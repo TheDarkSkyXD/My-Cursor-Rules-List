@@ -1,0 +1,17 @@
+## FRONTEND
+
+### Guidelines for REACT
+
+#### REACT_ROUTER
+
+- Use createBrowserRouter instead of BrowserRouter for better data loading and error handling
+- Implement lazy loading with React.lazy() for route components to improve initial load time
+- Use the useNavigate hook instead of the navigate component prop for programmatic navigation
+- Leverage loader and action functions to handle data fetching and mutations at the route level
+- Implement error boundaries with errorElement to gracefully handle routing and data errors
+- Use relative paths with dot notation (e.g., "../parent") to maintain route hierarchy flexibility
+- Utilize the useRouteLoaderData hook to access data from parent routes
+- Implement fetchers for non-navigation data mutations
+- Use route.lazy() for route-level code splitting with automatic loading states
+- Implement shouldRevalidate functions to control when data revalidation happens after navigation
+

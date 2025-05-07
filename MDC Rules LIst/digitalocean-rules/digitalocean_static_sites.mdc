@@ -1,0 +1,128 @@
+---
+description: Static site deployment on DigitalOcean
+globs: ["**/*.html", "**/*.css", "**/*.js", "**/static/**"]
+alwaysApply: false
+---
+
+# Static Site Deployment on DigitalOcean
+
+> For rule creation guidelines, see [Rule Creation Framework](.cursor/rules/rul3s.mdc)
+
+## Context
+DigitalOcean offers several cost-effective options for hosting static websites. This rule provides guidance on deploying and optimizing static sites on DigitalOcean's infrastructure.
+
+> **Get Started**: Sign up using [this referral link](https://m.do.co/c/d5a4da02539a) to receive $200 in free credit for 60 days.
+
+## Deployment Options for Static Sites
+
+### App Platform (Recommended for Beginners)
+**Best for**: Simple static websites, JAMstack applications, and sites built with static site generators.
+
+1. **Connect Repository**: Link your GitHub, GitLab, or Bitbucket repository
+2. **Configure Build Command**: Set appropriate build command (e.g., `npm run build` for React/Vue apps)
+3. **Set Output Directory**: Specify the directory containing your built files (e.g., `build`, `dist`, `public`)
+4. **Choose Basic Plan**: Start with the Basic plan ($5/month) or even the free Starter tier
+5. **Configure Custom Domain**: Set up your custom domain with automatic SSL
+6. **Enable Auto-deploy**: Configure automatic deployments on repository changes
+7. **Set Environment Variables**: Add any required environment variables for build process
+
+### Spaces (Object Storage)
+**Best for**: Pure static websites with no build process, or as a CDN for static assets.
+
+1. **Create a Space**: Set up a new Space in your preferred region
+2. **Enable CDN**: Turn on CDN for better performance
+3. **Upload Files**: Upload your static website files
+4. **Configure Index Document**: Set `index.html` as your index document
+5. **Set Up Custom Domain**: Configure your custom domain to point to the Space
+6. **Configure CORS**: Set appropriate CORS settings if needed
+7. **Set Cache Control**: Configure caching headers for optimal performance
+
+### Droplet with Nginx
+**Best for**: Static sites requiring custom server configurations or additional services.
+
+1. **Choose Small Droplet**: Start with the $5/month plan for most static sites
+2. **Install Nginx**: Set up Nginx as your web server
+3. **Configure Server Block**: Create a server block for your domain
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com www.yourdomain.com;
+    root /var/www/html;
+    index index.html;
+    
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+```
+4. **Set Up SSL**: Use Certbot to configure free SSL certificates
+5. **Enable Gzip**: Configure compression for better performance
+6. **Set Up Caching**: Configure browser caching for static assets
+7. **Configure Firewall**: Set up UFW to allow only necessary ports (80, 443, 22)
+
+## Optimization Techniques
+
+1. **Minify Assets**: Compress HTML, CSS, and JavaScript files
+2. **Optimize Images**: Use WebP format and appropriate compression
+3. **Implement Lazy Loading**: Lazy load images and non-critical resources
+4. **Use CDN**: Leverage DigitalOcean's CDN for faster content delivery
+5. **Configure Caching**: Set appropriate cache headers for different asset types
+6. **Implement Preloading**: Preload critical resources
+7. **Use HTTP/2**: Enable HTTP/2 for improved performance
+8. **Implement Responsive Images**: Use srcset for serving appropriate image sizes
+
+## Continuous Deployment
+
+### GitHub Actions for App Platform
+```yaml
+name: Deploy to DigitalOcean App Platform
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: Deploy to App Platform
+        run: doctl apps create-deployment ${{ secrets.APP_ID }}
+```
+
+### GitHub Actions for Spaces
+```yaml
+name: Deploy to DigitalOcean Spaces
+on:
+  push:
+    branches: [ main ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build site
+        run: |
+          npm ci
+          npm run build
+      - name: Deploy to Spaces
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.SPACES_ACCESS_KEY }}
+          secret_key: ${{ secrets.SPACES_SECRET_KEY }}
+          space_name: ${{ secrets.SPACE_NAME }}
+          space_region: ${{ secrets.SPACE_REGION }}
+          source: build
+          out_dir: /
+```
+
+## Cost Optimization
+
+1. **Use Free Tier**: Start with App Platform's free tier for personal projects
+2. **Optimize Storage**: Minimize the size of assets to reduce storage costs
+3. **Monitor Bandwidth**: Keep an eye on bandwidth usage, especially for Spaces
+4. **Use Appropriate Plan**: Choose the right plan based on your traffic needs
+5. **Implement Caching**: Proper caching reduces bandwidth costs
+6. **Consider Cloudflare**: Use Cloudflare as a free CDN in front of your DigitalOcean resources 

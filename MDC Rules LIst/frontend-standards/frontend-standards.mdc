@@ -1,0 +1,229 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Frontend Development Standards
+
+## Component Architecture
+
+- Use functional components with TypeScript
+- Implement React Server Components (RSC) by default
+- Use client components only when necessary
+- Structure components hierarchically:
+  - Page components
+  - Feature components
+  - UI components
+  - Layout components
+- Keep components focused and reusable
+
+## Component Structure
+
+```typescript
+const ComponentName: FC<Props> = ({ prop1, prop2 }) => {
+  // Hooks
+  // State
+  // Effects
+  // Handlers
+  // Render helpers
+  return (...)
+}
+```
+
+## State Management
+
+- Use React Query for server state
+- Use local state for UI state
+- Implement proper loading and error states
+- Use context for theme/auth/global state
+- Keep state as close to usage as possible
+
+## Performance Optimization
+
+- Implement code splitting
+- Use dynamic imports for large components
+- Optimize images and assets
+- Implement proper caching strategies
+- Use React.memo for expensive renders
+- Implement virtualization for long lists
+
+## Styling
+
+- Use Tailwind CSS for styling
+- Follow mobile-first approach
+- Use CSS variables for theming
+- Implement dark mode support
+- Keep styles modular and reusable
+- Use CSS Grid and Flexbox for layouts
+
+## Data Fetching
+
+- Use React Query for data fetching
+- Implement proper error boundaries
+- Handle loading states gracefully
+- Cache responses appropriately
+- Implement optimistic updates
+- Use proper retry strategies
+
+## Form Handling
+
+- Use React Hook Form for forms
+- Implement proper validation
+- Handle errors gracefully
+- Show loading states during submission
+- Implement proper form reset
+- Use controlled components when necessary
+
+## Accessibility
+
+- Follow WCAG guidelines
+- Use semantic HTML
+- Implement proper ARIA attributes
+- Ensure keyboard navigation
+- Provide proper focus management
+- Test with screen readers
+
+## Testing
+
+- Write component tests
+- Implement integration tests
+- Test error states
+- Test loading states
+- Use proper mocking strategies
+- Test accessibility
+
+## Build and Deployment
+
+- Optimize bundle size
+- Implement proper code splitting
+- Use proper environment variables
+- Implement proper CI/CD
+- Use proper caching strategies
+- Monitor performance metrics
+
+## Code Organization
+
+```
+src/
+  ├── app/              # Next.js app directory
+  ├── components/       # Reusable components
+  │   ├── ui/          # Basic UI components
+  │   └── features/    # Feature-specific components
+  ├── hooks/           # Custom hooks
+  ├── lib/             # Utilities and helpers
+  ├── providers/       # Context providers
+  ├── styles/          # Global styles
+  ├── types/           # TypeScript types
+  └── utils/           # Utility functions
+```
+
+## Import Order
+
+1. React and Next.js imports
+2. Third-party libraries
+3. Types
+4. Components
+5. Hooks
+6. Utils
+7. Styles
+8. Relative imports
+
+## Component Naming
+
+- Use PascalCase for components
+- Use descriptive names
+- Suffix with type (Button, Card, Modal)
+- Use consistent naming patterns
+- Avoid abbreviations
+
+## Props
+
+- Use TypeScript interfaces for props
+- Make props required when necessary
+- Provide default values when appropriate
+- Document complex props
+- Use proper prop types
+
+## Error Handling
+
+- Implement error boundaries
+- Show user-friendly error messages
+- Log errors properly
+- Handle network errors
+- Implement retry mechanisms
+- Show proper fallback UI 
+
+## Streaming and Suspense
+
+- Use `<Suspense>` for components that perform asynchronous operations
+- Always provide a fallback UI (preferably using skeleton components)
+- Break down pages into smaller chunks for progressive loading
+- Prioritize critical UI elements for earlier rendering
+- Use streaming for data-heavy components
+
+```tsx
+import { Suspense } from 'react'
+import { Skeleton } from '@/components/ui/skeleton'
+ 
+export default function Page() {
+  return (
+    <section>
+      <Suspense fallback={<Skeleton className="h-32 w-full" />}>
+        <DataComponent />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-32 w-full" />}>
+        <AnotherDataComponent />
+      </Suspense>
+    </section>
+  )
+}
+```
+
+## React 19 Ref Handling
+
+- Use the new ref props pattern instead of forwardRef
+- Pass ref directly as a prop to components
+- Use ComponentProps type for proper typing
+
+```tsx
+type ButtonProps = {
+  variant: "primary" | "secondary";
+} & ComponentProps<"button">;
+
+export const Button = ({
+  variant,
+  ref,
+  ...props
+}: ButtonProps) => {
+  return <button ref={ref} className={variant} {...props} />;
+};
+```
+
+## Tailwind CSS Best Practices
+
+- Use `flex gap-n` with `flex-col` instead of `space-y-n`
+- Use opacity syntax like `bg-white/50` instead of `bg-white bg-opacity-50`
+- Follow mobile-first approach
+- Use CSS variables for theming
+- Keep styles modular and reusable
+- Use CSS Grid and Flexbox for layouts
+
+## Next.js Routing
+
+- Use the App Router structure in the `app` directory
+- Implement proper page, layout, loading, and error files
+- Use async components for data fetching
+- Handle params and searchParams properly
+- Implement proper error boundaries
+- Use proper loading states
+
+```tsx
+import type { PageParams } from "@/types/next";
+
+export default async function RoutePage(props: PageParams<{ userId: string }>) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
+  
+  return // ...
+}
+``` 

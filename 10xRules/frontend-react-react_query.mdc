@@ -1,0 +1,17 @@
+## FRONTEND
+
+### Guidelines for REACT
+
+#### REACT_QUERY
+
+- Use TanStack Query (formerly React Query) with appropriate staleTime and gcTime based on data freshness requirements
+- Implement the useInfiniteQuery hook for pagination and infinite scrolling
+- Use optimistic updates for mutations to make the UI feel more responsive
+- Leverage queryClient.setQueryDefaults to establish consistent settings for query categories
+- Use suspense mode with <Suspense> boundaries for a more declarative data fetching approach
+- Implement retry logic with custom backoff algorithms for transient network issues
+- Use the select option to transform and extract specific data from query results
+- Implement mutations with onMutate, onError, and onSettled for robust error handling
+- Use Query Keys structuring pattern ([entity, params]) for better organization and automatic refetching
+- Implement query invalidation strategies to keep data fresh after mutations
+

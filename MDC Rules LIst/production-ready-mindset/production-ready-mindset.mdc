@@ -1,0 +1,263 @@
+---
+description: Write code assuming it will be deployed immediately to production
+globs: *
+alwaysApply: true
+---
+
+<rule>
+name: production-ready-mindset
+description: Write code assuming it will be deployed immediately to production
+
+filters:
+  - type: event
+    pattern: "code_review|implementation_complete"
+  - type: content
+    pattern: "(?i)(ready|complete|finished|implemented)"
+
+actions:
+  - type: transform
+    pattern: "^.*$"
+    replacement: |
+      # Production Readiness Assessment
+      
+      ## Implementation
+      
+      {original_content}
+      
+      ## Production Checklist
+      
+      | Category | Status | Notes |
+      |----------|--------|-------|
+      | **Error Handling** | {status} | {notes} |
+      | **Logging** | {status} | {notes} |
+      | **Performance** | {status} | {notes} |
+      | **Security** | {status} | {notes} |
+      | **Scalability** | {status} | {notes} |
+      | **Monitoring & Alerting** | {status} | {notes} |
+      | **Documentation** | {status} | {notes} |
+      | **Testing** | {status} | {notes} |
+      | **Accessibility** | {status} | {notes} |
+      | **Feature Flags** | {status} | {notes} |
+      | **API Contracts** | {status} | {notes} |
+      | **Cross-Team Impact** | {status} | {notes} |
+      
+      ## Deployment Considerations
+      
+      {deployment_notes}
+      
+      ## Rollback Plan
+      
+      {rollback_strategy}
+      
+      ## Cross-functional Impact
+      
+      | Team/System | Impact | Coordination Required |
+      |-------------|--------|----------------------|
+      | DevOps | {impact} | {coordination} |
+      | Security | {impact} | {coordination} |
+      | Data/Analytics | {impact} | {coordination} |
+      | Frontend/UX | {impact} | {coordination} |
+      | Customer Support | {impact} | {coordination} |
+
+  - type: validate
+    conditions:
+      - pattern: ".*"
+        validationScript: |
+          // Define production readiness criteria
+          const criteria = [
+            {
+              name: "Error Handling",
+              check: code => /try|catch|throw|error|exception/i.test(code),
+              message: "Implement proper error handling"
+            },
+            {
+              name: "Logging",
+              check: code => /log\.|console\.|logger/i.test(code),
+              message: "Add appropriate logging"
+            },
+            {
+              name: "Input Validation",
+              check: code => /validate|check|if\s*\([^)]+\)|assert/i.test(code),
+              message: "Validate all inputs"
+            },
+            {
+              name: "Comments/Documentation",
+              check: code => {
+                const lineCount = code.split('\n').length;
+                const commentCount = (code.match(/\/\/|\/\*|\*/g) || []).length;
+                return commentCount >= lineCount * 0.1;
+              },
+              message: "Add more documentation"
+            },
+            {
+              name: "Monitoring",
+              check: code => /metrics?|monitor|alert|gauge|counter|histogram/i.test(code),
+              message: "Add monitoring and alerting hooks"
+            },
+            {
+              name: "Performance Measurement",
+              check: code => /benchmark|performance|timing|duration/i.test(code),
+              message: "Add performance measurement"
+            },
+            {
+              name: "Feature Flags",
+              check: code => /feature[._-]?flag|toggle|config\.get/i.test(code),
+              message: "Consider feature flags for safer deployment"
+            },
+            {
+              name: "Versioning",
+              check: code => /version|semver|compatibility/i.test(code),
+              message: "Consider API versioning/compatibility"
+            }
+          ];
+          ];
+          
+          // Check each criterion
+          const failedCriteria = criteria
+            .filter(criterion => !criterion.check(code))
+            .map(criterion => criterion.message);
+          
+          if (failedCriteria.length > 0) {
+            return {
+              valid: false,
+              message: `Before production deployment: ${failedCriteria.join(', ')}`
+            };
+          }
+          
+          return { valid: true };
+
+  - type: suggest
+    message: |
+      Before considering code production-ready:
+      
+      1. Implement proper error handling for all failure paths
+      2. Add appropriate logging for operations and errors
+      3. Include monitoring hooks and alerting thresholds
+      4. Document deployment requirements and dependencies
+      5. Create a rollback plan for potential failures
+      6. Test thoroughly including failure scenarios
+      7. Consider accessibility requirements
+      8. Use feature flags for high-risk changes
+      9. Validate API contracts and versioning
+      10. Document cross-team impacts
+
+examples:
+  - input: |
+      I've implemented the user authentication feature. Here's the code:
+      
+      ```javascript
+      function authenticateUser(username, password) {
+        const user = findUserByUsername(username);
+        if (user && checkPassword(user, password)) {
+          return generateAuthToken(user);
+        }
+        return null;
+      }
+      ```
+    output: |
+      # Production Readiness Assessment
+      
+      ## Implementation
+      
+      ```javascript
+      function authenticateUser(username, password) {
+        // Input validation
+        if (!username || !password) {
+          throw new Error('Missing credentials');
+        }
+        
+        try {
+          // Log authentication attempt (without sensitive data)
+          logger.info(`Authentication attempt for user: ${username}`);
+          metrics.incrementCounter('auth.attempts');
+          const startTime = performance.now();
+          
+          // Find user with timeout and error handling
+          const user = findUserByUsername(username);
+          
+          // Check for rate limiting
+          if (isRateLimited(username)) {
+            logger.warn(`Rate limit exceeded for user: ${username}`);
+            metrics.incrementCounter('auth.ratelimited');
+            throw new Error('Too many authentication attempts');
+          }
+          
+          // Feature flag for new auth flow
+          const useNewAuthFlow = featureFlags.isEnabled('new-auth-flow');
+          const authFunction = useNewAuthFlow ? secureCompare : legacyCompare;
+          
+          // Verify credentials with timing-attack protection
+          if (user && authFunction(user.password, hashPassword(password))) {
+            // Log successful authentication
+            logger.info(`Successful authentication for user: ${username}`);
+            metrics.incrementCounter('auth.success');
+            
+            // Generate and return token with appropriate expiration
+            return generateAuthToken(user);
+          }
+          
+          // Log failed authentication
+          logger.warn(`Failed authentication for user: ${username}`);
+          metrics.incrementCounter('auth.failure');
+          
+          // Performance tracking
+          const duration = performance.now() - startTime;
+          metrics.recordHistogram('auth.duration', duration);
+          
+          return null;
+        } catch (error) {
+          // Log error details
+          logger.error(`Authentication error: ${error.message}`, { error });
+          metrics.incrementCounter('auth.error');
+          alerting.triggerIfThreshold('auth.error', 10, '5m');
+          throw new Error('Authentication service unavailable');
+        }
+      }
+      ```
+      
+      ## Production Checklist
+      
+      | Category | Status | Notes |
+      |----------|--------|-------|
+      | **Error Handling** | ✅ Complete | All edge cases and exceptions handled |
+      | **Logging** | ✅ Complete | Authentication attempts, successes, and failures logged |
+      | **Performance** | ✅ Complete | Performance tracking with histograms |
+      | **Security** | ✅ Complete | Rate limiting, timing attack protection |
+      | **Scalability** | ⚠️ Partial | Depends on external rate limiting implementation |
+      | **Monitoring & Alerting** | ✅ Complete | Success/failure metrics and threshold alerts |
+      | **Documentation** | ✅ Complete | Function behavior and error cases documented |
+      | **Testing** | ⚠️ Partial | Unit tests completed, integration tests needed |
+      | **Accessibility** | ✅ N/A | Backend authentication service |
+      | **Feature Flags** | ✅ Complete | Controlled rollout of new auth flow |
+      | **API Contracts** | ⚠️ Partial | API versioning needed for auth token format |
+      | **Cross-Team Impact** | ⚠️ Review | Mobile client changes needed for new tokens |
+      
+      ## Deployment Considerations
+      
+      1. Requires rate limiting service to be deployed first
+      2. Update API documentation for error responses
+      3. Set up alerts for excessive authentication failures
+      4. Deploy during low-traffic period due to authentication flow changes
+      5. Ensure feature flag configuration is in place before deployment
+      
+      ## Rollback Plan
+      
+      1. Keep previous authentication function available but deprecated
+      2. Use feature flag to control rollout percentage (start at 5%)
+      3. Monitor authentication failures after deployment
+      4. Automatic rollback if failure rate exceeds 2% over 5-minute period
+      
+      ## Cross-functional Impact
+      
+      | Team/System | Impact | Coordination Required |
+      |-------------|--------|----------------------|
+      | DevOps | New metrics and alerts | Coordinate dashboard updates |
+      | Security | Improved auth mechanism | Review new implementation |
+      | Data/Analytics | New auth events to track | Update event tracking |
+      | Frontend/UX | New token format | Update token handling in client apps |
+      | Customer Support | Potential login issues | Brief on new error messages |
+
+metadata:
+  priority: high
+  version: 1.0
+</rule>

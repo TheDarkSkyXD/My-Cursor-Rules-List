@@ -1,0 +1,209 @@
+# Backend Development Standards
+
+## Architecture
+
+- Follow clean architecture principles
+- Implement proper separation of concerns
+- Use dependency injection
+- Keep business logic independent of framework
+- Implement proper error handling
+- Use proper logging
+
+## API Design
+
+- Follow REST principles
+- Use proper HTTP methods
+- Implement proper status codes
+- Use consistent response format
+- Version APIs properly
+- Document APIs using OpenAPI/Swagger
+
+## Database
+
+- Use Prisma as ORM
+- Follow database normalization
+- Implement proper indexing
+- Use transactions when necessary
+- Implement proper migrations
+- Follow naming conventions
+
+## Authentication & Authorization
+
+- Implement JWT authentication
+- Use proper password hashing
+- Implement role-based access control
+- Use proper session management
+- Implement rate limiting
+- Use proper security headers
+
+## Error Handling
+
+- Use custom error classes
+- Implement proper error middleware
+- Log errors with context
+- Return proper error responses
+- Handle validation errors
+- Implement proper error tracking
+
+## Validation
+
+- Validate all inputs
+- Use Zod for schema validation
+- Implement proper sanitization
+- Handle edge cases
+- Return proper validation errors
+- Document validation rules
+
+## Testing
+
+- Write unit tests
+- Implement integration tests
+- Use proper test databases
+- Mock external services
+- Test error cases
+- Implement proper test coverage
+
+## Logging
+
+- Use proper logging levels
+- Implement structured logging
+- Log important events
+- Include proper context
+- Implement proper log rotation
+- Use proper log format
+
+## Performance
+
+- Optimize database queries
+- Implement proper caching
+- Use connection pooling
+- Implement proper indexing
+- Monitor performance metrics
+- Use proper load balancing
+
+## Security
+
+- Implement proper CORS
+- Use proper security headers
+- Implement rate limiting
+- Use proper input validation
+- Implement proper authentication
+- Follow security best practices
+
+## Code Organization
+
+```
+src/
+  ├── config/          # Configuration
+  ├── controllers/     # Request handlers
+  ├── middleware/      # Express middleware
+  ├── models/          # Data models
+  ├── routes/          # API routes
+  ├── services/        # Business logic
+  ├── types/           # TypeScript types
+  └── utils/           # Utility functions
+```
+
+## Database Schema
+
+- Use proper data types
+- Implement proper relationships
+- Use proper constraints
+- Follow naming conventions
+- Document schema
+- Implement proper indexes
+
+## API Response Format
+
+```typescript
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: {
+    code: string;
+    message: string;
+    details?: unknown;
+  };
+  meta?: {
+    page?: number;
+    limit?: number;
+    total?: number;
+  };
+}
+```
+
+## Environment Variables
+
+- Use proper naming convention
+- Document all variables
+- Use proper validation
+- Implement proper defaults
+- Use proper types
+- Keep sensitive data secure
+
+## Dependencies
+
+- Keep dependencies updated
+- Use specific versions
+- Document dependencies
+- Minimize dependencies
+- Regular security audits
+- Use proper package manager
+
+## Documentation
+
+- Document APIs
+- Document database schema
+- Document environment variables
+- Document deployment process
+- Document testing strategy
+- Keep documentation updated
+
+## Monitoring
+
+- Implement proper logging
+- Use proper monitoring tools
+- Track performance metrics
+- Monitor error rates
+- Track API usage
+- Implement proper alerts
+
+## Database Migrations
+
+- Use Prisma migrations for database schema changes
+- Always use `RENAME` operations instead of `DROP` and `ADD` to preserve data
+- Test migrations in a development environment before applying to production
+- Back up data before applying migrations
+- Document migration purposes and impacts
+
+### Example of Proper Migration
+
+Instead of:
+```sql
+-- AlterTable
+ALTER TABLE "Post" DROP COLUMN "content",
+ADD COLUMN "markdown" TEXT NOT NULL;
+```
+
+Use:
+```sql
+-- AlterTable
+ALTER TABLE "Post" RENAME COLUMN "content" TO "markdown";
+```
+
+## Testing Strategy
+
+- Write unit tests for business logic
+- Implement integration tests for API endpoints
+- Use proper test databases
+- Mock external services
+- Test error cases
+- Implement proper test coverage
+- Follow TDD principles when appropriate
+
+### TDD Workflow
+
+1. Write tests first
+2. Implement the minimal code to make tests pass
+3. Refactor while keeping tests green
+4. Repeat for new features 

@@ -1,0 +1,24 @@
+---
+description: MVP development strategies for quick idea validation
+globs: 
+alwaysApply: true
+---
+
+# MVP Development Strategies
+
+> For rule creation guidelines, see [Rule Creation Framework](.cursor/rules/rul3s.mdc)
+
+When helping develop an initial version of a product:
+
+1. Focus on core functionality first, leaving nice-to-have features for later iterations
+2. Suggest using no-code/low-code tools for rapid prototyping when appropriate
+3. Recommend leveraging existing libraries and frameworks rather than building from scratch
+4. Suggest simplified UI approaches that can be enhanced later
+5. Recommend feature flags to easily enable/disable features during development
+6. Suggest using mock data and services before implementing real backends
+7. Recommend starting with monolithic architecture for simplicity, with notes on future separation
+8. Suggest manual processes for complex features that can be automated later
+9. Recommend focusing on one platform first before expanding to others
+10. Suggest implementing analytics early to gather user feedback
+11. Recommend documenting technical debt and future improvements
+12. Suggest time-boxed development sprints to maintain momentum 

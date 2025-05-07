@@ -1,0 +1,73 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ # Change Management
+
+Rule for managing code changes, reversions, and redirections based on user feedback.
+
+<rule>
+name: change_management
+description: Standards for handling code changes, reversions, and redirections
+filters:
+  - type: event
+    pattern: "code_change"
+  - type: event
+    pattern: "user_feedback"
+
+actions:
+  - type: suggest
+    message: |
+      When handling changes and user feedback:
+
+      1. Change Rejection:
+         ```
+         - Immediately revert all unnecessary changes
+         - Remove unused imports, variables, and functions
+         - Clean up any partial implementations
+         - Return file to last known good state
+         ```
+
+      2. Change Redirection:
+         ```
+         - Understand the new direction completely before proceeding
+         - Don't try to preserve irrelevant code
+         - Start fresh with the new approach
+         - Don't mix old and new implementations
+         ```
+
+      3. Cleanup Checklist:
+         ```
+         - Remove unused imports
+         - Remove unused variables and functions
+         - Remove unnecessary style changes
+         - Remove unrelated changes
+         - Clean up any temporary state
+         ```
+
+      4. Before New Implementation:
+         ```
+         - Confirm complete understanding of new requirements
+         - Get clarification if needed
+         - Plan the implementation
+         - Start clean
+         ```
+
+examples:
+  - input: |
+      # Original implementation
+      <button class="resize-handle">
+        <ResizeIcon />
+      </button>
+
+      # User wants OS-style resize
+      # First: Remove everything not needed
+      # Then: Implement new approach
+      <div class="resize-handle" />
+    output: "Clean reversion and new implementation"
+
+metadata:
+  priority: high
+  version: 1.0
+</rule>

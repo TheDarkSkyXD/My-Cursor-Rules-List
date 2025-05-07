@@ -1,0 +1,46 @@
+---
+description: Safe deployment practices and security considerations
+globs: [".gitignore", "deploy.*", "Dockerfile", "docker-compose.*", ".env.*"]
+alwaysApply: true
+---
+
+# Safe Deployment Practices
+
+> For rule creation guidelines, see [Rule Creation Framework](.cursor/rules/rul3s.mdc)
+
+## Context
+Deploying applications to production environments requires careful attention to security, configuration, and environment management to prevent data leaks and ensure reliable operation.
+
+## Guidelines
+
+### Security and Credentials
+
+1. **Never commit secrets**: Ensure all API keys, passwords, tokens, and credentials are stored in environment variables or secure secret management systems, never in code
+2. **Use environment-specific configuration**: Maintain separate configurations for development, staging, and production environments
+3. **Implement proper .gitignore**: Always include node_modules/, .env files, log files, and build artifacts in .gitignore
+4. **Rotate credentials regularly**: Implement a process for rotating API keys and access tokens, especially after team member departures
+5. **Limit access permissions**: Follow the principle of least privilege for all service accounts and API keys
+
+### Deployment Process
+
+6. **Implement CI/CD pipelines**: Automate testing and deployment to reduce human error and ensure consistency
+7. **Use feature flags**: Deploy new features behind toggles to enable quick rollbacks if issues arise
+8. **Implement blue-green deployments**: Use staging environments that mirror production for zero-downtime deployments
+9. **Maintain deployment documentation**: Keep clear instructions for deployment procedures and rollback processes
+10. **Version your APIs**: Implement proper API versioning to avoid breaking changes for existing users
+
+### Monitoring and Recovery
+
+11. **Set up monitoring and alerts**: Implement application monitoring, error tracking, and automated alerts for critical issues
+12. **Create backup strategies**: Regularly backup databases and critical configuration with automated processes
+13. **Implement health checks**: Add endpoints that verify system health and dependencies
+14. **Prepare disaster recovery plans**: Document steps to recover from major failures or data loss
+15. **Log appropriately**: Implement structured logging with appropriate detail levels, but avoid logging sensitive information
+
+### .gitignore Best Practices
+
+16. **Start with templates**: Use language/framework-specific .gitignore templates from gitignore.io as a foundation
+17. **Ignore environment files**: Always add .env, .env.local, and similar environment-specific files
+18. **Ignore build artifacts**: Add build/, dist/, and other generated directories
+19. **Ignore dependency directories**: Include node_modules/, vendor/, and similar package directories
+20. **Ignore system files**: Exclude .DS_Store, Thumbs.db, and other OS-specific files 

@@ -1,0 +1,6 @@
+---
+description: This tool preforms debugging steps for applications
+globs: */*.ts
+alwaysApply: false
+---
+When i say /debug, gather console logs and take a screenshot of the app to help fix issues

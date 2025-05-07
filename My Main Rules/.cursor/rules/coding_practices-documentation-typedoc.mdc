@@ -1,0 +1,13 @@
+## CODING_PRACTICES
+
+### Guidelines for DOCUMENTATION
+
+#### TYPEDOC
+
+- Use JSDoc-style comments with TypeScript-specific annotations for all public APIs
+- Configure custom themes to match {{project_branding}} for consistent documentation
+- Group related functionality using @module and @category tags for better organization
+- Document edge cases and error handling for {{critical_functions}}
+- Generate and publish documentation as part of the CI/CD pipeline to keep it current
+- Include usage examples for complex interfaces and abstract classes
+
