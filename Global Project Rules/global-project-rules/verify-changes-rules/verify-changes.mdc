@@ -1,0 +1,92 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Verify Changes
+
+Rule for automatically verifying code changes through compilation, testing, and linting.
+
+<rule>
+name: verify_changes
+description: Standards for verifying code changes through compilation, testing, and linting
+filters:
+  - type: event
+    pattern: "code_change"
+  - type: file_extension
+    pattern: "\\.(sol|ts|js)$"
+
+actions:
+
+- type: suggest
+  message: |
+  After code changes, always verify:
+
+  1. Dependencies and Environment:
+
+     ```
+     - Check if in devbox shell
+     - Verify all dependencies installed
+     - Check if forge/hardhat/npm packages are available
+     ```
+
+  2. Compilation:
+
+     ```
+     - Run forge build for Solidity
+     - Run tsc for TypeScript
+     - Fix any compilation errors before proceeding
+     ```
+
+  3. Testing:
+
+     ```
+     - Run forge test -vv for Solidity
+     - Run npm test for TypeScript/JavaScript
+     - Investigate and fix any test failures
+     ```
+
+  4. Linting:
+
+     ```
+     - Check solhint for Solidity
+     - Check eslint for TypeScript/JavaScript
+     - Address any style/best practice issues
+     ```
+
+  5. Coverage (Optional):
+     ```
+     - Run forge coverage for Solidity
+     - Run npm run coverage for TypeScript
+     - Identify untested code paths
+     ```
+
+examples:
+
+- input: |
+
+  # After contract changes:
+
+  forge build && forge test -vv
+
+  # After TypeScript changes:
+
+  npm run build && npm test
+  output: "Verification complete"
+
+- input: |
+
+  # Check if we're in devbox:
+
+  echo $DEVBOX_SHELL_ENABLED || devbox shell
+
+  # Then run verification
+
+  forge build && forge test -vv
+  output: "Environment and verification"
+
+metadata:
+priority: high
+version: 1.0
+</rule>

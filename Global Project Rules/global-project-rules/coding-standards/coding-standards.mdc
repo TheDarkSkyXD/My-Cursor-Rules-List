@@ -1,0 +1,140 @@
+# Coding Standards
+
+## General Principles
+
+- Write clean, maintainable, and type-safe code
+- Follow SOLID principles and DRY (Don't Repeat Yourself)
+- Prioritize readability and maintainability over cleverness
+- Document complex logic and important decisions
+- Write self-documenting code with clear naming
+
+## Code Structure
+
+- Organize code into logical modules and features
+- Keep files focused and single-responsibility
+- Use consistent file and directory structure
+- Separate business logic from presentation/API layers
+- Group related functionality together
+
+## TypeScript Best Practices
+
+- Use TypeScript for all code
+- Prefer interfaces over types for object definitions
+- Use strict type checking
+- Avoid `any` type; use `unknown` when type is truly unknown
+- Leverage type inference when possible
+- Use type guards for runtime type checking
+
+## Naming Conventions
+
+- Use descriptive names that reflect purpose
+- Follow consistent casing:
+  - camelCase for variables and functions
+  - PascalCase for types, interfaces, and classes
+  - kebab-case for directories and files
+- Use auxiliary verbs for boolean variables (is, has, should)
+- Prefix private members with underscore
+- Use meaningful names for generic types (TData, TResponse)
+
+## Code Style
+
+- Use consistent formatting (Prettier)
+- Follow language-specific style guides
+- Keep functions small and focused
+- Use early returns to reduce nesting
+- Write declarative code over imperative
+- Use meaningful comments for complex logic
+
+## Error Handling
+
+- Use proper error types and hierarchies
+- Handle errors at appropriate levels
+- Provide meaningful error messages
+- Log errors with context
+- Use try-catch blocks judiciously
+
+## Testing
+
+- Write unit tests for business logic
+- Use integration tests for API endpoints
+- Follow AAA pattern (Arrange, Act, Assert)
+- Mock external dependencies
+- Keep tests focused and independent
+
+## Performance
+
+- Optimize database queries
+- Use appropriate caching strategies
+- Implement pagination for large datasets
+- Profile and optimize critical paths
+- Use async/await for asynchronous operations
+
+## Security
+
+- Validate all inputs
+- Sanitize data before storage
+- Use proper authentication and authorization
+- Follow security best practices
+- Keep dependencies updated
+
+## Version Control
+
+- Write clear commit messages
+- Follow conventional commits format
+- Keep commits focused and atomic
+- Use meaningful branch names
+- Review code before committing
+
+## Documentation
+
+- Document public APIs
+- Keep README files up to date
+- Document complex algorithms
+- Include setup instructions
+- Document environment requirements
+
+## Dependencies
+
+- Minimize external dependencies
+- Keep dependencies up to date
+- Use specific versions
+- Document dependency purposes
+- Regular security audits
+
+## Environment Configuration
+
+- Use environment variables
+- Separate configuration from code
+- Document required environment variables
+- Use different configs for different environments
+- Never commit sensitive data
+
+## Task Management
+
+- Always check for a `todo.md` file in the project root
+- Reference and update the `todo.md` file for all tasks
+- Mark tasks as completed when finished
+- Add new tasks to the file as they are identified
+- Keep the file organized by priority and status
+- Use checkboxes for tracking completion status
+
+### Example todo.md format
+
+```markdown
+# Project Todo List
+
+## High Priority
+- [ ] Implement user authentication
+- [x] Set up database connection
+- [ ] Create API endpoints for user management
+
+## Medium Priority
+- [ ] Add form validation
+- [ ] Implement error handling
+- [ ] Set up logging system
+
+## Low Priority
+- [ ] Add documentation
+- [ ] Optimize performance
+- [ ] Add unit tests
+``` 
