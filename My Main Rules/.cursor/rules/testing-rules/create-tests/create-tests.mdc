@@ -17,7 +17,7 @@ Determine any remaining arguments or configuration needed to run the tests by re
 
 - **Light and Practical Tests:** Prefer simpler, multi-purpose testing strategies such as single smoke tests or integration tests that test multiple parts of core functionality with as little code as possible.
 - **Simple Tests:** Avoid large test files above 500 lines of code that make it hard to refactor. Avoid testing for edge cases unless the test was written while fixing a bug and trying to prevent that bug from happening again. Avoid complicated mocking solutions.
-- **Native Test Runners:** Deno / Bun, otherwise Vite test.
+- **Native Test Runners:** Using Jest.
 - **Locality:** Tests should be placed near the code they're testing.
 - **Naming Convention:** `{filename_being_tested}.test.{js/ts}`
 - **Reusability:** Extract shared functionality, e.g., `./test-utilities.{ts/js}`
