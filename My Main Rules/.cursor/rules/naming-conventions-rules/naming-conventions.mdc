@@ -14,7 +14,7 @@ globs: **/*
 - Names should be searchable and not too short
 - Avoid abbreviations except for widely accepted ones (e.g., `id`, `http`, `url`)
 - Avoid redundant or meaningless words (e.g., `data`, `info`)
-- Maximum name length: 10 characters
+- Maximum name length: 50 characters
 - Maintain consistent casing patterns as defined below
 
 ### 2. File & Folder Naming
