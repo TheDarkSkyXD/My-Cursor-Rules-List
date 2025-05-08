@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 ## CODING_PRACTICES
 
 ### Guidelines for STATIC_ANALYSIS
@@ -9,5 +14,5 @@
 - Use .prettierignore to exclude generated files, build artifacts, and {{specific_excluded_patterns}}
 - Set printWidth based on team preferences (80-120 characters) to improve code readability
 - Configure consistent quote style and semicolon usage to match team conventions
-- Implement CI checks to ensure all committed code adheres to the defined style
 
+- Implement CI checks to ensure all committed code adheres to the defined style

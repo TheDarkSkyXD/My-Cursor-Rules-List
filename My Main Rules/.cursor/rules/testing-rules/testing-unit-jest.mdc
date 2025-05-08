@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
 ## TESTING
 
 ### Guidelines for UNIT
@@ -13,5 +18,5 @@
 - Leverage expect assertions with specific matchers
 - Implement code coverage reporting with meaningful targets
 - Use mockResolvedValue and mockRejectedValue for async testing
-- Leverage fake timers for testing time-dependent functionality
 
+- Leverage fake timers for testing time-dependent functionality

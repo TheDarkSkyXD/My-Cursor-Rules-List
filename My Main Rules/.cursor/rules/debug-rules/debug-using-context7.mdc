@@ -1,6 +1,6 @@
 ---
 description: This tool preforms debugging steps for applications
-globs: */*.ts
+globs: 
 alwaysApply: false
 ---
 When i say /debug, Use context7
