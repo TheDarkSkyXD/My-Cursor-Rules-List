@@ -1,0 +1,48 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ # Modern React Application Ruleset
+
+This ruleset provides comprehensive guidelines for building applications using our standardized tech stack. These rules should be followed by both human developers and AI agents working on the codebase.
+
+## Overview
+
+Our tech stack consists of:
+
+- **Core**: React + TypeScript
+- **Framework**: Next.js (App Router)
+- **Styling**: Tailwind CSS + shadcn/ui
+- **State Management**: Zustand (client) + TanStack Query (server)
+- **Data Handling**: React Hook Form, Zod, TanStack Table
+- **Backend**: Supabase
+- **Deployment**: Vercel
+- **Testing**: Vitest, React Testing Library, Playwright
+- **Package Manager**: pnpm
+
+## Rule Sections
+
+- [Core Development Principles](mdc:core.mdc) - Fundamental principles and patterns
+- [Technology Stack Standards](mdc:tech-stack.mdc) - Required technologies and integration rules
+- [Naming Conventions](mdc:naming.mdc) - Standardized naming patterns across the codebase
+- [Project Structure](mdc:structure.mdc) - Directory organization and file placement
+- [Coding Standards](mdc:coding-standards.mdc) - Specific coding patterns and styles
+- [Best Practices](mdc:best-practices.mdc) - Development workflow and implementation patterns
+
+## Priority of Rules
+
+When rules appear to conflict, use the following priority order:
+
+1. Security and accessibility requirements
+2. Core development principles
+3. Technology stack standards
+4. Project-specific requirements
+5. Best practices and coding standards
+
+## Application of Rules
+
+- These rules apply to all new code written for the project
+- Legacy code should be migrated to follow these rules when modified
+- Exceptions should be documented with comments explaining the reason
+- Rules may evolve over time as technologies and best practices change

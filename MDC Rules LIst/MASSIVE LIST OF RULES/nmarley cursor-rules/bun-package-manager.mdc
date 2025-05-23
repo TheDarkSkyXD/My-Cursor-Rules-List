@@ -1,0 +1,51 @@
+---
+description: Enforce the use of Bun as the package manager
+globs: "*"
+alwaysApply: true
+---
+
+# Package Manager Configuration
+
+- Always use `bun` for package management tasks.
+- Do not use `npm`, `yarn`, or `pnpm` under any circumstances.
+
+## Installation
+
+To install dependencies, run:
+
+```bash
+bun install
+````
+
+## Adding Packages
+
+To add a package, use:
+
+```bash
+bun add <package-name>
+```
+
+For development dependencies:
+
+```bash
+bun add -d <package-name>
+```
+
+## Running Scripts
+
+To run scripts defined in `package.json`, use:
+
+```bash
+bun run <script-name>
+```
+
+For example, to start the development server:
+
+```bash
+bun run dev
+```
+
+## Notes
+
+* Ensure that `bun` is installed and available in your system's PATH.
+* This rule applies to all files in the project.

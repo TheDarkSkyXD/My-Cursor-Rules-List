@@ -1,0 +1,52 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+- You can @ files here
+- You can use markdown but dont have to
+# Issue Resolution Protocol
+
+## Diagnostic Investigation
+When encountering a test failure:
+
+1. **Comprehensive Compatibility Assessment**
+   - Verify issue's scope across entire codebase
+   - Confirm reproducibility under different conditions
+   - Document initial observations and potential impact
+
+2. **Systematic Root Cause Analysis**
+   - Generate 5-7 potential problem hypotheses
+     * Consider architectural, implementation, dependency, and environmental factors
+     * Rank hypotheses by probability and potential complexity
+   - Critically evaluate each hypothesis
+   - Distill to most likely 1-2 root causes
+
+## Resolution Preparation
+### Detailed Developer Guidance
+Create a comprehensive resolution brief that includes:
+- **Precise Diagnostic Insights**
+  * Exact file locations
+  * Specific line numbers affected
+  * Detailed explanation of root cause
+  * Potential downstream implications
+
+- **Explicit Fix Instructions**
+  * Step-by-step modification process
+  * Code snippets demonstrating corrective action
+  * Expected outcome and verification methods
+
+## Implementation Strategy
+- Execute fix with methodical precision
+- Conduct thorough regression and unit testing
+- Document entire diagnostic and resolution process
+- Update relevant documentation or comments
+
+## Guiding Principles
+- Prioritize systematic investigation
+- Maintain clarity and reproducibility
+- Minimize potential for future regressions
+- Facilitate knowledge transfer

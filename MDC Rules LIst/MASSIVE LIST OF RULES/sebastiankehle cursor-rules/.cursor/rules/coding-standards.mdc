@@ -1,0 +1,158 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ # Coding Standards
+
+## General Formatting
+
+- Use 2 spaces for indentation
+- Use semicolons at the end of statements
+- Limit line length to 100 characters
+- Use single quotes for strings by default
+- Add trailing commas in multi-line objects and arrays
+- Use parentheses for multi-line JSX
+- Use meaningful whitespace to improve readability
+
+## JavaScript/TypeScript
+
+### Variables
+- Use const by default
+- Use let only when necessary
+- Avoid var completely
+- Declare variables at the top of their scope
+- Use descriptive variable names
+
+### Functions
+- Keep functions small and focused on a single task
+- Use arrow functions for anonymous functions
+- Implement proper error handling
+- Use default parameters instead of conditional assignments
+- Avoid side effects when possible
+
+### TypeScript Specifics
+- Define specific types rather than using any
+- Use interface for object shapes that will be implemented/extended
+- Use type for unions, intersections, and primitive types
+- Enable strict mode in tsconfig.json
+- Use TypeScript's utility types when appropriate
+
+## React
+
+### Components
+- Use functional components with hooks
+- Keep components small and focused
+- Extract complex logic to custom hooks
+- Use proper prop destructuring
+- Set default props with default parameters
+
+### JSX
+- Use self-closing tags for elements without children
+- Use fragment shortcuts (<></>) when appropriate
+- Limit inline styling
+- Use conditional rendering patterns consistently
+- Format props consistently
+
+### Hooks
+- Follow the rules of hooks
+- Use the appropriate hooks for specific use cases
+- Extract complex hook logic to custom hooks
+- Add proper dependency arrays to useEffect and useMemo
+- Keep useEffect focused on related side effects
+
+## Next.js
+
+### Routing
+- Use dynamic routes appropriately
+- Implement proper loading and error states
+- Use server components where possible
+- Handle SEO properly with metadata
+- Structure routes logically
+
+### Data Fetching
+- Use proper data fetching patterns
+- Implement caching strategies
+- Handle loading and error states
+- Validate response data with Zod
+- Optimize fetch requests
+
+## CSS/Styling
+
+### Tailwind
+- Group related utility classes
+- Use consistent spacing utilities
+- Extract common patterns to components
+- Use proper responsive prefixes
+- Follow mobile-first approach
+
+### Custom CSS
+- Use CSS modules when needed
+- Follow BEM naming convention for custom classes
+- Keep selectors simple
+- Avoid !important unless absolutely necessary
+- Use CSS variables for theming
+
+## Testing
+
+### General
+- Write focused, deterministic tests
+- Use descriptive test names
+- Test behavior, not implementation
+- Implement proper test isolation
+- Use proper assertions
+
+### React Components
+- Test user interactions
+- Verify component renders correctly
+- Test error states
+- Test accessibility
+- Mock external dependencies
+
+## Documentation
+
+### Code Comments
+- Use JSDoc for function documentation
+- Add comments for complex logic only
+- Keep comments up to date
+- Use TODO comments for pending work
+- Document non-obvious behavior
+
+### Component Documentation
+- Document component props with JSDoc
+- Add usage examples for complex components
+- Document limitations and edge cases
+- Keep documentation up to date
+- Use storybook for visual documentation when appropriate
+
+## Error Handling
+
+### Client-Side
+- Use try/catch for async operations
+- Implement proper error boundaries
+- Display user-friendly error messages
+- Log errors for debugging
+- Handle expected error cases gracefully
+
+### Server-Side
+- Validate input data
+- Return appropriate status codes
+- Provide meaningful error messages
+- Log server errors
+- Implement proper error handling middleware
+
+## Performance
+
+### Rendering
+- Avoid unnecessary re-renders
+- Use proper memoization
+- Implement virtualization for long lists
+- Optimize images and media
+- Avoid layout shifts
+
+### Network
+- Implement proper caching
+- Optimize API requests
+- Use pagination or infinite loading
+- Prefetch critical resources
+- Implement proper loading states

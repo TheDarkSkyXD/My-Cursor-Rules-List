@@ -1,0 +1,203 @@
+---
+description: How to create a pull request cover note
+globs: 
+---
+# PR Notes Generation Rules
+
+## Project Setup
+1. Initial Setup:
+   ```bash
+   # Create and ignore tmp directory for PR notes
+   mkdir -p tmp
+   echo "/tmp" >> .gitignore
+
+   # Ensure GitHub CLI is installed and authenticated
+   gh auth status || gh auth login
+   ```
+
+2. Repository Configuration:
+   - Ensure main/master branch protection is enabled
+   - Configure required PR reviews if needed
+   - Set up any required status checks
+
+## Core Principles
+1. Every PR should have a clear, structured note
+2. Notes should be organized in standard sections
+3. Changes should be grouped by functional area
+4. Implementation details should be clear but concise
+
+## Required Sections
+1. Overview
+   - Brief description of the PR's purpose
+   - High-level context of the changes
+
+2. Key Changes
+   - Grouped by functional area
+   - Listed in chronological or logical order
+   - Each change should be actionable and clear
+
+3. Testing
+   - What tests were added
+   - How the changes were verified
+   - Any special testing considerations
+
+4. Dependencies
+   - New packages or services added
+   - Version changes
+   - Configuration updates
+
+5. Notes for Reviewers
+   - Important implementation details
+   - Areas needing special attention
+   - Known limitations or future work
+
+## Writing Guidelines
+1. Use active voice
+2. Keep descriptions concise but complete
+3. Group related changes together
+4. Highlight breaking changes clearly
+5. Include context for complex changes
+
+## PR Management Process
+1. Prerequisites:
+   - Ensure GitHub CLI is installed and authenticated
+   - Check you're on the correct branch
+   ```
+   git branch --show-current
+   ```
+   - Ensure all changes are committed
+   ```
+   git status
+   ```
+
+2. Check for existing PRs:
+   ```
+   gh pr list --head $(git branch --show-current)
+   ```
+
+3. If PR exists:
+   - View current description:
+     ```
+     gh pr view
+     ```
+   - Check PR status:
+     ```
+     gh pr status
+     ```
+   - Analyze if updates needed based on new commits
+
+4. Analyze changes:
+   - Get commit history:
+     ```
+     git log main..HEAD --oneline
+     ```
+   - Review actual changes (be wary of doing this if there are a lot of changes. Assess whether it's practical before commencing. If not just use the commit message history):
+     ```
+     git diff main
+     ```
+   - Check for dependency changes (again be cautious about diff sizes and your context window):
+     ```
+     git diff main -- '**/package.json' 'yarn.lock' 'package-lock.json'
+     ```
+   - Group related changes by feature/area
+   - Identify themes and patterns
+   - Note breaking changes or special considerations
+
+5. Create/Update PR:
+   - Ensure tmp directory exists:
+     ```
+     mkdir -p tmp
+     ```
+
+   - For new PR:
+     ```
+     # Save PR body to tmp file
+     printf "# PR Notes\n\n## Overview\n..." > tmp/pr-body.md
+
+     # Create PR using the file
+     gh pr create --title "Brief descriptive title" --body-file tmp/pr-body.md [--draft]
+     ```
+
+   - To update existing:
+     ```
+     # Update title
+     gh pr edit <number> --title "New title"
+
+     # Update body using tmp file
+     printf "# PR Notes\n\n## Overview\n..." > tmp/pr-body.md
+     gh pr edit <number> --body-file tmp/pr-body.md
+     ```
+
+6. Post-creation checks:
+   - Verify PR appears as expected:
+     ```
+     gh pr view --web
+     ```
+   - Check CI status:
+     ```
+     gh pr checks
+     ```
+   - Request reviews if needed:
+     ```
+     gh pr edit <number> --add-reviewer <username>
+     ```
+
+   Note: We use the tmp directory for PR descriptions to avoid cluttering the workspace.
+   The tmp directory should be listed in .gitignore.
+
+## Note Structure Example
+```markdown
+# PR Notes
+
+## Overview
+[Brief description of changes and their purpose]
+
+## Key Changes
+### [Functional Area 1]
+- Change 1
+- Change 2
+
+### [Functional Area 2]
+- Change 3
+- Change 4
+
+## Testing
+- [Test additions/changes]
+- [Verification steps]
+
+## Dependencies
+- [Dependency changes or "No dependency changes"]
+
+## Notes for Reviewers
+- [Important implementation details]
+- [Areas needing attention]
+```
+
+## Automation Hints
+To generate a base PR note:
+1. Use `git log main..HEAD --oneline` for change overview
+2. Group commits by their prefixes or related areas
+3. Extract testing information from test files
+4. Parse package.json diffs for dependency changes
+
+## Common Issues & Solutions
+1. Authentication Issues:
+   ```
+   gh auth login
+   ```
+
+2. Wrong base branch:
+   ```
+   gh pr edit <number> --base main
+   ```
+
+3. Need to update PR after push:
+   ```
+   gh pr edit <number> --body-file tmp/pr-body.md
+   ```
+
+4. Check PR status:
+   ```
+   gh pr status
+   gh pr checks
+   ```

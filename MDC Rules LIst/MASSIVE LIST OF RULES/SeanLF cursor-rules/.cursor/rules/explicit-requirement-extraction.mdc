@@ -1,0 +1,93 @@
+---
+description: Clarifies unstated requirements and validates understanding before coding
+globs: *
+alwaysApply: true
+---
+
+<rule>
+name: explicit-requirement-extraction
+description: Clarifies unstated requirements and validates understanding before coding
+
+filters:
+  - type: event
+    pattern: "requirements_analysis"
+  - type: content
+    pattern: "(?i)(implement|create|build|develop|add)"
+
+actions:
+  - type: transform
+    pattern: "^.*$"
+    replacement: |
+      # Requirements Analysis
+      
+      ## Explicit Requirements
+      {explicit_requirements_list}
+      
+      ## Implicit Requirements
+      {inferred_requirements_list}
+      
+      ## Clarification Needed
+      {questions_about_ambiguous_requirements}
+      
+      ## Assumptions
+      {list_of_assumptions_being_made}
+      
+      ## Constraints
+      {technical_business_constraints}
+      
+      # Proposed Solution
+      
+      {original_content}
+
+  - type: suggest
+    message: |
+      Before implementation, always:
+      
+      1. Explicitly list stated requirements
+      2. Identify unstated but necessary requirements
+      3. List assumptions you're making
+      4. Identify constraints that affect the solution
+      5. Ask clarifying questions for ambiguities
+
+examples:
+  - input: |
+      Add a feature to export reports to PDF.
+    output: |
+      # Requirements Analysis
+      
+      ## Explicit Requirements
+      1. Export reports to PDF format
+      
+      ## Implicit Requirements
+      1. Maintain report formatting and styling in PDF
+      2. Support all existing report types
+      3. Handle various data volumes (small to large reports)
+      4. Provide progress indication for large exports
+      5. Error handling for failed exports
+      
+      ## Clarification Needed
+      1. Should PDF exports include interactive elements?
+      2. Are there specific compliance requirements (accessibility, etc.)?
+      3. Should exports be synchronous or asynchronous for large reports?
+      4. Are there specific naming conventions for exported files?
+      5. Should we include company branding/watermarks?
+      
+      ## Assumptions
+      1. Users have permissions to view all data they can export
+      2. PDF generation will be server-side
+      3. Existing authentication will be used for export authorization
+      4. Standard paper sizes (A4, Letter) will be supported
+      
+      ## Constraints
+      1. Must work within existing UI design patterns
+      2. Server memory limitations for large report generation
+      3. Must maintain application responsiveness during export
+      
+      # Proposed Solution
+      
+      Based on these requirements and assumptions, I recommend implementing a PDF export feature using a server-side PDF generation library...
+
+metadata:
+  priority: critical
+  version: 1.0
+</rule>

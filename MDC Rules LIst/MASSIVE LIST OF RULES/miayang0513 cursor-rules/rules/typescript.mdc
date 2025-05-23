@@ -1,0 +1,63 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## Basic Typing
+- Always use explicit types when inference is unclear.
+- Prefer `type` aliases over `interface`, unless you need to extend multiple types.
+- Use the `satisfies` operator to ensure type conformity.
+- Enable strict mode (`strict: true`) in your `tsconfig.json`.
+- Use literal types and const assertions when appropriate.
+
+## Advanced Types
+- Use template literal types, enums, and discriminated unions effectively.
+- Narrow types early to improve type safety and minimize runtime errors.
+- Leverage mapped types and conditional types for dynamic type creation.
+- Use utility types (Pick, Omit, Partial, etc.) effectively.
+- Implement proper generic constraints.
+
+## Generics
+- Write reusable generic functions and types.
+- Use constraints to limit generic types appropriately.
+- Provide meaningful default types when applicable.
+- Keep generic names descriptive (T for Type, K for Key, etc.).
+- Use multiple type parameters when needed.
+
+## Module Management
+- Use proper module declaration files (.d.ts).
+- Organize types in separate type definition files.
+- Use proper import/export syntax for types.
+- Maintain clean module boundaries.
+- Document module APIs thoroughly.
+
+## Type Testing
+- Write type tests using conditional types.
+- Use the `expectType` utility for type checking.
+- Test edge cases in complex type systems.
+- Verify generic type behavior.
+- Document type test cases.
+
+## Code Quality
+- Avoid using `any`. Use `unknown` if necessary, but refine it quickly.
+- Favor immutability in object and array types.
+- Write ergonomic types that balance safety and developer experience.
+- Use proper error types and handling.
+- Implement proper null checking.
+
+## Performance
+- Consider type instantiation cost.
+- Avoid excessive type complexity.
+- Use type caching for complex types.
+- Balance type safety with compile time.
+
+## Reminder
+- Aim for code that is both **safe** and **pleasant** to work with.
+- Types should assist development, not create unnecessary complexity.
+- Document complex type implementations.
+- Keep types maintainable and readable.
+
+
+## Reminder
+- Aim for code that is both **safe** and **pleasant** to work with.
+- Types should assist development, not create unnecessary complexity.

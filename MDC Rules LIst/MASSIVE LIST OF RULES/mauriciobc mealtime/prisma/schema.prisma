@@ -1,0 +1,244 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+  output          = "../node_modules/.prisma/client"
+  binaryTargets = ["debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // Connection pooling URL for most operations
+  directUrl = env("DIRECT_URL")   // Direct connection URL for migrations and some operations
+  schemas   = ["public"]  // Only manage public schema; exclude auth
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cats {
+  id           String            @id @default(uuid()) @db.Uuid
+  created_at   DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime          @default(now()) @db.Timestamptz(6)
+  name         String
+  birth_date   DateTime?         @db.Date
+  weight       Decimal?          @db.Decimal(5, 2)
+  household_id String            @db.Uuid
+  owner_id     String            @db.Uuid
+  portion_size Decimal?          @db.Decimal(5, 2)
+  portion_unit String?           @db.VarChar(255)
+  photo_url    String?           @db.VarChar(2048)
+  restrictions String? @db.Text
+  notes        String? @db.Text
+  feeding_interval Int?
+  household    households        @relation(fields: [household_id], references: [id])
+  owner        profiles          @relation("owner", fields: [owner_id], references: [id])
+  feeding_logs feeding_logs[]
+  schedules    schedules[]
+  weight_logs  cat_weight_logs[]
+  weight_goals weight_goals[]
+
+  @@index([created_at])
+  @@index([household_id])
+  @@index([name])
+  @@index([owner_id])
+  @@index([updated_at])
+  @@index([weight])
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model household_members {
+  id           String     @id @default(uuid()) @db.Uuid
+  household_id String     @db.Uuid
+  user_id      String     @db.Uuid
+  role         String
+  created_at   DateTime   @default(now()) @db.Timestamptz(6)
+  household    households @relation(fields: [household_id], references: [id])
+  user         profiles   @relation(fields: [user_id], references: [id])
+
+  @@unique([household_id, user_id])
+  @@index([household_id])
+  @@index([role])
+  @@index([user_id])
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model households {
+  id                String              @id @default(uuid()) @db.Uuid
+  created_at        DateTime            @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime            @default(now()) @db.Timestamptz(6)
+  name              String
+  description       String?
+  owner_id          String              @db.Uuid
+  inviteCode        String?             @unique
+  cats              cats[]
+  feeding_logs      feeding_logs[]
+  household_members household_members[]
+
+  @@index([created_at])
+  @@index([owner_id])
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model profiles {
+  id                   String               @id @db.Uuid
+  updated_at           DateTime?            @db.Timestamptz(6)
+  username             String?              @unique
+  full_name            String?
+  avatar_url           String?
+  email                String?
+  timezone             String?
+  owned_cats           cats[]               @relation("owner")
+  feeding_logs_fed     feeding_logs[]       @relation("feeder")
+  household_members    household_members[]
+  weight_logs_measured cat_weight_logs[]    @relation("weight_measured_by")
+  created_weight_goals weight_goals[]       @relation("createdBy")
+
+  @@index([username])
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model notifications {
+  id         String   @id @default(uuid()) @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+  user_id    String   @db.Uuid
+  title      String
+  message    String
+  type       String
+  is_read    Boolean  @default(false)
+  metadata   Json     @default("{}")
+
+  // Note: The actual unique constraint on JSONB fields (metadata->>'catId', metadata->>'expectedTime') must be added via a raw SQL migration, as Prisma does not support functional indexes on JSON fields directly.
+  @@schema("public")
+}
+
+/// Scheduled notifications for future delivery (UTC timestamps)
+model scheduledNotification {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String
+  catId       String?
+  type        String
+  title       String
+  message     String
+  deliverAt   DateTime @db.Timestamptz(6) // UTC
+  delivered   Boolean  @default(false)
+  deliveredAt DateTime? @db.Timestamptz(6)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([delivered, deliverAt])
+  @@schema("public")
+  // TODO: Add expiresAt for retention/cleanup
+}
+
+model schedules {
+  id         String   @id @default(uuid()) @db.Uuid
+  cat_id     String   @db.Uuid
+  type       String
+  interval   Int?
+  times      String[]
+  enabled    Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @updatedAt @db.Timestamptz(6)
+  cat        cats     @relation(fields: [cat_id], references: [id], onDelete: Cascade)
+
+  @@index([cat_id])
+  @@index([enabled])
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model feeding_logs {
+  id           String     @id @default(uuid()) @db.Uuid
+  created_at   DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime   @default(now()) @db.Timestamptz(6)
+  cat_id       String     @db.Uuid
+  household_id String     @db.Uuid
+  meal_type    String
+  amount       Decimal    @db.Decimal(5, 2)
+  unit         String
+  notes        String?
+  fed_by       String?    @db.Uuid
+  fed_at       DateTime   @db.Timestamptz(6)
+  cat          cats       @relation(fields: [cat_id], references: [id])
+  feeder       profiles?  @relation("feeder", fields: [fed_by], references: [id])
+  household    households @relation(fields: [household_id], references: [id])
+
+  @@index([cat_id])
+  @@index([household_id])
+  @@index([fed_by])
+  @@index([fed_at])
+  @@schema("public")
+}
+
+model schema_migrations {
+  version    String   @id @unique(map: "schema_migrations_version_idx") @db.VarChar(255)
+  dirty      Boolean  @default(false)
+  applied_at DateTime @default(now()) @db.Timestamptz(6)
+
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cat_weight_logs {
+  id           String    @id @default(uuid()) @db.Uuid
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime  @default(now()) @db.Timestamptz(6)
+  weight       Decimal   @db.Decimal(5, 2)
+  date         DateTime  @db.Date
+  cat_id       String    @db.Uuid
+  notes        String?
+  measured_by  String?   @db.Uuid
+  cat          cats      @relation(fields: [cat_id], references: [id], onDelete: Cascade)
+  measuredBy   profiles? @relation("weight_measured_by", fields: [measured_by], references: [id])
+
+  @@index([cat_id])
+  @@index([date])
+  @@index([cat_id, date])
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model weight_goals {
+  id            String                  @id @default(uuid()) @db.Uuid
+  created_at    DateTime                @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime                @default(now()) @db.Timestamptz(6)
+  cat_id        String                  @db.Uuid
+  goal_name     String                  // Added: Name of the goal
+  target_weight Decimal                 @db.Decimal(5, 2)
+  target_date   DateTime?               @db.Date
+  start_weight  Decimal?                @db.Decimal(5, 2)
+  unit          String                  // Added: Unit for weights (e.g., kg, lbs)
+  status        String                  @default("active")
+  notes         String?
+  created_by    String                  @db.Uuid
+  milestones    weight_goal_milestones[]
+  cat           cats                    @relation(fields: [cat_id], references: [id], onDelete: Cascade)
+  createdBy     profiles                @relation("createdBy", fields: [created_by], references: [id])
+
+  @@index([cat_id])
+  @@index([target_date])
+  @@index([status])
+  @@index([cat_id, status])
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model weight_goal_milestones {
+  id         String       @id @default(uuid()) @db.Uuid
+  created_at DateTime     @default(now()) @db.Timestamptz(6)
+  goal_id    String       @db.Uuid
+  weight     Decimal      @db.Decimal(5, 2)
+  date       DateTime     @db.Date
+  notes      String?
+  goal       weight_goals @relation(fields: [goal_id], references: [id], onDelete: Cascade)
+
+  @@index([goal_id])
+  @@index([date])
+  @@index([goal_id, date])
+  @@schema("public")
+}

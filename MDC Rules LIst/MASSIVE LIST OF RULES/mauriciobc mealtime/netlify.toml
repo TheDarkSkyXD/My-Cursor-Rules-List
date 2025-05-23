@@ -1,0 +1,11 @@
+# Netlify configuration for scheduled notification delivery
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[scheduledFunctions]]
+  function = "app/api/scheduled-notifications/deliver/route.ts"
+  schedule = "* * * * *"   # run every minute
+
+# Optional: You can also annotate the handler file with a schedule comment for Netlify 

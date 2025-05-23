@@ -1,0 +1,7 @@
+packages:
+  - packages/*
+ignoredBuiltDependencies:
+  - '@nestjs/core'
+  - '@swc/core'
+onlyBuiltDependencies:
+  - sharp

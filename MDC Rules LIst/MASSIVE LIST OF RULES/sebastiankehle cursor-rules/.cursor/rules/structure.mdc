@@ -1,0 +1,153 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ # Project Structure Guidelines
+
+## Root Directory Structure
+
+```
+project-name/
+├── .cursor/           # Cursor IDE settings
+├── .github/           # GitHub workflows and configurations
+├── app/               # Next.js App Router directory
+├── components/        # Shared components 
+├── lib/               # Utility functions and shared code
+├── public/            # Static assets
+├── styles/            # Global styles and Tailwind configuration
+├── types/             # TypeScript type definitions
+├── .env.local         # Local environment variables
+├── .eslintrc.js       # ESLint configuration
+├── .gitignore         # Git ignore file
+├── next.config.js     # Next.js configuration
+├── package.json       # Project dependencies
+├── pnpm-lock.yaml     # pnpm lock file
+├── postcss.config.js  # PostCSS configuration
+├── tailwind.config.js # Tailwind CSS configuration
+└── tsconfig.json      # TypeScript configuration
+```
+
+## App Directory Structure (Next.js)
+
+```
+app/
+├── (auth)/            # Auth route group
+│   ├── login/         # Login route
+│   ├── register/      # Register route
+│   └── layout.tsx     # Auth layout
+├── (dashboard)/       # Dashboard route group
+├── api/               # API routes
+├── _components/       # App-wide components not shared outside app directory
+├── _lib/              # App-specific utilities
+├── globals.css        # Global CSS
+├── layout.tsx         # Root layout
+└── page.tsx           # Homepage
+```
+
+## Component Organization
+
+### Top-Level Components
+```
+components/
+├── ui/                # UI components from shadcn
+├── forms/             # Form-related components
+├── layout/            # Layout components
+├── data-display/      # Data visualization components
+├── feedback/          # Notifications, alerts, etc.
+└── modals/            # Modal dialogs
+```
+
+### Component Structure
+```
+components/ui/button/
+├── index.ts           # Re-export
+├── Button.tsx         # Component implementation
+└── button.test.tsx    # Component tests
+```
+
+## Data Management Structure
+
+### Zustand Stores
+```
+lib/stores/
+├── index.ts           # Re-export
+├── use-cart-store.ts  # Cart store
+└── use-theme-store.ts # Theme store
+```
+
+### API and Query Structure
+```
+lib/api/
+├── index.ts           # Re-export
+├── client.ts          # API client setup
+└── queries/           # TanStack Query functions
+    ├── users.ts       # User-related queries
+    └── products.ts    # Product-related queries
+```
+
+## Additional Directories
+
+### Hooks Organization
+```
+lib/hooks/
+├── index.ts           # Re-export
+├── use-local-storage.ts
+└── use-media-query.ts
+```
+
+### Utilities Organization
+```
+lib/utils/
+├── index.ts           # Re-export
+├── date-utils.ts      # Date manipulation functions
+└── string-utils.ts    # String manipulation functions
+```
+
+## Supabase Integration
+
+### Database Types
+```
+types/supabase.ts      # Generated Supabase types
+```
+
+### Database Functions
+```
+lib/supabase/
+├── client.ts          # Supabase client setup
+├── auth.ts            # Authentication functions
+└── queries/           # Database query functions
+    ├── users.ts       # User-related database functions
+    └── products.ts    # Product-related database functions
+```
+
+## Testing Structure
+
+### Test Organization
+```
+components/button/
+├── Button.tsx         # Component implementation
+└── button.test.tsx    # Component tests
+
+# OR
+
+__tests__/
+├── components/        # Component tests
+└── lib/               # Utility tests
+```
+
+### E2E Tests
+```
+playwright/
+├── tests/             # E2E test files
+└── fixtures/          # Test fixtures and utilities
+```
+
+## Integration Guidelines
+
+- Keep related files close together
+- Use barrel files (index.ts) for clean imports
+- Co-locate tests with implementation when practical
+- Use route groups to organize related pages
+- Keep components focused and composable
+- Structure directories by feature when appropriate

@@ -1,0 +1,111 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ # Naming Conventions
+
+## Files and Directories
+
+### General
+- Use kebab-case for directories
+- Use kebab-case for non-component files
+- Use PascalCase for component files
+
+### Next.js Specific
+- Use page.tsx for route pages
+- Use layout.tsx for layouts
+- Use loading.tsx for loading states
+- Use error.tsx for error boundaries
+- Use not-found.tsx for 404 pages
+- Use route.ts for API routes
+
+### Organization
+- Use underscore prefix (_) for private directories or utilities
+- Use parentheses for route groups: (marketing)
+- Place components in components/ directory
+- Place utilities in utils/ or lib/ directory
+- Place types in types/ directory
+- Place hooks in hooks/ directory
+
+## Components
+
+### Component Names
+- Use PascalCase for component names
+- Use descriptive, noun-based names
+- Add purpose suffix when appropriate: UserCard, PostList
+- Use adjective prefixes for variants: PrimaryButton, SecondaryButton
+
+### Props
+- Use camelCase for prop names
+- Use consistent naming across similar components
+- Add appropriate prefix for event handlers: onSubmit, onClick
+- Follow React naming conventions: children, className, etc.
+- Use is/has prefix for boolean props: isLoading, hasError
+
+## Functions
+
+### General Functions
+- Use camelCase for function names
+- Use verb prefixes for actions: getUser, updatePost, deleteComment
+- Use descriptive names that indicate purpose
+- Avoid abbreviations unless well-known (id, url, etc.)
+
+### Hooks
+- Prefix with use: useAuth, useCart
+- Use camelCase for the rest of the name
+- Describe the purpose clearly: useWindowSize, useLocalStorage
+- Follow React hook naming conventions
+
+## Types and Interfaces
+
+### TypeScript
+- Use PascalCase for type names and interfaces
+- Use suffix to indicate purpose: UserDto, PostResponse
+- Use descriptive names
+- Avoid I-prefix for interfaces (follow consistency)
+- Use T-prefix for generic type parameters: TData, TError
+
+## State Management
+
+### Zustand
+- Use descriptive names for stores: useUserStore, useCartStore
+- Use camelCase for state properties
+- Use action verbs for methods: addItem, removeUser, updateSettings
+- Create consistent patterns across stores
+
+### TanStack Query
+- Use descriptive key arrays: ['users', userId]
+- Use get/fetch/update prefix for query functions: getUser, updateUser
+- Use consistent naming for query hooks: useUserQuery, useProductsQuery
+
+## CSS/Tailwind
+
+### Class Names
+- Use meaningful class names for component wrappers
+- Use kebab-case for custom CSS classes
+- Group related Tailwind utility classes
+- Use cn() utility for conditional classes
+- Follow consistent ordering of utility classes
+
+## Database
+
+### Supabase
+- Use snake_case for table and column names
+- Use plural for table names: users, posts, comments
+- Use singular for relationship fields: user_id (not users_id)
+- Use descriptive names that indicate purpose
+- Add appropriate suffix for special columns: created_at, updated_at
+
+## Tests
+
+### File Names
+- Add .test.ts or .spec.ts suffix for test files
+- Match test file names to the files they test
+- Group tests in __tests__ directory when appropriate
+
+### Test Names
+- Use descriptive test names that indicate functionality
+- Use the "it should" pattern for test descriptions
+- Group related tests with describe blocks
+- Use setup and utility functions with descriptive names

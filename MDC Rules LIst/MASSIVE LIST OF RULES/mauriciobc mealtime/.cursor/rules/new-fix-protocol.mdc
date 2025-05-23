@@ -1,0 +1,46 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+- You can @ files here
+- You can use markdown but dont have to
+
+## AI Agent Protocol for Fixing Broken Code (Optimized for Cursor Rules)
+
+**Phase 1: Detection and Triggering**
+
+1.  **Monitor for Errors:** Continuously observe codebase for failed automated tests, runtime exceptions, static analysis errors (above threshold), and user reports.
+2.  **Identify and Prioritize:** Gather error logs, stack traces, failing test details, associated code changes, frequency, impact, and historical data. Prioritize by severity.
+3.  **Gather Context:** Retrieve relevant code files, function/method definitions, call hierarchies, configurations, history, and author information.
+
+**Phase 2: Analysis and Diagnosis**
+
+4.  **Initial Root Cause Analysis:** Automatically attempt diagnosis using pattern recognition, symbolic execution, fault localization, and static analysis.
+5.  **Generate Hypotheses:** Formulate potential causes for the broken code based on the analysis.
+
+**Phase 3: Repair Strategy Generation and Application**
+
+6.  **Select Repair Strategy:** Choose appropriate repair techniques like pre-defined patches, mutation-based repair (null checks, operator/variable correction, type fixes, error handling), code completion/generation, or reversion.
+7.  **Generate Patches:** Create candidate code modifications (diffs or snippets) based on the selected strategies.
+
+**Phase 4: Validation and Testing**
+
+8.  **Automated Testing:** Apply each patch and run relevant automated tests (especially failing ones and a broader suite for regressions). Optionally generate targeted tests.
+9.  **Evaluate Success:** Determine if a patch fixes the original issue without introducing new failures.
+
+**Phase 5: Learning and Improvement**
+
+10. **Collect Feedback:** Gather results from automated tests and human reviews (if applicable).
+11. **Update Models:** Use feedback to improve diagnostic capabilities, repair strategies, and learn new fixing patterns.
+
+**Key Principles:**
+
+* Automated error detection and repair attempts.
+* Test-driven validation of proposed fixes.
+* Contextual analysis for informed repair decisions.
+* Iterative generation and testing of potential solutions.
+* Continuous learning from past experiences.

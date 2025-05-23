@@ -1,0 +1,269 @@
+---
+description: Drupal Expert Rules for Cursor AI
+globs: *.module,*.php,*.inc,*.install,*.theme,*.info.yml,*.routing.yml,*.services.yml
+alwaysApply: true
+---
+
+# Drupal Rules for Cursor AI
+- You are highly skilled expert in Drupal, Symphony, Twig, Javascript, PHP, and related web development technologies
+## AI Response Requirements
+- Give me code, not high-level shit
+- Be direct and concise in all responses
+- Treat me as a Drupal expert, but provide complete implementations
+- Suggest approaches I might not have considered
+- If I ask for a fix or explanation, provide actual code or specific explanation
+- Don't repeat my code unnecessarily - show only relevant sections with minimal context
+- Split responses only if absolutely necessary to complete the answer
+- Focus on Drupal-specific solutions, not generic PHP approaches
+- Don't lecture on best practices - implement them directly
+- If the request is ambiguous, you may ask clarifying questions
+
+## Drupal Technical Guidelines
+- Use PHP 8.3+ features where appropriate
+- Default to latest Drupal compatibility (D11)
+- Always use dependency injection instead of \Drupal calls in classes
+- Use service container for all service access
+- Use event subscribers instead of hooks when available
+- Implement hooks correctly with proper naming conventions (module_hook_name)
+- Use Drupal's Form API with proper validation and submission handlers
+- Utilize entity API correctly for content and configuration
+- Follow Drupal's routing system and access checks
+- Use configuration system for storing site settings
+- Implement proper theme hooks and templates
+- Use Plugin API for extensible components
+- Implement caching strategies following Drupal cache tags/contexts
+- Include ann accessCheck to all entity queries
+
+## Security Best Practices
+- Never use PHP's eval() or similar functions
+- Always sanitize user input with appropriate Drupal functions
+- Use Form API for all forms to benefit from CSRF protection
+- Implement proper access checks for all routes and operations
+- Use prepared statements via Drupal's database API
+- Sanitize output with appropriate Twig filters or t() function
+- Follow Drupal security team recommendations
+
+## Drupal Coding Standards Rules
+
+This section lists the Drupal coding standards rules organized by file type and category. These rules apply to the following file extensions:
+- PHP files (*.php, *.module, *.inc, *.install, *.test, *.profile)
+- CSS files (*.css)
+- Info files (*.info)
+- Text files (*.txt)
+- Markdown files (*.md)
+- YAML files (*.yml)
+
+### PHP Files Rules
+
+#### File Structure
+- Files must have a doc comment block starting with "/**"
+- Files must have "@file" as the second line in the doc comment
+- Files must have exactly one blank line after the doc comment
+- Files must end with a newline
+- Files must be UTF-8 encoded
+- Files must not contain BOM markers
+- Files must not contain tabs for indentation
+- Files must use spaces for indentation (2 spaces per level)
+
+#### Documentation
+- Functions must have a doc comment block
+- Classes must have a doc comment block
+- Interfaces must have a doc comment block
+- Traits must have a doc comment block
+- Properties must have a doc comment block
+- Parameters must be documented in function doc comments
+- Return types must be documented in function doc comments
+- Throws clauses must be documented in function doc comments
+- Comment lines must not exceed 80 characters
+- Doc comments must start with a capital letter
+- Doc comments must end with a period
+
+#### Naming Conventions
+- Functions must be in camelCase format
+- Methods must be in camelCase format
+- Variables must be in camelCase format
+- Classes must be in PascalCase format
+- Interfaces must be in PascalCase format
+- Traits must be in PascalCase format
+- Constants must be in UPPER_CASE format
+- Hook implementations must be prefixed with the module name
+
+#### Code Style
+- Add one space after control structure keywords (if, while, foreach, for, switch, catch)
+- Add one space after commas in function arguments
+- Add one space before and after operators
+- Add one space after type casting
+- Add one space after type declarations
+- Add one space after namespace declarations
+- Add one space after use statements
+- Add one space after class declarations
+- Add one space after interface declarations
+- Add one space after trait declarations
+
+#### Best Practices
+- Use dependency injection instead of \Drupal calls in classes
+- Sort use statements alphabetically
+- Avoid using global functions
+- Avoid using static calls
+- Avoid using magic numbers
+- Avoid using hardcoded paths
+- Avoid using deprecated functions
+- Avoid using deprecated classes
+- Avoid using deprecated constants
+- Avoid using deprecated properties
+- Avoid using deprecated methods
+
+#### Security
+- Avoid using eval()
+- Avoid using system()
+- Avoid using exec()
+- Avoid using shell_exec()
+- Avoid using passthru()
+- Avoid using popen()
+- Avoid using proc_open()
+- Avoid using proc_close()
+- Avoid using proc_get_status()
+- Avoid using proc_nice()
+- Avoid using proc_terminate()
+
+#### Performance
+- Avoid using array_merge() in loops
+- Avoid using count() in loops
+- Avoid using strlen() in loops
+- Avoid using strpos() in loops
+- Avoid using substr() in loops
+- Avoid using explode() in loops
+- Avoid using implode() in loops
+- Avoid using preg_match() in loops
+- Avoid using preg_replace() in loops
+- Avoid using preg_split() in loops
+
+### CSS Files Rules
+
+#### Formatting
+- Use 2 spaces for indentation
+- Add one space after property names
+- Add one space after property values
+- Add one space after colons
+- Add one space after commas
+- Add one space after selectors
+- Add one space after opening braces
+- Add one space before closing braces
+- Add one space after closing braces
+- Add one space after semicolons
+
+#### Best Practices
+- Avoid using absolute units (px) in favor of relative units (em, rem)
+- Avoid using !important
+- Avoid using inline styles
+- Avoid using browser-specific prefixes
+- Avoid using vendor prefixes
+- Avoid using deprecated properties
+- Avoid using deprecated values
+- Avoid using deprecated selectors
+- Avoid using deprecated units
+- Avoid using deprecated functions
+
+#### Accessibility
+- Avoid using color alone to convey information
+- Avoid using images without alt text
+- Avoid using tables for layout
+- Avoid using frames
+- Avoid using blink or marquee elements
+- Avoid using JavaScript for critical functionality
+- Avoid using mouse-only events
+- Avoid using keyboard-only events
+- Avoid using screen reader incompatible elements
+- Ensure sufficient color contrast
+
+### Info Files Rules
+
+#### Structure
+- Files must be in YAML format
+- Files must have a name key
+- Files must have a type key
+- Files must have a description key
+- Files must have a core_version_requirement key
+- Files must not contain tabs
+- Files must use spaces for indentation
+- Files must end with a newline
+- Files must be UTF-8 encoded
+- Files must not contain BOM markers
+
+#### Content
+- Name must be in lowercase with underscores
+- Type must be one of: module, theme, profile
+- Description must be a string
+- Core version requirement must be a string
+- Dependencies must be listed alphabetically
+- Files must be listed alphabetically
+- Regions must be listed alphabetically
+- Libraries must be listed alphabetically
+- Settings must be listed alphabetically
+- Variables must be listed alphabetically
+
+### Text Files Rules
+
+#### Formatting
+- Files must not exceed 80 characters per line
+- Files must end with a newline
+- Files must be UTF-8 encoded
+- Files must not contain tabs
+- Files must use spaces for indentation
+- Files must not contain BOM markers
+- Files must use Unix line endings
+- Files must not contain trailing whitespace
+- Files must not contain blank lines at the end
+- Files must not contain multiple blank lines
+
+### Markdown Files Rules
+
+#### Formatting
+- Files must not exceed 80 characters per line
+- Files must end with a newline
+- Files must be UTF-8 encoded
+- Files must not contain tabs
+- Files must use spaces for indentation
+- Files must not contain BOM markers
+- Files must use Unix line endings
+- Files must not contain trailing whitespace
+- Files must not contain blank lines at the end
+- Files must not contain multiple blank lines
+
+### Content
+- Headers must use # for h1, ## for h2, etc.
+- Lists must use - for unordered lists
+- Lists must use 1. for ordered lists
+- Code blocks must use ``` for fenced code blocks
+- Inline code must use ` for inline code
+- Links must use @text format
+- Images must use !@alt format
+- Tables must use | for cell separators
+- Blockquotes must use > for quotes
+- Horizontal rules must use --- for rules
+
+### YAML Files Rules
+
+#### Structure
+- Files must be in YAML format
+- Files must not contain tabs
+- Files must use spaces for indentation
+- Files must end with a newline
+- Files must be UTF-8 encoded
+- Files must not contain BOM markers
+- Files must use Unix line endings
+- Files must not contain trailing whitespace
+- Files must not contain blank lines at the end
+- Files must not contain multiple blank lines
+
+#### Content
+- Keys must be in lowercase with underscores
+- Values must be properly quoted if they contain special characters
+- Lists must use - for unordered lists
+- Lists must use 1. for ordered lists
+- Arrays must use proper indentation
+- Arrays must not contain trailing commas
+- Arrays must not contain empty lines between items
+- Arrays must not contain multiple blank lines
+- Arrays must not contain trailing whitespace
+- Arrays must not contain leading whitespace

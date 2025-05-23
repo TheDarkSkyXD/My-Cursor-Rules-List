@@ -1,0 +1,53 @@
+---
+description: Rules for using Angular 17+'s new control flow syntax in templates
+glob: "**/*.html"
+---
+
+# Modern Angular Control Flow Syntax
+
+## Overview
+Angular 17+ introduces a new control flow syntax that replaces the older `*ngIf`, `*ngFor`, etc. directives. Always use the new syntax in `.html` files.
+
+## Rules
+
+### @for loops
+```html
+@for (item of items; track item.id) {
+  <div>{{ item.name }}</div>
+}
+@empty {
+  <div>No items found</div>
+}
+```
+
+### @if conditions
+```html
+@if (condition) {
+  <div>Shown when true</div>
+} @else if (otherCondition) {
+  <div>Else if content</div>
+} @else {
+  <div>Else content</div>
+}
+```
+
+### @switch statements
+```html
+@switch (condition) {
+  @case (value1) {
+    <div>Case 1</div>
+  }
+  @case (value2) {
+    <div>Case 2</div>
+  }
+  @default {
+    <div>Default case</div>
+  }
+}
+```
+
+## Important Notes
+- Always include the track expression in @for loops
+- Use curly braces {} to wrap the template content
+- @empty block in @for is optional but recommended for better UX
+- No asterisk (*) prefix is needed unlike the old syntax

@@ -1,0 +1,60 @@
+---
+description: How to write tests
+globs: 
+---
+# Testing Rules
+
+## Core Philosophy
+
+- Tests should be minimal but effective
+- Focus on verifying core functionality
+- Tests must run in containerized CI environments
+- ALL API calls in tests MUST be mocked
+
+## Test Environment
+
+- Tests MUST run in containers
+- Container environment should match production
+- Use Jest for testing framework
+- Tests live in `./tests` directory
+
+## Development Testing
+
+During active development:
+1. Use minimum testing needed to verify functionality
+   - don't go into grainy detail in tests too soon
+   - Ensure critical paths work and things aren't broken
+   - Don't test detail that is likely to change
+   - Use npm scripts when useful or necessary
+
+2. Focus on core functionality
+   - Verify basic flow works
+   - Check expected outputs
+   - Confirm feature usability
+
+3. Build up test coverage
+   - Start with critical paths
+   - Add edge cases later
+   - Document test scenarios
+
+## Debugging Test Failures
+
+When tests fail:
+
+1. Strip Down Approach
+   - Create debug branch
+   - Remove non-essential components
+   - Focus on minimal reproduction
+   - Start with basic configuration
+
+2. Incremental Verification
+   - Verify basic functionality
+   - Add components one at a time
+   - Document findings
+   - Keep simplified test cases
+
+3. Root Cause Analysis
+   - Use minimal failing case
+   - Identify failure patterns
+   - Document for future reference
+   - Update tests to catch similar issues

@@ -1,0 +1,14 @@
+---
+description: How to work with Docker and CI
+globs: 
+---
+# Docker and CI Rules
+
+## Core Guidelines
+
+- Each service should have a clear, single responsibility
+- Use multi-stage builds to minimize image size
+- Ensure consistent environment variables across all environments
+- Add health checks for all services
+- Wait for dependent services before starting
+- Use production builds in CI/CD pipelines

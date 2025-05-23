@@ -1,0 +1,153 @@
+---
+description: Identifies potential failure points and handles them without prompting
+globs: *
+alwaysApply: true
+---
+
+<rule>
+name: proactive-edge-case-handling
+description: Identifies potential failure points and handles them without prompting
+
+filters:
+  - type: event
+    pattern: "code_implementation"
+  - type: content
+    pattern: "(?i)(function|method|class|component)"
+
+actions:
+  - type: transform
+    pattern: "^(```[a-z]*\n)?.*?(```)?$"
+    replacement: |
+      # Implementation with Edge Case Handling
+      
+      ## Potential Failure Points
+      {list_of_identified_edge_cases}
+      
+      ## Handling Strategy
+      {edge_case_handling_approach}
+      
+      ```${1}
+      ${2}
+      ```
+      
+      ## Remaining Risks
+      {unhandled_edge_cases_and_rationale}
+
+  - type: validate
+    conditions:
+      - pattern: ".*"
+        validationScript: |
+          // Check for error handling patterns based on language
+          const language = detectedLanguage;
+          let requiredPatterns = [];
+          
+          if (language === "javascript" || language === "typescript") {
+            requiredPatterns = [
+              /try\s*\{.*?\}\s*catch/s,
+              /if\s*\([^)]*?null|undefined[^)]*?\)/,
+              /\?\./
+            ];
+          } else if (language === "python") {
+            requiredPatterns = [
+              /try:(?:\s.*?)?except/s,
+              /if\s+[\w\s.]+\s+is\s+None/,
+              /if\s+not\s+[\w\s.]+:?/
+            ];
+          } else if (language === "java" || language === "kotlin") {
+            requiredPatterns = [
+              /try\s*\{.*?\}\s*catch/s,
+              /if\s*\([^)]*?null[^)]*?\)/,
+              /Optional<.*?>/
+            ];
+          }
+          
+          // Check if code has appropriate error handling
+          const missingPatterns = requiredPatterns.filter(pattern => !pattern.test(code));
+          
+          if (missingPatterns.length > 0 && code.length > 100) {
+            return {
+              valid: false,
+              message: "Code appears to be missing error handling for common edge cases."
+            };
+          }
+          
+          return { valid: true };
+
+  - type: suggest
+    message: |
+      When implementing any functionality, remember to:
+      
+      1. Identify all possible edge cases before coding
+      2. Handle null/undefined/empty values explicitly
+      3. Consider resource availability (network, disk, memory)
+      4. Add appropriate error logging for debugging
+      5. Use defensive programming techniques consistently
+
+examples:
+  - input: |
+      ```javascript
+      function getUserData(userId) {
+        const userData = database.fetchUser(userId);
+        return {
+          name: userData.name,
+          email: userData.email,
+          permissions: userData.permissions
+        };
+      }
+      ```
+    output: |
+      # Implementation with Edge Case Handling
+      
+      ## Potential Failure Points
+      1. `userId` could be null, undefined, or invalid format
+      2. Database operation could fail (connection issues, timeouts)
+      3. User might not exist in the database
+      4. User data might be incomplete (missing required fields)
+      5. Database might return unexpected data types
+      
+      ## Handling Strategy
+      - Input validation for userId
+      - Explicit error handling for database operations
+      - Null/undefined checks for user data
+      - Default values for missing properties
+      - Type checking/conversion for data safety
+      
+      ```javascript
+      function getUserData(userId) {
+        // Input validation
+        if (!userId || typeof userId !== 'string') {
+          throw new Error('Invalid user ID provided');
+        }
+        
+        try {
+          // Handle potential database failures
+          const userData = database.fetchUser(userId);
+          
+          // Handle missing user
+          if (!userData) {
+            return null;
+          }
+          
+          // Handle potentially missing data with defaults and type safety
+          return {
+            name: userData.name || 'Unknown User',
+            email: userData.email || '',
+            permissions: Array.isArray(userData.permissions) ? userData.permissions : []
+          };
+        } catch (error) {
+          // Log error for debugging
+          console.error(`Failed to fetch user data for ID ${userId}:`, error);
+          throw new Error(`Unable to retrieve user data: ${error.message}`);
+        }
+      }
+      ```
+      
+      ## Remaining Risks
+      1. Database inconsistencies beyond missing fields not handled
+      2. No retry mechanism for transient database failures
+      3. No caching strategy for frequent access patterns
+
+metadata:
+  priority: high
+  version: 1.0
+</rule>

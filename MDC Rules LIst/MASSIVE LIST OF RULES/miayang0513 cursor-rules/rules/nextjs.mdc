@@ -1,0 +1,51 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## Directory and Components
+- Use `app/` directory structure.
+- Prefer Server Components by default.
+- Mark dynamic behavior explicitly (`dynamic = "force-static"` or `"force-dynamic"`).
+- Organize components by feature/domain when possible.
+
+## Data Fetching and Actions
+- Prefer Server Actions for mutations instead of traditional API routes.
+- Use Route Handlers (`app/api/`) when interacting with external APIs or services.
+- Optimize fetch calls with revalidation and caching strategies.
+- Implement proper error handling for all data fetches.
+
+## Error Handling
+- Use error.tsx for custom error pages.
+- Implement error boundaries at appropriate component levels.
+- Handle loading and error states gracefully with suspense boundaries.
+- Log errors appropriately for monitoring.
+
+## Middleware and Security
+- Use middleware for authentication, logging, and request transformation.
+- Implement rate limiting for public endpoints.
+- Add security headers using middleware.
+- Handle CORS properly in API routes.
+
+## Performance
+- Always minimize client bundle size.
+- Use streaming and partial rendering techniques where appropriate.
+- Implement proper image optimization using next/image.
+- Use font optimization techniques.
+
+## Deployment
+- Ensure edge-optimized routes where beneficial.
+- Configure proper caching strategies.
+- Set up proper monitoring and logging.
+- Use environment variables appropriately.
+
+## Reminder
+- Keep Server Components pure and side-effect free.
+- Prefer statically generated content unless truly dynamic.
+- Always consider security implications of your choices.
+- Test critical user flows thoroughly.
+
+
+## Reminder
+- Keep Server Components pure and side-effect free.
+- Prefer statically generated content unless truly dynamic.

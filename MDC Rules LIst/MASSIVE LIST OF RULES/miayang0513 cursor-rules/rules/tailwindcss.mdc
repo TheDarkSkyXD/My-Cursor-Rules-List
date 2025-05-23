@@ -1,0 +1,69 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## Core Usage
+- Favor built-in utility classes; avoid writing custom CSS whenever possible.
+- Prefer logical properties (`inset`, `block`, `inline`, etc.) for better i18n and RTL support.
+- Use helper libraries like `clsx` or `cva` to manage dynamic class names cleanly.
+- Follow consistent class ordering patterns.
+
+## Responsive Design
+- Use mobile-first approach consistently.
+- Implement proper breakpoint strategies.
+- Consider container queries for component-level responsiveness.
+- Test layouts across different screen sizes.
+- Use fluid typography and spacing when appropriate.
+
+## Dark Mode
+- Implement dark mode using Tailwind's built-in features.
+- Use semantic color naming in your theme.
+- Test color contrast in both modes.
+- Consider system preference detection.
+- Provide smooth mode transitions.
+
+## Design System Integration
+- Create consistent component abstractions.
+- Define and use design tokens effectively.
+- Maintain a component library with standard styles.
+- Document custom utility patterns.
+- Use CSS variables for dynamic values.
+
+## Performance
+- Use proper purge configuration.
+- Minimize custom CSS usage.
+- Optimize for production builds.
+- Consider CSS-in-JS implications.
+- Monitor bundle size impact.
+
+## Styling Best Practices
+- Minimize the use of `@apply`, and only use it inside dedicated CSS files like `tailwind.css`.
+- Keep class names short, readable, and scoped to the relevant component.
+- Organize classes semantically: layout, spacing, typography, colors, states.
+- Use meaningful class name groupings.
+- Implement proper hover, focus, and active states.
+
+## Accessibility and Semantics
+- Always prioritize semantic HTML elements (`button`, `nav`, `section`, etc.).
+- Combine Tailwind classes with semantic markup for better accessibility (a11y) and SEO.
+- Ensure sufficient color contrast.
+- Implement proper focus indicators.
+- Support reduced motion preferences.
+
+## Animation and Interaction
+- Use Tailwind's built-in transition utilities.
+- Implement consistent animation patterns.
+- Consider performance implications.
+- Respect user motion preferences.
+
+## Reminder
+- Maintain consistency: organize Tailwind classes logically within each component.
+- Keep the UI clean, scalable, and easy to adjust without rewriting a lot of classes.
+- Consider accessibility in all design decisions.
+- Document custom utilities and patterns.
+
+
+## Reminder
+- Maintain consistency: organize Tailwind classes logically within each component.
+- Keep the UI clean, scalable, and easy to adjust without rewriting a lot of classes.

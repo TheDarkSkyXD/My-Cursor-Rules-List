@@ -1,0 +1,79 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ # Core Development Principles
+
+## Architecture
+
+- Use Server Components by default for static/non-interactive UI
+- Use Client Components only when needed for interactivity
+- Keep component tree shallow where possible
+- Follow unidirectional data flow patterns
+- Implement clean separation between UI, logic, and data layers
+
+## Component Design
+
+- Create single-responsibility components
+- Implement logical component composition
+- Use proper React patterns (custom hooks, context, etc.)
+- Keep components focused on specific functionality
+- Follow atomic design methodology when appropriate
+
+## Type Safety
+
+- Always use TypeScript with strict mode enabled
+- Define explicit interfaces for component props
+- Create domain-specific type definitions
+- Avoid using `any` or unsafe type assertions
+- Use Zod for runtime type validation
+
+## Performance
+
+- Implement proper memoization where beneficial
+- Use virtualization for long lists
+- Optimize images using Next.js Image component
+- Implement code splitting for larger applications
+- Analyze and monitor Core Web Vitals
+
+## Accessibility
+
+- Use semantic HTML elements
+- Implement keyboard navigation
+- Ensure proper contrast ratios
+- Add ARIA attributes when necessary
+- Test with screen readers
+- Support reduced motion preferences
+
+## Error Handling
+
+- Implement proper error boundaries
+- Handle async errors gracefully
+- Provide meaningful error messages
+- Create fallback UI for error states
+- Log errors appropriately
+
+## Security
+
+- Sanitize user inputs
+- Implement proper authentication flows
+- Use HTTPS for all communications
+- Follow OWASP security guidelines
+- Keep dependencies updated
+
+## Internationalization
+
+- Use proper i18n libraries/frameworks
+- Support RTL languages when necessary
+- Implement locale-specific formatting
+- Design UI with text expansion in mind
+- Use translation keys rather than hardcoded strings
+
+## Optimization
+
+- Implement lazy loading for non-critical resources
+- Use proper caching strategies
+- Optimize bundle size
+- Implement progressive enhancement
+- Prioritize critical rendering path

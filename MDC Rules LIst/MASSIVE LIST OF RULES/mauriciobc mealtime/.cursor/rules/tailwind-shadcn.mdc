@@ -1,0 +1,58 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+- You can @ files here
+- You can use markdown but dont have to
+
+
+# Tailwind (shadcn/ui Integration)
+
+# Tailwind CSS Integration with shadcn/ui in Next.js
+
+## Overview
+This guide provides a detailed walkthrough on integrating Tailwind CSS with shadcn/ui in a Next.js project. The focus is on creating a seamless development experience, ensuring high performance, and maintaining code readability.
+
+## Key Features
+- **Tailwind CSS**: Utilized for utility-first CSS and responsive design.
+- **shadcn/ui**: A UI component library that complements Tailwind CSS, providing pre-built components that are customizable and easy to use.
+- **Next.js**: Used for server-side rendering and routing, enhancing the performance and SEO of the application.
+
+## Integration Steps
+1. **Install Dependencies**:
+   ```bash
+   npm install tailwindcss postcss autoprefixer @shadcn/ui
+   ```
+2. **Configure Tailwind CSS**:
+   Create a `tailwind.config.js` and `postcss.config.js` to set up Tailwind CSS.
+3. **Integrate shadcn/ui**:
+   Import and use shadcn/ui components in your Next.js pages and components.
+4. **Optimize for Performance**:
+   Implement lazy loading for components and optimize Tailwind CSS purge settings.
+
+## Best Practices
+- **Component Design**: Use shadcn/ui components as building blocks, customizing them with Tailwind CSS utilities.
+- **Responsive Design**: Leverage Tailwind CSS's responsive utilities to ensure your UI looks great on all devices.
+- **Performance**: Regularly audit your CSS and JavaScript bundles to keep the application fast and responsive.
+
+## Example Code
+```jsx
+import { Button } from '@shadcn/ui';
+
+const HomePage = () => (
+  <div className="p-4">
+    <Button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Click Me
+    </Button>
+  </div>
+);
+
+export default HomePage;
+```
+
+## Conclusion
+Integrating Tailwind CSS with shadcn/ui in a Next.js project can significantly enhance your development workflow and the quality of your UI. By following the steps and best practices outlined in this guide, you can build a performant, maintainable, and visually appealing application.

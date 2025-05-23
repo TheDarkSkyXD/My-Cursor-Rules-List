@@ -1,0 +1,123 @@
+---
+description: Label and document technical compromises made for business urgency
+globs: *
+alwaysApply: true
+---
+
+<rule>
+name: technical-debt-awareness
+description: Label and document technical compromises made for business urgency
+
+filters:
+  - type: event
+    pattern: "code_implementation|code_review"
+  - type: content
+    pattern: "(?i)(temporary|workaround|hack|todo|fixme|quick|urgent)"
+
+actions:
+  - type: transform
+    pattern: "^.*$"
+    replacement: |
+      # Implementation with Technical Debt Tracking
+      
+      {original_content}
+      
+      ## Technical Debt Register
+      
+      | Item | Impact | Remediation Plan | Priority | Ticket |
+      |------|--------|------------------|----------|--------|
+      {technical_debt_table}
+      
+      ## Acceptable vs. Concerning Debt
+      
+      ### Acceptable Technical Debt
+      {acceptable_debt_list}
+      
+      ### Concerning Technical Debt
+      {concerning_debt_list}
+
+  - type: validate
+    conditions:
+      - pattern: "(?i)(hack|temporary|todo|fixme)"
+        validationScript: |
+          // Check if technical debt is documented
+          const technicalDebtMarkers = [
+            /hack/i, /temporary/i, /workaround/i,
+            /todo/i, /fixme/i, /technical debt/i
+          ];
+          
+          // Find all technical debt markers in the code
+          const foundMarkers = technicalDebtMarkers.filter(marker => 
+            marker.test(code)
+          );
+          
+          // Check if there's a ticket reference or explanation
+          const hasDocumentation = /TICKET|ISSUE|JIRA|explanation:/i.test(code);
+          
+          if (foundMarkers.length > 0 && !hasDocumentation) {
+            return {
+              valid: false,
+              message: "Technical debt found without ticket reference or explanation"
+            };
+          }
+          
+          return { valid: true };
+
+  - type: suggest
+    message: |
+      When introducing technical debt:
+      
+      1. Document it explicitly as technical debt
+      2. Explain why it was necessary (business context)
+      3. Describe the impact and risks
+      4. Create a ticket for future remediation
+      5. Assign a priority and timeline for fixing it
+
+examples:
+  - input: |
+      // TODO: This is a temporary solution until we refactor the auth system
+      function quickAuthFix() {
+        // Just check if the token exists for now
+        return !!localStorage.getItem('auth_token');
+      }
+    output: |
+      # Implementation with Technical Debt Tracking
+      
+      ```javascript
+      /**
+       * Temporary authentication validation
+       * 
+       * TECHNICAL DEBT: This is a minimal implementation to unblock the release
+       * TICKET: AUTH-127 - Implement proper token validation
+       * EXPIRES: 2023-06-30 (must be replaced before security audit)
+       */
+      function quickAuthFix() {
+        // Just check if the token exists for now
+        // Does not validate token integrity or expiration
+        return !!localStorage.getItem('auth_token');
+      }
+      ```
+      
+      ## Technical Debt Register
+      
+      | Item | Impact | Remediation Plan | Priority | Ticket |
+      |------|--------|------------------|----------|--------|
+      | Token validation bypass | Security risk - No validation of token integrity or expiration | Implement proper JWT validation with signature checking | HIGH | AUTH-127 |
+      | Local storage for auth token | Security risk - Vulnerable to XSS attacks | Move token to HTTP-only cookies | HIGH | AUTH-128 |
+      | No permission checking | Feature limitation - All authenticated users have same permissions | Implement role-based permissions | MEDIUM | AUTH-129 |
+      
+      ## Acceptable vs. Concerning Debt
+      
+      ### Acceptable Technical Debt
+      - Using existing user table structure temporarily (low risk, planned DB migration next quarter)
+      - Simplified error messages (UX impact only, will improve in next iteration)
+      
+      ### Concerning Technical Debt
+      - Missing token validation (security risk, must be fixed before production)
+      - Local storage for sensitive data (security risk, must be fixed before production)
+      - No CSRF protection (security risk, must be addressed before public release)
+
+metadata:
+  priority: high
+  version: 1.0
+</rule>

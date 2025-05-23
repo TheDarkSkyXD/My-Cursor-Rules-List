@@ -1,0 +1,63 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## Components and Hooks
+- Use function components exclusively.
+- Use React hooks correctly; avoid misuse of `useEffect` for data fetching.
+- Embrace the new actions and form actions APIs.
+- Keep components focused and single-responsibility.
+- Implement proper prop validation with TypeScript.
+
+## State Management
+- Choose appropriate state management level:
+  - Local state for component-specific data
+  - Context for shared state within a subtree
+  - Global state only when absolutely necessary
+- Implement proper state immutability
+- Use reducers for complex state logic
+- Consider server state management tools when needed
+
+## Error Handling
+- Implement Error Boundaries at appropriate levels
+- Use Suspense for loading states
+- Handle async errors gracefully
+- Provide meaningful error messages to users
+- Log errors appropriately for debugging
+
+## Performance Optimization
+- Use `useMemo`, `useCallback`, and React Compiler features appropriately.
+- Avoid prop drilling; use context API or local state collocation.
+- Keep components pure whenever possible.
+- Implement proper code splitting with lazy loading
+- Use proper key props in lists
+
+## Testing Strategy
+- Write unit tests for complex logic
+- Test component rendering and interactions
+- Mock external dependencies appropriately
+- Test error scenarios and edge cases
+- Use React Testing Library best practices
+
+## Accessibility
+- Use semantic HTML elements
+- Implement proper ARIA attributes
+- Ensure keyboard navigation works
+- Test with screen readers
+- Follow WCAG guidelines
+
+## Rendering
+- Prefer streaming and partial hydration techniques.
+- Minimize unnecessary re-renders with proper memoization.
+
+## Reminder
+- Always align with the "functional and declarative" mindset.
+- Prioritize code simplicity and maintainability.
+- Consider performance implications of your choices.
+- Write tests for critical functionality.
+
+
+## Reminder
+- Always align with the "functional and declarative" mindset.
+- Prioritize code simplicity and maintainability.

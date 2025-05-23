@@ -1,0 +1,147 @@
+#!/bin/bash
+
+# Get the absolute path to the repository
+# This works whether the script is run directly or through a symlink
+REPO_DIR="$( cd "$( dirname "$(readlink -f "$0")" )/.." && pwd )"
+RULES_DIR="$REPO_DIR/rules"
+
+# Function to show usage
+function show_usage {
+    echo "Usage: cursor-rules [command]"
+    echo ""
+    echo "Commands:"
+    echo "  seed      Seed the current project with rules from the repository"
+    echo "  import    Import rules from repository to current project"
+    echo "  export    Export rules from current project to repository"
+    echo ""
+    echo "Example:"
+    echo "  cursor-rules seed"
+    echo "  cursor-rules import"
+    echo "  cursor-rules export"
+}
+
+# Function to handle seeding
+function seed_rules {
+    echo "Seeding current project with rules from repository..."
+    echo "Repository: $REPO_DIR"
+    
+    # Check if rules directory exists in the repository
+    if [ ! -d "$RULES_DIR" ]; then
+        echo "Error: Rules directory not found in repository at $RULES_DIR"
+        exit 1
+    fi
+
+    # Create .cursor directory if it doesn't exist
+    if [ ! -d ".cursor" ]; then
+        echo "Creating .cursor directory..."
+        mkdir -p .cursor
+    fi
+
+    # Create .cursor/rules directory if it doesn't exist
+    if [ ! -d ".cursor/rules" ]; then
+        echo "Creating .cursor/rules directory..."
+        mkdir -p .cursor/rules
+    fi
+
+    # Copy all .mdc files from the rules repository to the current project
+    echo "Copying rules from repository to current project..."
+    echo "Source: $RULES_DIR"
+    echo "Destination: .cursor/rules/"
+    
+    # Check if there are any .mdc files to copy
+    if [ -z "$(ls -A "$RULES_DIR"/*.mdc 2>/dev/null)" ]; then
+        echo "Warning: No .mdc files found in the rules repository"
+    else
+        cp "$RULES_DIR"/*.mdc .cursor/rules/
+        echo "Rules seeded successfully!"
+    fi
+}
+
+# Function to handle import
+function import_rules {
+    echo "Importing rules from repository to current project..."
+    echo "Repository: $REPO_DIR"
+    
+    # Check if rules directory exists in the repository
+    if [ ! -d "$RULES_DIR" ]; then
+        echo "Error: Rules directory not found in repository at $RULES_DIR"
+        exit 1
+    fi
+
+    # Check if .cursor directory exists in the current project
+    if [ ! -d ".cursor" ]; then
+        echo "Creating .cursor directory..."
+        mkdir -p .cursor
+    fi
+
+    # Check if .cursor/rules directory exists
+    if [ ! -d ".cursor/rules" ]; then
+        echo "Creating .cursor/rules directory..."
+        mkdir -p .cursor/rules
+    fi
+
+    # Copy all .mdc files from the rules repository to the current project
+    echo "Source: $RULES_DIR"
+    echo "Destination: .cursor/rules/"
+    
+    # Check if there are any .mdc files to copy
+    if [ -z "$(ls -A "$RULES_DIR"/*.mdc 2>/dev/null)" ]; then
+        echo "Warning: No .mdc files found in the rules repository"
+    else
+        cp "$RULES_DIR"/*.mdc .cursor/rules/
+        echo "Rules imported successfully!"
+    fi
+}
+
+# Function to handle export
+function export_rules {
+    echo "Exporting rules from current project to repository..."
+    echo "Repository: $REPO_DIR"
+    
+    # Check if .cursor/rules directory exists in the current project
+    if [ ! -d ".cursor/rules" ]; then
+        echo "Error: .cursor/rules directory not found in the current project"
+        exit 1
+    fi
+
+    # Check if rules directory exists in the repository
+    if [ ! -d "$RULES_DIR" ]; then
+        echo "Creating rules directory in repository..."
+        mkdir -p "$RULES_DIR"
+    fi
+
+    # Copy all .mdc files from .cursor/rules to the rules repository
+    echo "Source: .cursor/rules/"
+    echo "Destination: $RULES_DIR"
+    
+    # Check if there are any .mdc files to copy
+    if [ -z "$(ls -A .cursor/rules/*.mdc 2>/dev/null)" ]; then
+        echo "Warning: No .mdc files found in the current project"
+    else
+        cp .cursor/rules/*.mdc "$RULES_DIR/"
+        
+        # Add and commit the changes
+        cd "$REPO_DIR"
+        git add rules/
+        git commit -m "Update rules from project export"
+        
+        echo "Rules exported successfully!"
+    fi
+}
+
+# Main script logic
+case "$1" in
+    "seed")
+        seed_rules
+        ;;
+    "import")
+        import_rules
+        ;;
+    "export")
+        export_rules
+        ;;
+    *)
+        show_usage
+        exit 1
+        ;;
+esac 

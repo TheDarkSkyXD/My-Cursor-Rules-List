@@ -1,0 +1,96 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ # Technology Stack Standards
+
+## Required Technologies
+
+### Core
+- React 19+ (or latest stable)
+- TypeScript in strict mode
+
+### Framework
+- Next.js App Router
+
+### Styling
+- Tailwind CSS
+- shadcn/ui component library
+
+### State Management
+- Zustand for client state management
+- TanStack Query for server state management
+
+### UI Enhancement
+- Framer Motion for animations
+- TanStack Table for data tables
+
+### Form Management
+- React Hook Form for form handling
+- Zod for validation
+
+### Backend & Infrastructure
+- Supabase for database and authentication
+- Vercel for hosting and deployment
+
+### Testing
+- Vitest for unit/integration tests
+- React Testing Library for component tests
+- Playwright for end-to-end tests
+
+### Package Management
+- pnpm for dependency management
+
+## Integration Rules
+
+### Next.js Integration
+- Use App Router directory structure
+- Implement proper server/client component patterns
+- Use Next.js built-in optimizations (Image, Font, etc.)
+- Follow Next.js routing conventions
+
+### Styling Integration
+- Use Tailwind classes directly in components
+- Implement shadcn/ui using the CLI
+- Customize shadcn theme in globals.css
+- Create consistent component styling patterns
+
+### State Management Integration
+- Use Zustand for UI state only
+- Implement TanStack Query for all API calls
+- Create custom hooks for data access patterns
+- Keep state granular and focused
+
+### Form Integration
+- Use React Hook Form with shadcn form components
+- Create Zod schemas for all form validations
+- Implement reusable form patterns
+- Handle form submission with proper loading/error states
+
+### Animation Integration
+- Use Framer Motion for complex animations
+- Implement reduced motion alternatives
+- Create consistent animation patterns
+- Use Tailwind transitions for simple animations
+
+### Testing Integration
+- Test business logic with Vitest
+- Test component behavior with React Testing Library
+- Test user journeys with Playwright
+- Implement proper test isolation
+
+### Database Integration
+- Use Supabase for relational database needs
+- Implement Row Level Security for all tables
+- Create type-safe database clients
+- Use Zod to validate database responses
+
+## Technology Selection Guidelines
+
+- Always prefer official solutions from the tech stack
+- Consider bundle size impact for client-side libraries
+- Evaluate license compatibility for all dependencies
+- Prefer established, maintained libraries over newer alternatives
+- Consider accessibility implications of all libraries
+- Evaluate server-side compatibility for all additions

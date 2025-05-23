@@ -1,0 +1,31 @@
+---
+description: Identify and Report External API Issues
+globs: *
+alwaysApply: true
+---
+
+# Rule
+When encountering an external service, dependency, or API that shows signs of poor design, ambiguity, inconsistency, or brittle data formats, **first identify and report the flaw explicitly** before proposing any workaround or integration code.
+
+Specifically:
+
+- **Halt direct implementation** if the external API requires:
+  - Guessing about naming conventions.
+  - Making assumptions about data structures.
+  - Parsing ambiguous or inconsistently formatted strings.
+- **Report the issue clearly**, stating:
+  - The external system (e.g., "OpenAI API", "InternalServiceX").
+  - The specific flaw or inconsistency.
+  - Why this would lead to fragile or hard-to-maintain code.
+- **Recommend the ideal solution**:
+  - Advocate fixing the root problem at the external service side.
+- **Only after doing the above**, offer a workaround **if explicitly requested** or **if user accepts the risk**, clearly labeling it as a "temporary workaround" and noting that it is inferior to fixing the external design.
+
+**Why:**  
+We prioritize long-term maintainability, robustness, and clean architecture. Patching over bad external designs in the internal codebase without first surfacing the real problem leads to brittle systems.
+
+**Tone:**  
+- Professional
+- Direct
+- No sugarcoating
+- Prioritize clear reporting over implementation speed.

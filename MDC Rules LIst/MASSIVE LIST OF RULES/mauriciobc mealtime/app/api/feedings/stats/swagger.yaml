@@ -1,0 +1,242 @@
+openapi: 3.0.0
+info:
+  title: Cat Feeding Statistics API
+  version: 1.0.0
+  description: API for retrieving statistics about cat feeding patterns
+
+paths:
+  /api/feedings/stats:
+    get:
+      summary: Get feeding statistics
+      description: Retrieves detailed feeding statistics for cats over a specified period of time
+      parameters:
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+          description: User ID for authentication
+        - name: catId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Optional filter for a specific cat's statistics (UUID format)
+        - name: days
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 90
+            default: 7
+          description: Number of days to retrieve statistics for (1-90, default 7)
+      
+      responses:
+        200:
+          description: Successfully retrieved feeding statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  period:
+                    type: object
+                    properties:
+                      days:
+                        type: integer
+                        example: 7
+                      startDate:
+                        type: string
+                        format: date
+                        example: '2023-01-01'
+                      endDate:
+                        type: string
+                        format: date
+                        example: '2023-01-07'
+                  totals:
+                    type: object
+                    properties:
+                      feedings:
+                        type: integer
+                        example: 36
+                      dailyAverage:
+                        type: number
+                        format: float
+                        example: 5.14
+                  dailyStats:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                          example: '2023-01-01'
+                        feedings:
+                          type: integer
+                          example: 6
+                        mealTypes:
+                          type: object
+                          additionalProperties:
+                            type: integer
+                          example:
+                            Breakfast: 2
+                            Lunch: 1
+                            Dinner: 2
+                            Snack: 1
+                  catStats:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 'cat-uuid-123'
+                        name:
+                          type: string
+                          example: 'Whiskers'
+                        totalFeedings:
+                          type: integer
+                          example: 12
+                        mealTypes:
+                          type: object
+                          additionalProperties:
+                            type: integer
+                          example:
+                            Breakfast: 4
+                            Lunch: 2
+                            Dinner: 4
+                            Snack: 2
+                        dailyAverage:
+                          type: number
+                          format: float
+                          example: 1.71
+        400:
+          description: Bad request due to invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Invalid query parameters'
+                  details:
+                    type: object
+                    example:
+                      days: ['Expected number, received string']
+        401:
+          description: Unauthorized access due to missing authentication
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Authentication required'
+                  details:
+                    type: string
+                    example: 'User ID is missing'
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Failed to fetch feeding statistics'
+                  details:
+                    type: string
+                    example: 'Database connection error'
+
+components:
+  schemas:
+    FeedingStats:
+      type: object
+      properties:
+        period:
+          type: object
+          required:
+            - days
+            - startDate
+            - endDate
+          properties:
+            days:
+              type: integer
+              description: Number of days in the statistics period
+            startDate:
+              type: string
+              format: date
+              description: Start date of the statistics period
+            endDate:
+              type: string
+              format: date
+              description: End date of the statistics period
+        totals:
+          type: object
+          required:
+            - feedings
+            - dailyAverage
+          properties:
+            feedings:
+              type: integer
+              description: Total number of feedings in the period
+            dailyAverage:
+              type: number
+              format: float
+              description: Average number of feedings per day
+        dailyStats:
+          type: array
+          description: Statistics broken down by day
+          items:
+            type: object
+            required:
+              - date
+              - feedings
+              - mealTypes
+            properties:
+              date:
+                type: string
+                format: date
+                description: Date for the statistics
+              feedings:
+                type: integer
+                description: Number of feedings on this day
+              mealTypes:
+                type: object
+                description: Count of feedings by meal type
+                additionalProperties:
+                  type: integer
+        catStats:
+          type: array
+          description: Statistics broken down by cat
+          items:
+            type: object
+            required:
+              - id
+              - name
+              - totalFeedings
+              - mealTypes
+              - dailyAverage
+            properties:
+              id:
+                type: string
+                description: Cat's unique identifier
+              name:
+                type: string
+                description: Cat's name
+              totalFeedings:
+                type: integer
+                description: Total number of feedings for this cat
+              mealTypes:
+                type: object
+                description: Count of feedings by meal type for this cat
+                additionalProperties:
+                  type: integer
+              dailyAverage:
+                type: number
+                format: float
+                description: Average feedings per day for this cat 

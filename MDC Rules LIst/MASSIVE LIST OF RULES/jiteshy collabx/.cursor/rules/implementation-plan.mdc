@@ -1,0 +1,162 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Implementation Plan - CollabX Core Functionalities
+
+## Rules to adhere to:
+   - Anytime we do a refactoring to use the common items from shared package, remove the redundant files from frontend or backend.
+   - Do not change the UI layout or components if not absolutely needed.
+   - Looks for existing implementation first and if not found then implement from scratch.
+   - Cleanup redundant code if any along the way.
+   - Make things easier wherever possible in the code
+   - For each feature above, add existing or create new test cases after implementing the functionality.
+   - Refer this plan and Do not break the previously implemented functionality.
+   - Be very careful with refactoring just so we do not break anything existing.
+
+## Phase 1: Session Management and User Experience
+1. [x] Auto Join with Random Username
+   - Add random username generation in frontend
+   - Modify `useWebSocket` hook to auto-join on mount
+   - Update `EditorGateway` to handle auto-join
+   - Add tests for auto-join functionality
+   - Status: Done
+   - Changes: Fixed type issues in useWebSocket hook and ensured proper auto-join functionality
+
+2. [x] User List and Current User Display
+   - Update `EditorHeader` component to show "(You)" suffix
+   - Add "Current User" label below username
+   - Modify user list styling for better visibility
+   - Add tests for user list display
+   - Status: Done
+   - Changes: Enhanced user list display with current user label, improved styling, and added comprehensive tests
+
+3. [x] Session Link Join
+   - Add session link handling in frontend
+   - Update `EditorGateway` to handle session link joins
+   - Add validation for session links
+   - Add tests for session link functionality
+   - Status: Done
+   - Changes: Added session link validation to shared package, implemented comprehensive tests for UUID and URL validation
+
+4. [x] User Join Notifications
+   - Add toast notification system
+   - Implement user join notifications for other users only and not self
+   - Add tests for notification system
+   - Status: Done
+   - Changes: Updated to show toast for other users only (not self)
+
+5. [x] User Count and Avatar Updates
+   - Update user count display in header
+   - Implement real-time avatar updates
+   - Add tests for user count and avatar updates
+   - Status: Done
+   - Changes: Added user count in editor header
+
+## Phase 2: Editor Functionality
+6. [x] Default Content Loading
+   - Set up default content in `DEFAULT_CONTENT`
+   - Ensure content is loaded on editor mount
+   - Add tests for default content loading
+   - Status: Done
+   - Changes: Already implemented, added test cases.
+
+7. [x] Collaborative Editing
+   - Verify existing content sync implementation
+   - Add conflict resolution if needed
+   - Add tests for collaborative editing
+   - Status: Done
+   - Changes: Already implemented, added test cases.
+
+8. [x] Language Synchronization
+   - Verify existing language sync implementation
+   - Change of language should sync across all users in current session
+   - Add tests for language synchronization
+   - Status: Done
+   - Changes: Fixed error handling in language change handler and verified all tests are passing
+
+9. [x] Max users in session handling
+   - Limit 5 users per session and have the value configurable
+   - Additional users after limit should be shown a dialog with create new session and enter in read only mode buttons
+   - Create new should route user to a new session
+   - Read only should take the user to current session but in read only mode
+   - Editor should show visual cue for read only mode
+   - Add tests for session full handling
+   - Status: Done
+   - Changes: Max users handling done on backend
+
+## Phase 3: UI/UX Features
+9. [x] Theme Management
+   - Set dark theme as default
+   - Add theme toggle functionality
+   - Persist theme preference
+   - Add tests for theme management
+   - Status: Done
+   - Changes: Dark theme set by default and persisted in local storage
+
+10. [x] Typing Indicator
+    - Add typing state tracking
+    - Implement typing indicator display
+    - Handle multiple users typing
+    - Add tests for typing indicator
+    - Status: Done
+    - Changes: User typing indicator added
+
+## Phase 4: Session Management and Limits
+11. [x] User Limit Implementation
+    - Add user limit configuration in env
+    - Implement user limit check in `SessionService`
+    - Add tests for user limit functionality
+    - Status: Done
+    - Changes: User limit functionality already implemented with configurable MAX_USERS_PER_SESSION, comprehensive error handling, and frontend UI components for session full state.
+
+12. [x] Session Full Dialog
+    - Add session full dialog component
+    - Implement new session creation
+    - Add read-only mode handling
+    - Add tests for session full dialog
+    - Status: Done
+    - Changes: Session full dialog already implemented with create new session and read-only mode options, proper state management, and integration with the main page.
+
+13. [x] Redis Session Management
+    - Update Redis session TTL to 4 hours
+    - Implement session cleanup after 15 minutes of inactivity
+    - Add session cleanup mechanism
+    - Add tests for Redis session management
+    - Status: Done
+    - Changes: Updated session TTL to 4 hours, added inactivity cleanup after 15 minutes, implemented session cleanup mechanism, and added comprehensive tests for Redis session management.
+
+## Testing and Quality Assurance
+1. [x] Unit Tests
+   - Add tests for all new functionality
+   - Ensure existing tests pass
+   - Add integration tests where needed
+   - Status: Done
+
+2. [x] Performance Testing
+   - Test with multiple concurrent users
+   - Verify Redis performance
+   - Test WebSocket connection stability
+   - Status: Done
+
+3. [x] Security Testing
+   - Verify rate limiting
+   - Test session validation
+   - Check input sanitization
+   - Status: Done
+
+## Documentation
+1. [x] API Documentation
+   - Document WebSocket events
+   - Document session management
+   - Add usage examples
+   - Status: Done
+   - Changes: Created comprehensive API.md with WebSocket events, session management, and usage examples
+
+2. [x] Code Documentation
+   - Add JSDoc comments
+   - Document complex logic
+   - Add inline comments where needed
+   - Status: Done
+   - Changes: Added JSDoc comments to EditorGateway, SocketService, and ValidationService classes 

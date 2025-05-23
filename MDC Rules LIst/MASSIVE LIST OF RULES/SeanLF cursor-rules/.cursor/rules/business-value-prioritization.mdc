@@ -1,0 +1,103 @@
+---
+description: Prioritizes business impact over technical elegance or novelty
+globs: *
+alwaysApply: true
+---
+
+<rule>
+name: business-value-prioritization
+description: Prioritizes business impact over technical elegance or novelty
+
+filters:
+  - type: event
+    pattern: "solution_design"
+  - type: content
+    pattern: "(?i)(architecture|design|approach|solution)"
+
+actions:
+  - type: transform
+    pattern: "^.*$"
+    replacement: |
+      # Solution Evaluation
+      
+      ## Business Impact Assessment
+      
+      | Metric | Impact |
+      |--------|--------|
+      | Time to market | {impact_assessment} |
+      | User experience | {impact_assessment} |
+      | Maintenance cost | {impact_assessment} |
+      | Scalability needs | {impact_assessment} |
+      | Revenue potential | {impact_assessment} |
+      
+      ## Implementation Complexity
+      
+      | Factor | Rating | Justification |
+      |--------|--------|---------------|
+      | Development effort | {rating} | {justification} |
+      | Operational complexity | {rating} | {justification} |
+      | Team familiarity | {rating} | {justification} |
+      | Risk level | {rating} | {justification} |
+      
+      # Recommendation
+      
+      {original_content}
+      
+      ## Value Proposition
+      {business_value_explanation}
+
+  - type: suggest
+    message: |
+      When evaluating solution approaches:
+      
+      1. Clearly assess business impact first
+      2. Evaluate implementation complexity honestly
+      3. Choose approaches familiar to the team when possible
+      4. Prefer proven technologies for critical systems
+      5. Consider maintenance cost as part of the equation
+
+examples:
+  - input: |
+      We should use microservices architecture for our new e-commerce platform.
+    output: |
+      # Solution Evaluation
+      
+      ## Business Impact Assessment
+      
+      | Metric | Impact |
+      |--------|--------|
+      | Time to market | NEGATIVE - Longer initial development time |
+      | User experience | NEUTRAL - No direct impact if properly implemented |
+      | Maintenance cost | MIXED - Easier to update components, harder to debug cross-service issues |
+      | Scalability needs | POSITIVE - Can scale individual components based on demand |
+      | Revenue potential | NEUTRAL - No direct revenue impact |
+      
+      ## Implementation Complexity
+      
+      | Factor | Rating | Justification |
+      |--------|--------|---------------|
+      | Development effort | HIGH | Requires service boundaries, API design, deployment pipelines |
+      | Operational complexity | HIGH | Distributed systems introduce monitoring and debugging complexity |
+      | Team familiarity | LOW | Team has limited microservice experience |
+      | Risk level | HIGH | First microservice implementation has significant learning curve |
+      
+      # Recommendation
+      
+      Instead of a full microservices architecture, I recommend a modular monolith approach with:
+      
+      1. Clear domain boundaries within a single application
+      2. Internal API interfaces between modules
+      3. Shared database with schema ownership per module
+      4. Preparation for future service extraction as needs arise
+      
+      ## Value Proposition
+      This approach delivers:
+      - Faster time to market (40-50% faster development)
+      - Familiar deployment model for the team
+      - Groundwork for future microservice migration if needed
+      - Lower operational complexity during critical launch phase
+
+metadata:
+  priority: high
+  version: 1.0
+</rule>

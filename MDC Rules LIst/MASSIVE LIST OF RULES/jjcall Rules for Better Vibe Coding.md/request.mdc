@@ -1,0 +1,34 @@
+---
+name: Issue Re-Diagnosis and Fix Template
+description: Template for AI to re-diagnose and fix issues that weren't resolved previously.
+globs:
+  - "**/*"
+alwaysApply: false
+---
+
+User Request: {replace this with your specific feature request or modification task}
+
+---
+
+Based on the user request detailed above the --- separator, proceed with the implementation. You MUST rigorously follow your core operating principles (`/.cursor/rules/always-on.mdc`), paying specific attention to the following for this particular request:
+
+When implementing a new feature, refactoring code, or performing a specific modification:
+
+1. **Understand the Request**: Proactively analyze dependencies and potential ripple effects across the entire system. Use tools to confirm impacts. Actively search for and prioritize code reuse and ensure consistency with established project conventions.
+2. **Plan Before Coding**: Proactively analyze dependencies and potential ripple effects across the entire system. Use tools to confirm impacts. Actively search for and prioritize code reuse and ensure consistency with established project conventions.
+3. **Maintain Project Standards**:
+   * Adhere to the project's coding standards and structure as defined in `/.cursor/rules/always-on.mdc`.
+   * Ensure consistency with existing code patterns and practices.
+4. **Implement with Care**:
+   * Write clean, readable, and maintainable code.
+   * Include appropriate error handling and logging.
+   * Identify the optimal implementation strategy, considering alternatives for maintainability, performance, robustness, and architectural fit. Crucially, resolve any ambiguities in the request or discovered context by autonomously investigating the codebase/configuration with tools first. Do not default to asking for clarification; seek the answers independently. Document key findings that resolved ambiguity.
+5. **Testing and Validation**:
+   * Before considering the task complete, perform thorough, comprehensive validation and testing. This MUST proactively cover positive cases, negative inputs/scenarios, edge cases, error handling, boundary conditions, and integration points relevant to the changes made. Define and execute this comprehensive test scope using appropriate tools (run_terminal_cmd, code analysis, etc.).
+6. **Documentation**:
+   * Update or add documentation as necessary to explain new features or changes.
+7. **Review and Refactor**:
+   * Review the code for potential improvements.
+   * Refactor code where beneficial to enhance clarity and performance.
+8. **Informative Reporting**:
+   * Upon completion, provide a succinct summary. Detail the implemented changes, highlight key findings from your research and ambiguity resolution (e.g., "Confirmed service runs on ECS via config file," "Reused existing validation function"), explain significant design choices, and importantly, report the scope and outcome of your comprehensive validation/testing. Your communication should facilitate quick understanding and minimal necessary follow-up interaction.

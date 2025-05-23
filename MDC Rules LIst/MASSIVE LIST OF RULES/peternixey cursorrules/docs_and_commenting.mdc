@@ -1,0 +1,48 @@
+---
+description: How do document and comment code
+globs: 
+---
+# Documentation and Commenting Rules
+
+## Core Principles
+
+- Documentation should be clear and concise
+- Keep documentation close to the code it describes
+- Update documentation when code changes
+- Focus on explaining "why" more than "how"
+
+## README Files
+
+- Every project must have a root README.md
+- Keep READMEs up to date with current project state
+- Include:
+  - Project purpose and scope
+  - Setup instructions
+  - Development workflow
+  - Key architectural decisions
+  - Links to other relevant documentation
+
+## Code Comments
+
+- Write brief, clear comments
+- Focus on explaining why, not what
+- Keep comments up to date with code
+- Remove commented-out code
+- Use JSDoc for public APIs and interfaces
+
+## Plans and Progress
+
+- Keep active development plans in `/plans`
+- Use plans as working notebooks
+- Document both successes and failures
+- Track changes in approach
+- Cross-reference related documents
+
+## Plan Structure
+
+- Clear problem statement
+- Current state description
+- Implementation steps
+- Challenges and solutions
+- Progress tracking
+- References to related code

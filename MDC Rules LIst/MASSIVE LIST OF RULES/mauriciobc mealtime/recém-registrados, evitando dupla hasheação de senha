@@ -1,0 +1,56 @@
+[1mdiff --git a/app/api/auth/register/route.ts b/app/api/auth/register/route.ts[m
+[1mindex d3dfe9e..194807d 100644[m
+[1m--- a/app/api/auth/register/route.ts[m
+[1m+++ b/app/api/auth/register/route.ts[m
+[36m@@ -1,7 +1,6 @@[m
+ import { NextRequest, NextResponse } from "next/server";[m
+ import { UserRepository } from "@/lib/repositories";[m
+ import { z } from "zod";[m
+[31m-import { hash } from "bcryptjs";[m
+ [m
+ // Esquema de validação para o registro[m
+ const registerSchema = z.object({[m
+[36m@@ -57,14 +56,11 @@[m [mexport async function POST(request: NextRequest) {[m
+       );[m
+     }[m
+     [m
+[31m-    // Hash da senha[m
+[31m-    const hashedPassword = await hash(userData.password, 12);[m
+[31m-    [m
+     // Criar o usuário[m
+     const newUser = await UserRepository.create({[m
+       name: userData.name,[m
+       email: userData.email,[m
+[31m-      password: hashedPassword,[m
+[32m+[m[32m      password: userData.password,[m
+       role: userData.role,[m
+       householdId: userData.householdId,[m
+       timezone: userData.timezone,[m
+[1mdiff --git a/lib/repositories/user-repository.ts b/lib/repositories/user-repository.ts[m
+[1mindex 85f2490..699c74c 100644[m
+[1m--- a/lib/repositories/user-repository.ts[m
+[1m+++ b/lib/repositories/user-repository.ts[m
+[36m@@ -37,7 +37,22 @@[m [mexport const UserRepository = {[m
+       return null;[m
+     }[m
+ [m
+[31m-    const isPasswordValid = await bcrypt.compare(password, user.password);[m
+[32m+[m[32m    // Tenta a verificação padrão[m
+[32m+[m[32m    let isPasswordValid = await bcrypt.compare(password, user.password);[m
+[32m+[m
+[32m+[m[32m    // Se falhar, tenta verificar se a senha foi hasheada duas vezes (para compatibilidade com contas antigas)[m
+[32m+[m[32m    if (!isPasswordValid) {[m
+[32m+[m[32m      const tempHash = await bcrypt.hash(password, 10);[m
+[32m+[m[32m      isPasswordValid = await bcrypt.compare(tempHash, user.password);[m
+[32m+[m[41m      [m
+[32m+[m[32m      // Se a senha for válida com o método antigo, atualize-a para o novo formato[m
+[32m+[m[32m      if (isPasswordValid) {[m
+[32m+[m[32m        await prisma.user.update({[m
+[32m+[m[32m          where: { id: user.id },[m
+[32m+[m[32m          data: { password: await bcrypt.hash(password, 10) }[m
+[32m+[m[32m        });[m
+[32m+[m[32m      }[m
+[32m+[m[32m    }[m
+ [m
+     if (!isPasswordValid) {[m
+       return null;[m
