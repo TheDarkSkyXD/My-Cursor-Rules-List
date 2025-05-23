@@ -1,8 +1,0 @@
-{
-  "description": "Rules for managing Git workflow and version control",
-  "globs": ["**/*"],
-  "alwaysApply": true,
-  "priority": 11,
-  "triggers": ["git.*", "commit.*", "branch.*", "merge.*"],
-  "content": "# Git Flow Rules\n\n## Branch Management\n- Create task branches\n- Follow naming conventions\n- Document changes\n- Update security status\n- Maintain clean history\n\n## Commits\n- Write clear messages\n- Include security notes\n- Document changes\n- Reference issues\n- Update status\n\n## Pull Requests\n- Document changes\n- Include security review\n- Update documentation\n- Verify tests\n- Check compatibility\n\n## Merging\n- Verify security\n- Check tests\n- Update documentation\n- Clean up branches\n- Update status"
-} 

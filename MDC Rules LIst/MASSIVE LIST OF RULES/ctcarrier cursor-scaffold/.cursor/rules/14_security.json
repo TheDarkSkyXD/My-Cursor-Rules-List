@@ -1,8 +1,0 @@
-{
-  "description": "Rules for maintaining security throughout the development process",
-  "globs": ["**/*"],
-  "alwaysApply": true,
-  "priority": 14,
-  "triggers": ["security.*", "secure.*", "vulnerability.*"],
-  "content": "# Security Rules\n\n## General Security\n- Never hardcode secrets\n- Use environment variables\n- Validate all inputs\n- Sanitize all outputs\n- Follow least privilege\n\n## Dependency Security\n- Use latest stable versions\n- Scan for vulnerabilities\n- Update dependencies regularly\n- Document version requirements\n- Maintain compatibility\n\n## Code Security\n- Review for vulnerabilities\n- Follow secure coding practices\n- Document security decisions\n- Test security features\n- Handle errors securely\n\n## Configuration Security\n- Secure default settings\n- Document security settings\n- Regular security reviews\n- Access control\n- Audit logging"
-} 

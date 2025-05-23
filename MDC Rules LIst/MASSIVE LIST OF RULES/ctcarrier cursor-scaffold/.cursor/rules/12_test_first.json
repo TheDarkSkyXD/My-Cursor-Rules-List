@@ -1,8 +1,0 @@
-{
-  "description": "Rules for implementing test-driven development practices",
-  "globs": ["**/*"],
-  "alwaysApply": true,
-  "priority": 12,
-  "triggers": ["test.*", "tdd.*"],
-  "content": "# Test-First Rules\n\n## Test Planning\n- Write tests first\n- Document requirements\n- Consider security\n- Plan edge cases\n- Update documentation\n\n## Test Implementation\n- Implement tests\n- Include security tests\n- Document test cases\n- Verify coverage\n- Update status\n\n## Test Execution\n- Run tests regularly\n- Check security tests\n- Document results\n- Fix failures\n- Update progress\n\n## Test Maintenance\n- Update with changes\n- Review coverage\n- Check security\n- Document updates\n- Verify integrity"
-} 

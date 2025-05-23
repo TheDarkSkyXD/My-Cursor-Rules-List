@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "browser-tools": {
-      "command": "wsl",
-      "args": ["bash", "-c", "'/usr/bin/npx @agentdeskai/browser-tools-mcp@1.2.0'"],
-      "enabled": true
-    }
-  }
-}

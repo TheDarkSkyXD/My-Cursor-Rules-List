@@ -1,7 +1,0 @@
-{
-  "description": "Rules for verifying the integrity of code, documentation, and environment",
-  "globs": ["**/*"],
-  "alwaysApply": true,
-  "priority": 5,
-  "triggers": ["check.*", "verify.*", "validate.*"]
-}

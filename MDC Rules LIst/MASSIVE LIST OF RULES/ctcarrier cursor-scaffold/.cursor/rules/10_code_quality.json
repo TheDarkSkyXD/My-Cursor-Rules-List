@@ -1,8 +1,0 @@
-{
-  "description": "Rules for maintaining high code quality standards",
-  "globs": ["**/*"],
-  "alwaysApply": true,
-  "priority": 10,
-  "triggers": ["code.*", "quality.*", "review.*"],
-  "content": "# Code Quality Rules\n\n## Code Standards\n- Follow style guides\n- Write clean code\n- Document thoroughly\n- Test comprehensively\n- Review security\n\n## Testing\n- Write tests first\n- Cover edge cases\n- Include security tests\n- Document test cases\n- Maintain coverage\n\n## Documentation\n- Document code clearly\n- Include examples\n- Note security considerations\n- Update with changes\n- Cross-reference\n\n## Review\n- Self-review code\n- Check security\n- Verify tests\n- Validate documentation\n- Update status"
-} 

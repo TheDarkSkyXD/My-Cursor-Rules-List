@@ -1,8 +1,0 @@
-{
-  "description": "Rules for recovering and resuming tasks after interruptions",
-  "globs": ["**/*"],
-  "alwaysApply": true,
-  "priority": 7,
-  "triggers": ["resume.*", "recover.*"],
-  "content": "# Resumption Rules\n\n## State Recovery\n- Load last known state\n- Verify task status\n- Check progress\n- Review decisions\n- Update security status\n\n## Context Recovery\n- Load environment state\n- Verify tool versions\n- Check dependencies\n- Validate configurations\n- Update documentation\n\n## Progress Recovery\n- Review progress.md\n- Check completed steps\n- Verify next steps\n- Update status\n- Document recovery\n\n## Security Recovery\n- Verify security state\n- Check vulnerabilities\n- Update security status\n- Review permissions\n- Document changes"
-} 
