@@ -1,0 +1,266 @@
+---
+description: "JavaScript and TypeScript commenting standards and best practices"
+globs: ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx"]
+---
+
+# JavaScript Comments Standards
+
+## File Headers
+Required format for all JavaScript/TypeScript files:
+```javascript
+/**
+ * @file [Brief file description]
+ * @fileoverview [Detailed explanation of the file's purpose and functionality]
+ *
+ * [Additional context and important notes about the file]
+ *
+ * Functions:
+ * - [List all functions included in this file with brief descriptions]
+ * - Format: "functionName: brief description"
+ * - Must be present even if empty
+ *
+ * Constants:
+ * - [List all constants if the file defines them]
+ * - Format: "CONSTANT_NAME: type - description"
+ * - Must be present even if empty
+ *
+ * Flow:
+ * 1. [Step one in execution flow]
+ * 2. [Step two]
+ * - Must describe the main flow of the file
+ *
+ * Error Handling:
+ * - [Describe potential error cases and how they are managed]
+ * - Format: "Error case: handling approach"
+ * - Must describe all error scenarios
+ *
+ * @module [Module path or identifier]
+ * @requires [Dependency name] - [Brief description]
+ * @exports {Type} [Exported entity] - [Brief export description]
+ */
+```
+
+## Function Documentation
+Required format for all functions and methods:
+```javascript
+/**
+ * [Short function description]
+ *
+ * [Detailed explanation of what the function does, including edge cases]
+ *
+ * @async (if applicable)
+ * @function [functionName]
+ * @param {Type} name - [Parameter description]
+ * @returns {Type} [Return value description]
+ * @throws {ErrorType} [Description of when this error occurs]
+ * @example
+ * // Example usage of the function
+ * const result = myFunction(param);
+ * // returns: expected output
+ *
+ * // Edge case example
+ * const edgeResult = myFunction(edgeParam);
+ * // returns: edge case output
+ *
+ */
+```
+
+## Class Documentation
+```javascript
+/**
+ * [Class description]
+ *
+ * @class
+ * @implements {Interface}
+ * @augments ParentClass
+ * @property {Type} propertyName - [Property description]
+ * @example
+ * const instance = new MyClass(config);
+ * instance.method();
+ * // returns: expected output
+ *
+ */
+```
+
+## Variable and Constant Documentation
+```javascript
+/**
+ * @constant {Type} Description of the constant
+ * @readonly (if applicable)
+ */
+const CONSTANT_NAME = value;
+
+/**
+ * @type {Type} Description of the variable
+ * @private|@public|@protected (if applicable)
+ */
+let variableName = value;
+```
+
+## Required Sections in File Headers
+Every JavaScript file MUST include these sections in its header documentation:
+
+1. Functions Section:
+   - List of all functions with brief descriptions
+   - Must be present even if empty
+   - Format: "- functionName: brief description"
+   - Include both exported and internal functions
+
+2. Constants Section:
+   - List of all constants with types
+   - Must be present even if empty
+   - Format: "- CONSTANT_NAME: type - description"
+   - Include both exported and internal constants
+
+3. Flow Section:
+   - Numbered steps of execution flow
+   - Must describe the main flow of the file
+   - Format: "1. Step description"
+   - Include all major processing steps
+
+4. Error Handling Section:
+   - List of error cases and their handling
+   - Must describe all error scenarios
+   - Format: "- Error case: handling approach"
+   - Include both thrown errors and handled errors
+
+## Allowed JSDoc Tags
+The following tags are allowed and should be used appropriately:
+
+### Primary Tags (Required when applicable)
+```yaml
+@file: File description (required)
+@fileoverview: Detailed file overview (required)
+@function: Function declaration
+@constant: Constant declaration
+@module: Module declaration
+@requires: Module dependencies
+@exports: Module exports
+@example: Usage examples (required for public APIs)
+@throws: Error declarations
+@returns: Return value description
+@param: Parameter description
+@type: Type declaration
+@typedef: Type definition
+@property: Object property
+```
+
+### Modifier Tags
+```yaml
+@async: Asynchronous functions
+@augments: Class inheritance
+@class: Class declaration
+@private: Private members
+@public: Public members
+@protected: Protected members
+@readonly: Read-only members
+```
+
+### Metadata Tags
+```yaml
+@todo: Pending tasks
+@description: Detailed descriptions
+```
+
+## Example Requirements
+
+All functions MUST include examples that demonstrate:
+1. Basic usage with common inputs
+2. Edge cases and special scenarios
+3. Expected return values as comments
+4. Multiple examples for complex functionality
+5. If a param is an object, you should write the first level keys of the object and its type
+
+Good example (showing the first level of an object):
+```javascript
+/**
+ * Creates application context with validated paths
+ *
+ * @param {object} options - CLI options and configuration
+ * @param {string} [options.template] - Path to template file
+ * @param {string} [options.data] - Path to data file
+ * @param {string} [options.css] - Path to CSS file
+ * @param {boolean} [options.debug] - Enable debug mode
+ * @param {string} [options.output] - Output directory path
+ * @returns {object} context - The created context
+ * @returns {string} context.template - Resolved template path
+ * @returns {string} context.data - Resolved data path
+ * @returns {boolean} context.debug - Debug mode state
+ * @example
+ * // Basic usage
+ * const context = createContext({
+ *   template: './template.md',
+ *   data: './data.csv',
+ *   debug: true
+ * });
+ * // returns: { template: '/abs/path/template.md', data: '/abs/path/data.csv', debug: true }
+ *
+ * // Minimal configuration
+ * const minContext = createContext({
+ *   template: './template.md'
+ * });
+ * // returns: { template: '/abs/path/template.md', debug: false }
+ */
+```
+
+Bad example (missing object details and edge cases):
+```javascript
+/**
+ * @param {object} options - Options
+ * @returns {object} The context
+ * @example
+ * createContext({ template: 'file.md' })
+ */
+```
+
+## Best Practices
+
+### Do Use Comments For
+- Complex business logic explanations
+- Algorithm implementations
+- Workarounds and their reasons
+- Browser-specific code
+- Regular expression explanations
+- Public API documentation
+- Deprecated feature warnings
+
+### Avoid Comments For
+- Obvious operations
+- Self-documenting code
+- Commented-out code
+- Version control information
+- Personal notes
+- Redundant information
+
+### Style Guidelines
+- Use proper English, and only English
+- Maintain consistent indentation
+- Keep comments up to date
+- Remove commented-out code
+- Use appropriate JSDoc tags
+- Break long comments into multiple lines
+- Align multi-line comment blocks
+
+## Linting Rules
+```yaml
+rules:
+  "jsdoc/require-jsdoc": error
+  "jsdoc/require-description": error
+  "jsdoc/require-param-description": error
+  "jsdoc/require-returns-description": error
+  "jsdoc/no-undefined-types": error
+  "jsdoc/check-alignment": error
+  "jsdoc/require-file-overview": error
+  "jsdoc/require-example": error
+  "jsdoc/check-tag-names": error
+  "jsdoc/check-types": error
+  "jsdoc/valid-types": error
+```
+
+## IDE Integration
+Configure IDE to:
+- Auto-generate comment templates
+- Enforce JSDoc validation
+- Highlight TODO comments
+- Auto-align comment blocks
+- Show documentation on hover

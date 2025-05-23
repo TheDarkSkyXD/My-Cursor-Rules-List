@@ -1,0 +1,235 @@
+---
+description: Tailwind CSS v4 Standards and Best Practices
+globs: *.js,*.jsx,*.ts,*.tsx,*.css,*.html,*.vue,*.svelte
+alwaysApply: false
+---
+# Tailwind CSS v4 Usage Guide for AI Agents
+
+**Core Principle:** Tailwind CSS v4 uses a **CSS-first** approach. Configuration primarily happens in CSS files, not `tailwind.config.js`.
+
+## 1. CSS File Setup
+
+**DO:** Use the single `@import` directive in your main CSS file (e.g., `globals.css`, `app.css`).
+
+```css
+/* CORRECT v4 Syntax */
+@import 'tailwindcss';
+
+/* Optional: Add prefix */
+/* @import 'tailwindcss' prefix(tw); */
+
+/* Optional: Add specific source files if auto-detection is insufficient/disabled */
+/* @source "../node_modules/@my-company/ui-lib/**/*.js"; */
+
+/* Optional: Disable automatic source detection */
+/* @import 'tailwindcss' source(none); */
+
+/* Your custom CSS rules, @theme, @variant definitions follow */
+```
+
+**DO NOT:** Use the old v3 `@tailwind` directives.
+
+```css
+/* INCORRECT - DO NOT USE (v3 Syntax) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+## 2. PostCSS Configuration
+
+**DO:** Use the correct v4 package name in your PostCSS configuration (`postcss.config.js`, `postcss.config.mjs`, etc.).
+
+```javascript
+// Example postcss.config.mjs
+export default {
+  plugins: {
+    '@tailwindcss/postcss': {},
+    // autoprefixer is generally NOT needed with Tailwind CSS v4+
+  },
+};
+```
+
+**DO NOT:** Use the old `tailwindcss` package name directly as the PostCSS plugin key if you intend to use v4 features.
+
+## 3. Theme Configuration (`@theme`)
+
+**DO:** Define custom theme tokens (colors, fonts, spacing, breakpoints, etc.) inside the `@theme` directive in your main CSS file using CSS custom properties.
+
+```css
+/* In your main CSS file (e.g., globals.css) */
+@import 'tailwindcss';
+
+@theme {
+  /* Define custom properties */
+  --color-primary: #3b82f6; /* Hex */
+  --color-secondary: oklch(65% 0.15 260); /* OKLCH */
+  --color-background-paper: var(--color-white); /* Reference other vars */
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui;
+  --font-display: 'Satoshi', var(--font-sans);
+
+  --spacing-base: 0.25rem; /* Base spacing unit */
+  /* Note: Multiples like --spacing-1, --spacing-2 etc. are often derived */
+
+  --breakpoint-xl: 1280px;
+  --breakpoint-3xl: 1920px;
+
+  --radius-custom: 12px;
+
+  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+
+  /* You can reference Tailwind's default theme values using theme() */
+  --color-semantic-info: theme(colors.blue.500);
+}
+```
+
+**DO NOT:** Primarily rely on `tailwind.config.js` for theme extensions in a new v4 project. Use `@theme` in CSS.
+
+**NOTE:** Many utilities (e.g., `z-10`, `grid-cols-7`, `opacity-60`) and spacing values (`p-1`, `m-2`, `mt-21`) work without explicit definition in `@theme` due to v4's architecture and dynamic spacing scale. Define tokens in `@theme` when you need _custom named values_ or want to _override defaults_.
+
+## 4. Using Theme Values
+
+**DO:** Use standard CSS `var()` function to access theme tokens within CSS rules.
+
+```css
+.custom-component {
+  background-color: var(--color-primary);
+  font-family: var(--font-display);
+  padding: var(--spacing-4); /* Access derived spacing */
+  border-radius: var(--radius-custom);
+}
+```
+
+**DO:** Use the generated utility classes in your HTML/JSX/Vue/Svelte templates.
+
+```html
+<button class="bg-primary text-white font-sans p-4 rounded-custom shadow-card">Click Me</button>
+```
+
+**DO NOT:** Rely heavily on the `theme()` function _outside_ of the `@theme` directive in your custom CSS. Use `var()` instead for applying theme values.
+
+## 5. Opacity Syntax
+
+**DO:** Use the slash syntax for applying opacity with color utilities.
+
+```html
+<!-- CORRECT v4 Syntax -->
+<div class="bg-primary/75 text-black/50 border-secondary/25">Content</div>
+```
+
+**DO NOT:** Use the old v3 opacity utilities.
+
+```html
+<!-- INCORRECT - DO NOT USE (v3 Syntax) -->
+<div class="bg-primary bg-opacity-75 text-black text-opacity-50 border-secondary border-opacity-25">
+  Content
+</div>
+```
+
+## 6. Defining Variants (`@variant`)
+
+**DO:** Use the `@variant` directive to define custom variants or modify existing ones like `dark`.
+
+```css
+/* Define a custom variant for aria-selected */
+@variant selected (&[aria-selected='true']);
+
+/* Standard dark mode setup (class-based) */
+@variant dark {
+  .dark {
+    /* Define dark mode overrides using CSS variables */
+    --color-background: theme(colors.gray.900);
+    --color-text: theme(colors.gray.100);
+    --color-primary: theme(colors.blue.400);
+    /* etc. */
+  }
+}
+
+/* Alternative dark mode setup using :where() for lower specificity */
+/* @variant dark (&:where(.dark, .dark *)); */
+/* Apply variable overrides within a separate .dark { ... } block or directly */
+
+/* Example media query variant */
+@variant pointer-coarse (@media (pointer: coarse));
+```
+
+**Usage in HTML/JSX:**
+
+```html
+<div class="bg-white dark:bg-background text-black dark:text-text">...</div>
+<button class="p-2 selected:bg-primary selected:text-white pointer-coarse:p-4">Item</button>
+```
+
+## 7. Custom Utilities (`@utility`)
+
+**DO:** Use the `@utility` directive to define simple custom utility classes.
+
+```css
+@utility icon-sm {
+  width: 1.25rem; /* 20px */
+  height: 1.25rem; /* 20px */
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+```
+
+**Usage in HTML/JSX:**
+
+```html
+<svg class="icon-sm"></svg>
+<h1 class="text-balance">Headline Text</h1>
+```
+
+## 8. Handling Breaking Changes / Renames
+
+**BE AWARE:** Some utility classes were renamed from v3. Apply these changes when migrating or generating code. (This list is based on provided docs and may be incomplete):
+
+- `shadow-sm` -> `shadow-xs`
+- `shadow` -> `shadow-sm`
+- `shadow-md` -> `shadow-md` (no change)
+- `shadow-lg` -> `shadow-lg` (no change)
+- `shadow-xl` -> `shadow-xl` (no change)
+- `shadow-2xl` -> `shadow-2xl` (no change)
+- _(Similar pattern for `drop-shadow-_`, `blur-_`, `rounded-_`where`sm`becomes`xs`, and the previous base name becomes `sm`)\*
+- `outline-none` -> `outline-hidden` (for the old transparent outline behavior) or `outline-0` (for `outline: 0;`)
+
+**BE AWARE:** Default styles changed:
+
+- Default border color is `currentColor`.
+- Default ring width is `1px`.
+
+**BE AWARE:** Syntax for CSS variables in arbitrary values changed:
+
+- **Use:** `bg-(--brand-color)`
+- **Do Not Use:** `bg-[--brand-color]`
+
+## 9. Legacy v3 Configuration (`@config`)
+
+**DO:** Use the `@config` directive **only if** you need to integrate settings from an existing `tailwind.config.js` file, typically during a migration.
+
+```css
+@import 'tailwindcss';
+
+/* Load settings from a v3 config file */
+@config "./tailwind.config.js";
+
+/* You can still add v4 @theme definitions below */
+@theme {
+  --color-new-feature: red;
+}
+```
+
+**DO NOT:** Use `@config` as the primary configuration method for new Tailwind v4 projects. Prefer `@theme` in CSS.
+
+## Summary: Key Rules for v4
+
+- **CSS First:** Configure in CSS (`@theme`, `@variant`).
+- **Import:** Use `@import 'tailwindcss';`.
+- **Theme:** Define tokens with CSS variables (`--color-primary: ...`) inside `@theme`.
+- **Apply Theme:** Use `var(--css-variable)` in CSS, utility classes (`bg-primary`) in HTML/JSX.
+- **Opacity:** Use slash syntax (`bg-black/50`).
+- **PostCSS:** Use `@tailwindcss/postcss` plugin.
+- **Avoid:** Old `@tailwind` directives, old opacity utilities, heavy reliance on `tailwind.config.js` for new projects.

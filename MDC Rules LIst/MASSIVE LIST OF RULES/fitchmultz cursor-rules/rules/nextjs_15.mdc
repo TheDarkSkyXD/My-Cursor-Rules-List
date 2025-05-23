@@ -1,0 +1,208 @@
+---
+description: Next.js 15.2.4 Standards and Best Practices
+globs: *.js,*.jsx,*.ts,*.tsx
+alwaysApply: false
+---
+
+# Next.js 15.2.4 Standards
+
+This rule provides guidance for working with Next.js 15.2.4 projects, ensuring correct patterns and best practices.
+
+## Core Version 15 Information
+
+Next.js 15.2.4 includes several key features and updates:
+
+1. **React 19 Support**: Full compatibility with React 19, including React Compiler
+2. **Improved Error Debugging**: Enhanced error overlay with better context
+3. **Caching Semantics**: New caching model where fetch requests are no longer cached by default
+4. **Node.js Middleware Support**: Experimental Node.js-based middleware for server operations
+5. **Static Indicator**: Visual indicator showing static routes during development
+6. **TypeScript Config**: Support for `next.config.ts` with TypeScript
+
+## App Router Patterns
+
+The App Router is the recommended approach for all new Next.js projects:
+
+```tsx
+// app/page.tsx
+export default function HomePage() {
+  return <h1>Hello World</h1>;
+}
+
+// app/layout.tsx
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+### Data Fetching
+
+Always use the native `fetch` API with proper caching options:
+
+```tsx
+// CORRECT - explicit caching control
+async function getData() {
+  const res = await fetch('https://api.example.com/data', {
+    next: { revalidate: 3600 } // Revalidate every hour
+  });
+  
+  if (!res.ok) {
+    throw new Error('Failed to fetch data');
+  }
+  
+  return res.json();
+}
+
+// INCORRECT - no caching control (Next.js 15+ no longer caches by default)
+async function getData() {
+  const res = await fetch('https://api.example.com/data');
+  return res.json();
+}
+```
+
+### Server Components
+
+Server Components are the default in the App Router. Use "use client" directive only when needed:
+
+```tsx
+// Server Component (default)
+export default async function ServerComponent() {
+  const data = await getData();
+  return <div>{data.title}</div>;
+}
+
+// Client Component
+"use client"
+
+import { useState } from 'react';
+
+export default function ClientComponent() {
+  const [count, setCount] = useState(0);
+  return (
+    <button onClick={() => setCount(count + 1)}>
+      Count: {count}
+    </button>
+  );
+}
+```
+
+## Route Handlers
+
+Use the new route handler format for API endpoints:
+
+```tsx
+// app/api/route.ts
+export async function GET(request: Request) {
+  return Response.json({ message: 'Hello World' });
+}
+
+export async function POST(request: Request) {
+  const data = await request.json();
+  // Process data...
+  return Response.json({ success: true });
+}
+```
+
+## Middleware
+
+Use middleware for authentication, redirects, and other request modifications:
+
+```tsx
+// middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  // Check authentication, rewrite paths, add headers, etc.
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: '/api/:path*',
+};
+```
+
+## Server Actions
+
+Use React 19's server actions for form submissions and data mutations:
+
+```tsx
+// Server Action
+"use server"
+
+export async function submitForm(formData: FormData) {
+  const name = formData.get('name');
+  // Process form data...
+  return { success: true };
+}
+
+// Using in a Client Component
+"use client"
+
+import { submitForm } from './actions';
+
+export default function Form() {
+  return (
+    <form action={submitForm}>
+      <input name="name" />
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+## Metadata API
+
+Use the metadata API for SEO optimization:
+
+```tsx
+// app/page.tsx
+export const metadata = {
+  title: 'Home Page',
+  description: 'Welcome to our website',
+};
+
+export default function Page() {
+  return <h1>Hello World</h1>;
+}
+```
+
+## TypeScript Configuration
+
+Take advantage of TypeScript configuration support:
+
+```typescript
+// next.config.ts
+import { type NextConfig } from 'next';
+
+const config: NextConfig = {
+  reactStrictMode: true,
+  // Other configurations...
+};
+
+export default config;
+```
+
+## Tailwind CSS Integration
+
+When using Tailwind CSS with Next.js 15.2.4, follow the Tailwind v4 standards:
+
+```tsx
+// app/globals.css
+@import 'tailwindcss';
+
+// Install with
+// npm install tailwindcss@4 @tailwindcss/postcss
+```
+
+## Browser Compatibility
+
+Next.js 15.2.4 targets modern browsers, with a focus on:
+- Chrome 93+
+- Firefox 103+
+- Safari 15.4+
+- Edge 93+

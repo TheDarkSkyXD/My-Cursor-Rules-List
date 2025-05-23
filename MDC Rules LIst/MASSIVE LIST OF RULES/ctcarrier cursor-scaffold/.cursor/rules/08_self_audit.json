@@ -1,0 +1,8 @@
+{
+  "description": "Rules for conducting self-audits of code, documentation, and environment",
+  "globs": ["**/*"],
+  "alwaysApply": true,
+  "priority": 8,
+  "triggers": ["audit.*", "review.*"],
+  "content": "# Self-Audit Rules\n\n## Code Audit\n- Review code quality\n- Check for vulnerabilities\n- Verify test coverage\n- Validate documentation\n- Update security status\n\n## Documentation Audit\n- Check file completeness\n- Verify cross-references\n- Validate formats\n- Update timestamps\n- Review security docs\n\n## State Audit\n- Verify task status\n- Check progress tracking\n- Validate decisions\n- Review questions\n- Confirm security status\n\n## Environment Audit\n- Verify tool versions\n- Check dependencies\n- Validate configurations\n- Test security tools\n- Confirm compatibility"
+} 

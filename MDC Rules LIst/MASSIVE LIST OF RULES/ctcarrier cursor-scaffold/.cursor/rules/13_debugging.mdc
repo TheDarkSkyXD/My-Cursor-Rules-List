@@ -1,0 +1,34 @@
+---
+description: Rules for systematic debugging and problem resolution
+globs: ["**/*"]
+alwaysApply: true
+---
+# Debugging Rules
+
+## Problem Identification
+- Reproduce issue
+- Document symptoms
+- Check security impact
+- Review logs
+- Update status
+
+## Analysis
+- Gather information
+- Check security
+- Review code
+- Test hypotheses
+- Document findings
+
+## Solution
+- Implement fix
+- Verify security
+- Test thoroughly
+- Document changes
+- Update status
+
+## Verification
+- Test solution
+- Check security
+- Verify fixes
+- Document results
+- Update progress 

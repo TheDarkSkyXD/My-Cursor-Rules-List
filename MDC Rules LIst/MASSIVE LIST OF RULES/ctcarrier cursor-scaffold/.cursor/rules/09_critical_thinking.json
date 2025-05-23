@@ -1,0 +1,8 @@
+{
+  "description": "Rules for applying critical thinking to problem-solving and decision-making",
+  "globs": ["**/*"],
+  "alwaysApply": true,
+  "priority": 9,
+  "triggers": ["analyze.*", "evaluate.*", "decide.*"],
+  "content": "# Critical Thinking Rules\n\n## Problem Analysis\n- Break down complex problems\n- Identify dependencies\n- Consider security implications\n- Evaluate alternatives\n- Document reasoning\n\n## Decision Making\n- Gather all information\n- Consider security impact\n- Evaluate alternatives\n- Document rationale\n- Update security status\n\n## Risk Assessment\n- Identify potential risks\n- Evaluate security impact\n- Consider mitigation\n- Document decisions\n- Update security docs\n\n## Solution Evaluation\n- Verify requirements\n- Check security\n- Validate compatibility\n- Test thoroughly\n- Document results"
+} 

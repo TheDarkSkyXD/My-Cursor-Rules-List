@@ -1,0 +1,80 @@
+---
+description: 
+globs: rfcs/*.md
+alwaysApply: false
+---
+ ---
+description: Guidelines for writing RFCs
+globs: ["rfcs/*.md"]
+---
+# RFC Style Guidelines
+
+## Structure
+- Each RFC must follow the template structure defined in `00-template.md`
+- RFCs must be numbered sequentially (e.g., `01-pipeline-framework.md`)
+- File names should be lowercase with hyphens for spaces
+
+## Content Sections
+
+### Summary
+- Must be concise and clear
+- Should explain the feature in 1-2 sentences
+- Focus on what the feature does, not how it works
+
+### Motivation
+- Explain the problem being solved
+- List specific use cases
+- Describe expected outcomes
+- Focus on benefits and impact
+
+### Detailed Design
+- Provide comprehensive technical details
+- Include code examples with explanations
+- Break down complex concepts into subsections
+- Use numbered lists for core components
+- Include edge cases and error handling
+- Provide concrete implementation examples
+
+### Implementation Plan
+- Use checkboxes for tracking tasks
+- Break down into logical phases
+- Include both acceptance tests and implementation steps
+- Order tasks by dependency
+
+### Code References
+- Link to relevant code files
+- Include specific line numbers or sections when helpful
+- Reference related RFCs if applicable
+
+## Code Examples
+- Use Python code blocks with syntax highlighting
+- Include complete, runnable examples
+- Show both simple and complex use cases
+- Demonstrate error handling and edge cases
+- Use descriptive variable names
+- Include comments for complex logic
+
+## Formatting
+- Use Markdown headers for clear section hierarchy
+- Include code blocks with appropriate language tags
+- Use bullet points for lists
+- Use numbered lists for sequential steps
+- Keep paragraphs focused and concise
+- Use tables when comparing options or showing relationships
+
+## Best Practices
+- Write in present tense
+- Be specific and concrete
+- Include both high-level overview and detailed implementation
+- Consider backward compatibility
+- Address potential risks or limitations
+- Include performance considerations
+- Document configuration options
+- Provide clear examples of usage patterns
+
+## Review Process
+- RFCs should be reviewed by team members
+- Address all feedback and questions
+- Update implementation plan based on discussions
+- Keep track of changes and decisions
+- Document any alternatives considered

@@ -1,0 +1,34 @@
+---
+description: Rules for maintaining and synchronizing context across tasks and sessions
+globs: ["**/*"]
+alwaysApply: true
+---
+# Context Sync Rules
+
+## State Management
+- Keep state files current
+- Update status regularly
+- Track active task
+- Maintain progress
+- Document changes
+
+## Documentation Sync
+- Update all relevant files
+- Maintain consistency
+- Cross-reference when needed
+- Version documentation
+- Archive old versions
+
+## Environment Sync
+- Track tool versions
+- Update dependencies
+- Document changes
+- Maintain compatibility
+- Update security status
+
+## Recovery
+- Maintain backup state
+- Document recovery steps
+- Track session state
+- Preserve progress
+- Enable resumption 

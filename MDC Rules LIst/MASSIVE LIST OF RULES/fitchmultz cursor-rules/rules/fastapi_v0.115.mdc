@@ -1,0 +1,443 @@
+---
+description: FastAPI v0.115.12 Standards and Best Practices
+globs: *.py,*.pyi
+alwaysApply: false
+---
+
+# FastAPI v0.115.12 Standards
+
+This rule provides guidance for working with FastAPI v0.115.12 projects, ensuring correct patterns and best practices for building high-performance APIs.
+
+## Core Information
+
+FastAPI v0.115.12 (released March 23, 2025) is a modern high-performance web framework for building APIs with Python 3.8+ that features:
+
+1. **Fully Async Support**: Native support for asynchronous programming
+2. **Type Annotations**: Leverages Python type hints for validation
+3. **Pydantic v2 Integration**: Built on Pydantic for data validation
+4. **OpenAPI Documentation**: Automatic API documentation with Swagger UI
+5. **High Performance**: On par with NodeJS and Go frameworks
+
+## Project Structure
+
+Recommended project structure for maintainable FastAPI applications:
+
+```
+my_project/
+├── app/
+│   ├── __init__.py
+│   ├── main.py              # FastAPI app initialization
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── config.py        # Application configuration
+│   │   ├── security.py      # Security utilities
+│   │   └── dependencies.py  # Shared dependencies
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── routes/          # API route modules
+│   │   │   ├── __init__.py
+│   │   │   ├── items.py
+│   │   │   └── users.py
+│   │   └── dependencies.py  # API specific dependencies
+│   ├── models/              # Pydantic models
+│   │   ├── __init__.py
+│   │   ├── item.py
+│   │   └── user.py
+│   ├── schemas/             # Database models (SQLAlchemy, etc.)
+│   │   ├── __init__.py
+│   │   ├── item.py
+│   │   └── user.py
+│   └── services/            # Business logic
+│       ├── __init__.py
+│       ├── item_service.py
+│       └── user_service.py
+└── tests/                   # Unit and integration tests
+```
+
+## Application Setup
+
+### CORRECT - FastAPI Application Setup
+
+```python
+from fastapi import FastAPI
+from app.api.routes import items, users
+from app.core.config import settings
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    description=settings.PROJECT_DESCRIPTION,
+    version="0.1.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
+
+# Include routers
+app.include_router(users.router, prefix="/users", tags=["users"])
+app.include_router(items.router, prefix="/items", tags=["items"])
+
+# Add middleware if needed
+app.add_middleware(...)
+
+# Add event handlers
+@app.on_event("startup")
+async def startup_event():
+    # Initialize connections, etc.
+    pass
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    # Close connections, etc.
+    pass
+```
+
+### INCORRECT - Anti-Pattern Setup
+
+```python
+# Don't put all routes in one file
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/users")
+def get_users():
+    pass
+
+@app.get("/items")
+def get_items():
+    pass
+
+# Many more routes in the same file...
+```
+
+## Pydantic v2 Models
+
+FastAPI v0.115.12 uses Pydantic v2 for data validation:
+
+### CORRECT - Pydantic Models
+
+```python
+from pydantic import BaseModel, Field, EmailStr
+from typing import Optional, List
+from datetime import datetime
+
+class UserBase(BaseModel):
+    email: EmailStr
+    is_active: bool = True
+
+class UserCreate(UserBase):
+    password: str = Field(..., min_length=8)
+
+class UserResponse(UserBase):
+    id: int
+    created_at: datetime
+
+    # Configure model behavior
+    model_config = {
+        "from_attributes": True  # New in Pydantic v2
+    }
+
+class PaginatedUsers(BaseModel):
+    items: List[UserResponse]
+    total: int
+    page: int
+    size: int
+```
+
+### INCORRECT - Outdated Pydantic Patterns
+
+```python
+# Don't use deprecated Config class
+class UserResponse(UserBase):
+    id: int
+    created_at: datetime
+
+    class Config:  # Deprecated in Pydantic v2
+        orm_mode = True  # Use from_attributes instead
+```
+
+## Router Organization
+
+Organize your routes into separate modules:
+
+### CORRECT - Router Module
+
+```python
+from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List, Optional
+from sqlalchemy.orm import Session
+
+from app.api.dependencies import get_db
+from app.models.item import ItemCreate, ItemResponse
+from app.services.item_service import create_item, get_items
+
+router = APIRouter()
+
+@router.post("/", response_model=ItemResponse, status_code=status.HTTP_201_CREATED)
+async def create_new_item(
+    item: ItemCreate,
+    db: Session = Depends(get_db)
+):
+    return await create_item(db=db, item=item)
+
+@router.get("/", response_model=List[ItemResponse])
+async def read_items(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    items = await get_items(db=db, skip=skip, limit=limit)
+    return items
+```
+
+## Dependency Injection
+
+Use FastAPI's dependency injection system:
+
+### CORRECT - Dependencies
+
+```python
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
+from jose import jwt, JWTError
+
+from app.core.config import settings
+from app.core.database import get_session
+from app.models.user import User
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
+
+async def get_db():
+    db = get_session()
+    try:
+        yield db
+    finally:
+        db.close()
+
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+) -> User:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid authentication credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise credentials_exception
+
+    return user
+```
+
+## Async Support
+
+Use async/await patterns where appropriate:
+
+### CORRECT - Async Routes
+
+```python
+@router.get("/{item_id}", response_model=ItemResponse)
+async def read_item(
+    item_id: int,
+    db: Session = Depends(get_db)
+):
+    item = await get_item_by_id(db=db, item_id=item_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+```
+
+### IMPORTANT - Async vs Sync
+
+```python
+# Use async for non-blocking I/O operations
+@router.get("/external-data")
+async def get_external_data():
+    async with httpx.AsyncClient() as client:
+        response = await client.get("https://api.example.com/data")
+    return response.json()
+
+# Use sync for CPU-bound or blocking operations
+@router.get("/cpu-intensive")
+def cpu_intensive_operation(data: str):
+    # CPU-bound operations run in a threadpool automatically
+    result = perform_complex_calculation(data)
+    return {"result": result}
+```
+
+## Security and Authentication
+
+Implement security using FastAPI's built-in security utilities:
+
+### CORRECT - OAuth2 with JWT
+
+```python
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+from datetime import timedelta
+
+from app.core.security import (
+    authenticate_user,
+    create_access_token,
+    get_password_hash,
+)
+from app.models.token import Token
+from app.api.dependencies import get_db
+
+router = APIRouter()
+
+@router.post("/token", response_model=Token)
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+    user = await authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": str(user.id)}, expires_delta=access_token_expires
+    )
+
+    return {"access_token": access_token, "token_type": "bearer"}
+```
+
+## Error Handling
+
+Use structured error handling with HTTPException:
+
+### CORRECT - Error Handling
+
+```python
+from fastapi import HTTPException, status
+
+# Raise specific HTTP exceptions
+if item is None:
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Item not found"
+    )
+
+# Use status codes from fastapi.status
+if not user.is_admin:
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Not enough permissions"
+    )
+
+# Add headers when needed
+if token_invalid:
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid token",
+        headers={"WWW-Authenticate": "Bearer"}
+    )
+```
+
+## Response Models
+
+Define explicit response models:
+
+### CORRECT - Response Models
+
+```python
+from fastapi import APIRouter, status
+from typing import List
+
+from app.models.item import ItemResponse, ItemListResponse
+
+router = APIRouter()
+
+@router.get(
+    "/",
+    response_model=List[ItemResponse],
+    response_model_exclude_unset=True,
+    status_code=status.HTTP_200_OK,
+)
+async def read_items():
+    # ...implementation
+    return items
+
+@router.post(
+    "/",
+    response_model=ItemResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_item(item: ItemCreate):
+    # ...implementation
+    return created_item
+```
+
+## Background Tasks
+
+Use FastAPI's background tasks for non-critical operations:
+
+### CORRECT - Background Tasks
+
+```python
+from fastapi import APIRouter, BackgroundTasks, Depends
+
+@router.post("/send-notification/")
+async def send_notification(
+    email: str,
+    background_tasks: BackgroundTasks,
+):
+    # Add task to be run in the background
+    background_tasks.add_task(send_email_notification, email, "Welcome!")
+    return {"message": "Notification will be sent in the background"}
+```
+
+## Testing
+
+Write comprehensive tests for your FastAPI application:
+
+### CORRECT - Testing
+
+```python
+from fastapi.testclient import TestClient
+import pytest
+
+from app.main import app
+
+client = TestClient(app)
+
+def test_read_items():
+    response = client.get("/items/")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+def test_create_item():
+    item_data = {"name": "Test Item", "description": "This is a test item"}
+    response = client.post("/items/", json=item_data)
+    assert response.status_code == 201
+    assert response.json()["name"] == item_data["name"]
+```
+
+## Performance Best Practices
+
+- Use async functions for I/O-bound operations
+- Use standard functions for CPU-bound tasks
+- Implement proper caching mechanisms
+- Use database connection pooling
+- Implement pagination for large datasets
+- Use response compression middleware
+- Consider Edge Function deployments for latency-sensitive operations
+
+By following these standards and patterns, your FastAPI applications will be maintainable, secure, and performant.

@@ -1,0 +1,34 @@
+---
+description: Rules for implementing test-driven development practices
+globs: ["**/*"]
+alwaysApply: true
+---
+# Test-First Rules
+
+## Test Planning
+- Write tests first
+- Document requirements
+- Consider security
+- Plan edge cases
+- Update documentation
+
+## Test Implementation
+- Implement tests
+- Include security tests
+- Document test cases
+- Verify coverage
+- Update status
+
+## Test Execution
+- Run tests regularly
+- Check security tests
+- Document results
+- Fix failures
+- Update progress
+
+## Test Maintenance
+- Update with changes
+- Review coverage
+- Check security
+- Document updates
+- Verify integrity 

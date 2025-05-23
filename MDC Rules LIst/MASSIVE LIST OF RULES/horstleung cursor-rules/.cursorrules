@@ -1,0 +1,29 @@
+# General Workflow Rules
+
+## Documentation Requirements
+- Read the docs/project.md and docs/progress.md before starting any work
+- Update docs/progress.md after completing significant features or changes
+- Document all architectural decisions in appropriate documentation
+
+## Code Development Practices
+- Analyze the current codebase first to understand existing tools and components
+- Make code reusable by following the modular design principles in code-modularity.mdc
+- Maintain consistent architectural patterns as defined in architectural-consistency.mdc
+- Follow code style and formatting guidelines from code-style-formatting.mdc
+- Ensure proper documentation according to documentation-automation.mdc
+- Write tests for all new code following testing-standards.mdc
+- Manage dependencies according to dependency-management.mdc
+
+## Project Structure
+- Don't break the current folder structure; if changes are needed, consult with team members first
+- Organize new code according to its purpose and responsibility
+- Keep related functionality together
+
+## Workflow Steps
+1. Read docs/project.md and review git commits from the last checkpoint
+2. Understand the project architecture and current state
+3. Implement changes following all established rules
+4. Write tests for new functionality
+5. Document changes in code and update relevant documentation
+6. Update or generate docs/progress.md to create the latest checkpoint of project status
+7. Perform a self-review of changes against all established rules

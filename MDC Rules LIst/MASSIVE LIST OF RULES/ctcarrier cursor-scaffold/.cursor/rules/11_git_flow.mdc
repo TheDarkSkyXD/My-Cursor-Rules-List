@@ -1,0 +1,34 @@
+---
+description: Rules for managing Git workflow and version control
+globs: ["**/*"]
+alwaysApply: true
+---
+# Git Flow Rules
+
+## Branch Management
+- Create task branches
+- Follow naming conventions
+- Document changes
+- Update security status
+- Maintain clean history
+
+## Commits
+- Write clear messages
+- Include security notes
+- Document changes
+- Reference issues
+- Update status
+
+## Pull Requests
+- Document changes
+- Include security review
+- Update documentation
+- Verify tests
+- Check compatibility
+
+## Merging
+- Verify security
+- Check tests
+- Update documentation
+- Clean up branches
+- Update status 

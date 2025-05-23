@@ -1,0 +1,637 @@
+---
+description: 
+globs: openai*
+alwaysApply: false
+---
+# OpenAI Python SDK v1.70.0 Standards and Best Practices
+
+This rule provides guidance for working with the OpenAI Python SDK v1.70.0, ensuring correct patterns and best practices for building applications with OpenAI's models.
+
+## Core Information
+
+The OpenAI Python SDK provides a unified interface for developers to integrate OpenAI's generative models into their Python applications with:
+
+1. **Two Primary APIs**: Responses API (newer) and Chat Completions API (standard)
+2. **Multimodal Support**: Generate content from text, images, and audio
+3. **Function Calling**: Robust tools capabilities
+4. **Streaming**: Efficient streaming of model responses
+5. **Vision Support**: Process and analyze images
+6. **Embeddings**: Generation of text embeddings for semantic search and RAG
+7. **Error Handling**: Request IDs and retry capabilities
+8. **Assistants API**: Stateful conversation management with built-in tools
+9. **Agents SDK**: Lightweight framework for building multi-agent systems
+
+## Models Overview
+
+### Standard Models
+
+#### GPT-4 Models
+
+- **GPT-4o** (`gpt-4o`, `gpt-4o-2024-08-06`): Latest flagship model with multimodal capabilities, 128K token context, 4K output limit
+- **GPT-4o Mini** (`gpt-4o-mini`, `gpt-4o-mini-2024-07-18`): Smaller, faster version of GPT-4o, 128K token context, 16K output limit
+- **GPT-4 Turbo** (`gpt-4-turbo`, `gpt-4-turbo-2024-04-09`): Previous-gen model with 128K token context
+
+#### GPT-3.5 Models
+
+- **GPT-3.5 Turbo** (`gpt-3.5-turbo`, `gpt-3.5-turbo-0125`): Cost-effective general-purpose model
+- **GPT-3.5 Turbo 16K** (`gpt-3.5-turbo-16k`): Extended context version
+
+### Reasoning Models (O-Series)
+
+#### O1 Models
+- **O1** (`o1`, `o1-2024-12-17`): Advanced reasoning model with 200K input/100K output tokens
+- **O1 Preview** (`o1-preview`, `o1-preview-2024-09-12`): Preview version with 128K input/32K output tokens
+- **O1 Mini** (`o1-mini`, `o1-mini-2024-09-12`): Smaller, faster version with 128K input/65K output tokens
+- **O1 Pro** (`o1-pro`, `o1-pro-2025-03-19`): Pro version of O1 model
+
+#### O3 Models
+- **O3 Mini** (`o3-mini`, `o3-mini-2025-01-31`): Small reasoning model with 200K input/100K output tokens
+
+### Embedding Models
+
+- **Text Embedding 3 Large** (`text-embedding-3-large`): 3072 dimensions
+- **Text Embedding 3 Small** (`text-embedding-3-small`): 1536 dimensions
+- **Text Embedding Ada 002** (`text-embedding-ada-002`): Legacy embedding model
+
+### Image Generation Models
+
+- **DALL-E 3** (`dall-e-3`): Latest image generation model
+- **DALL-E 2** (`dall-e-2`): Previous image generation model
+
+## Installation and Setup
+
+```python
+# Install the SDK
+pip install openai
+
+# Basic imports
+from openai import OpenAI
+
+# Initialize the client with API key
+client = OpenAI(
+    api_key="YOUR_API_KEY",  # Or set OPENAI_API_KEY environment variable
+)
+
+# For Azure OpenAI
+from openai import AzureOpenAI
+
+client = AzureOpenAI(
+    api_version="2023-07-01-preview",
+    azure_endpoint="https://example-endpoint.openai.azure.com",
+)
+```
+
+## Responses API (New Recommended API)
+
+### CORRECT - Generate Content
+
+```python
+from openai import OpenAI
+
+client = OpenAI()
+
+response = client.responses.create(
+    model="gpt-4o",
+    instructions="You are a coding assistant that talks like a pirate.",
+    input="How do I check if a Python object is an instance of a class?",
+)
+
+print(response.output_text)
+```
+
+### CORRECT - Vision Input
+
+```python
+from openai import OpenAI
+import base64
+
+client = OpenAI()
+
+# With image URL
+prompt = "What is in this image?"
+img_url = "https://example.com/image.jpg"
+
+response = client.responses.create(
+    model="gpt-4o-mini",
+    input=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "input_text", "text": prompt},
+                {"type": "input_image", "image_url": f"{img_url}"},
+            ],
+        }
+    ],
+)
+
+# With base64 encoded image
+with open("path/to/image.png", "rb") as image_file:
+    b64_image = base64.b64encode(image_file.read()).decode("utf-8")
+
+response = client.responses.create(
+    model="gpt-4o-mini",
+    input=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "input_text", "text": prompt},
+                {"type": "input_image", "image_url": f"data:image/png;base64,{b64_image}"},
+            ],
+        }
+    ],
+)
+```
+
+## Chat Completions API (Standard API)
+
+### CORRECT - Chat Completions
+
+```python
+from openai import OpenAI
+
+client = OpenAI()
+
+completion = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Hello, how are you today?"}
+    ],
+    max_tokens=150,
+    temperature=0.7,
+)
+
+print(completion.choices[0].message.content)
+```
+
+### CORRECT - Stream Response
+
+```python
+from openai import OpenAI
+
+client = OpenAI()
+
+stream = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Write a short story about AI"}
+    ],
+    stream=True,
+)
+
+for chunk in stream:
+    if chunk.choices[0].delta.content is not None:
+        print(chunk.choices[0].delta.content, end="")
+```
+
+## Tool Calling (Function Calling)
+
+### CORRECT - Using Tool Calling
+
+```python
+from openai import OpenAI
+import json
+from typing import List, Optional
+
+client = OpenAI()
+
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "description": "Get the current weather in a location",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "string",
+                        "description": "The city and state, e.g. San Francisco, CA"
+                    },
+                    "unit": {
+                        "type": "string",
+                        "enum": ["celsius", "fahrenheit"],
+                        "description": "Temperature unit"
+                    }
+                },
+                "required": ["location"]
+            }
+        }
+    }
+]
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "user", "content": "What's the weather like in San Francisco?"}
+    ],
+    tools=tools,
+    tool_choice="auto",
+)
+
+message = response.choices[0].message
+tool_calls = message.tool_calls
+
+if tool_calls:
+    # Process the tool calls and get results
+    available_functions = {
+        "get_weather": lambda location, unit="celsius": {"temp": 22, "unit": unit, "location": location}
+    }
+    
+    messages = [
+        {"role": "user", "content": "What's the weather like in San Francisco?"},
+        message
+    ]
+    
+    for tool_call in tool_calls:
+        function_name = tool_call.function.name
+        function_args = json.loads(tool_call.function.arguments)
+        function_response = available_functions[function_name](mdc:**function_args)
+        
+        messages.append(
+            {
+                "tool_call_id": tool_call.id,
+                "role": "tool",
+                "name": function_name,
+                "content": json.dumps(function_response)
+            }
+        )
+    
+    second_response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=messages,
+    )
+    
+    print(second_response.choices[0].message.content)
+```
+
+## Assistants API
+
+### CORRECT - Creating an Assistant
+
+```python
+from openai import OpenAI
+
+client = OpenAI()
+
+# Create an assistant
+assistant = client.beta.assistants.create(
+    name="Math Tutor",
+    instructions="You are a personal math tutor. Answer questions step by step.",
+    model="gpt-4o",
+    tools=[{"type": "code_interpreter"}]
+)
+
+# Save the assistant ID for future use
+assistant_id = assistant.id
+```
+
+### CORRECT - Creating a Thread and Running a Conversation
+
+```python
+from openai import OpenAI
+import time
+
+client = OpenAI()
+
+# Create a thread
+thread = client.beta.threads.create()
+
+# Add a message to the thread
+message = client.beta.threads.messages.create(
+    thread_id=thread.id,
+    role="user",
+    content="Can you solve this equation: 3x + 11 = 14?"
+)
+
+# Run the assistant on the thread
+run = client.beta.threads.runs.create(
+    thread_id=thread.id,
+    assistant_id=assistant_id
+)
+
+# Wait for the run to complete
+while run.status in ["queued", "in_progress"]:
+    run = client.beta.threads.runs.retrieve(
+        thread_id=thread.id,
+        run_id=run.id
+    )
+    time.sleep(0.5)
+
+# Get the messages from the thread
+messages = client.beta.threads.messages.list(
+    thread_id=thread.id
+)
+
+# Print the assistant's response
+for message in messages.data:
+    if message.role == "assistant":
+        print(f"Assistant: {message.content[0].text.value}")
+```
+
+### CORRECT - Using File Search Tool
+
+```python
+from openai import OpenAI
+
+client = OpenAI()
+
+# Upload a file
+file = client.files.create(
+    file=open("document.pdf", "rb"),
+    purpose="assistants"
+)
+
+# Create a vector store for search
+vector_store = client.beta.vector_stores.create(
+    name="document_store"
+)
+
+# Add the file to the vector store
+vector_store_file = client.beta.vector_stores.files.create_and_poll(
+    vector_store_id=vector_store.id,
+    file_id=file.id
+)
+
+# Create an assistant with file search capability
+assistant = client.beta.assistants.create(
+    name="Research Assistant",
+    instructions="You help users find information in their documents.",
+    model="gpt-4o",
+    tools=[{"type": "file_search"}],
+    tool_resources={
+        "file_search": {
+            "vector_store_ids": [vector_store.id]
+        }
+    }
+)
+```
+
+## Agents SDK
+
+### CORRECT - Installing Agents SDK
+
+```python
+# Install the Agents SDK
+pip install openai-agents
+```
+
+### CORRECT - Creating a Simple Agent
+
+```python
+from agents import Agent, Runner
+
+# Create a simple agent
+agent = Agent(
+    name="Assistant",
+    instructions="You are a helpful assistant that answers questions concisely."
+)
+
+# Run the agent synchronously
+result = Runner.run_sync(agent, "Write a haiku about programming.")
+print(result.final_output)
+```
+
+### CORRECT - Creating Agents with Tools
+
+```python
+from agents import Agent, Runner
+import requests
+
+# Define tool functions
+def get_weather(location: str, unit: str = "celsius"):
+    """Get the current weather for a location."""
+    # Simulate API call
+    return f"The weather in {location} is 22 degrees {unit}."
+
+# Create an agent with tools
+weather_agent = Agent(
+    name="Weather Assistant",
+    instructions="You help users check the weather in different locations.",
+    tools=[get_weather]
+)
+
+# Run the agent
+result = Runner.run_sync(weather_agent, "What's the weather like in London?")
+print(result.final_output)
+```
+
+### CORRECT - Using Handoffs Between Agents
+
+```python
+from agents import Agent, Runner, handoff
+
+# Create specialized agents
+weather_agent = Agent(
+    name="Weather Agent",
+    instructions="You provide accurate weather information.",
+    tools=[get_weather]
+)
+
+travel_agent = Agent(
+    name="Travel Agent",
+    instructions="You help users plan trips and provide travel recommendations.",
+    handoffs=[weather_agent]  # Allow handoffs to the weather agent
+)
+
+# Run the main agent
+result = Runner.run_sync(travel_agent, "I'm planning a trip to Paris next week. Will I need an umbrella?")
+print(result.final_output)
+```
+
+### CORRECT - Streaming Agent Results
+
+```python
+from agents import Agent, Runner
+import asyncio
+
+async def main():
+    agent = Agent(
+        name="Storyteller",
+        instructions="You create engaging short stories."
+    )
+    
+    # Stream responses as they're generated
+    async for event in Runner.stream(agent, "Tell me a story about a robot learning to cook."):
+        if hasattr(event, "delta"):
+            print(event.delta, end="", flush=True)
+
+# Run the async function
+asyncio.run(main())
+```
+
+### CORRECT - Using Guardrails with Agents
+
+```python
+from agents import Agent, Runner, Guardrail
+from pydantic import BaseModel
+
+# Define a validation model
+class ContentValidation(BaseModel):
+    is_appropriate: bool
+    reason: str
+
+# Create a guardrail function
+def content_guardrail(input_text: str) -> ContentValidation:
+    # Simple check for demonstration
+    contains_inappropriate = any(word in input_text.lower() for word in ["harmful", "illegal", "dangerous"])
+    
+    return ContentValidation(
+        is_appropriate=not contains_inappropriate,
+        reason="Contains inappropriate content" if contains_inappropriate else "Content is appropriate"
+    )
+
+# Create an agent with guardrails
+moderated_agent = Agent(
+    name="Moderated Assistant",
+    instructions="You are a helpful assistant that provides only appropriate information.",
+    guardrails=[Guardrail(content_guardrail)]
+)
+
+# Run the agent with guardrails
+result = Runner.run_sync(moderated_agent, "How can I help you today?")
+print(result.final_output)
+```
+
+## Embeddings
+
+### CORRECT - Text Embeddings
+
+```python
+from openai import OpenAI
+
+client = OpenAI()
+
+response = client.embeddings.create(
+    model="text-embedding-3-small",
+    input="The quick brown fox jumps over the lazy dog"
+)
+
+embedding = response.data[0].embedding
+print(f"Embedding dimension: {len(embedding)}")
+```
+
+## Error Handling
+
+### CORRECT - Proper Error Handling with Request IDs
+
+```python
+from openai import OpenAI
+import openai
+
+client = OpenAI()
+
+try:
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "user", "content": "Write a short poem"}
+        ]
+    )
+    print(response.choices[0].message.content)
+    print(f"Request ID: {response._request_id}")
+except openai.APIStatusError as e:
+    print(f"API error: {e}")
+    print(f"Error code: {e.code}")
+    print(f"Error message: {e.message}")
+    print(f"Request ID: {e.request_id}")
+except Exception as e:
+    print(f"Unexpected error: {e}")
+```
+
+## Retry Configuration
+
+### CORRECT - Configure Retries
+
+```python
+from openai import OpenAI
+
+# Configure retries for all requests
+client = OpenAI(
+    max_retries=3,  # Default is 2
+)
+
+# For a specific request
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "user", "content": "Hello"}
+    ],
+    max_retries=5  # Override for this request only
+)
+```
+
+## Key Model Parameters
+
+### Standard Models (GPT-4o, GPT-3.5, etc.)
+
+```python
+from openai import OpenAI
+
+client = OpenAI()
+
+# Regular parameters for standard models
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Hello"}],
+    temperature=0.7,            # Controls randomness (0-2)
+    top_p=0.95,                 # Nucleus sampling alternative to temperature
+    max_tokens=150,             # Maximum number of tokens to generate
+    presence_penalty=0.0,       # Penalize topics that are already present
+    frequency_penalty=0.0,      # Penalize repeated tokens
+    logit_bias={},              # Modify token probabilities
+    n=1,                        # Number of choices to generate
+    stream=False,               # Whether to stream the response
+    stop=None,                  # Sequence(s) that stops generation
+)
+```
+
+### Reasoning Models (O-Series)
+
+```python
+from openai import OpenAI
+
+client = OpenAI()
+
+# Special parameters for reasoning models (o1, o3-mini)
+response = client.chat.completions.create(
+    model="o1",
+    messages=[{"role": "user", "content": "Solve this complex problem step by step"}],
+    max_completion_tokens=1000,  # Controls output length for o-series models
+    reasoning_effort="high",     # low/medium/high, controls thinking depth
+    # Note: temperature, top_p, presence_penalty, frequency_penalty, 
+    # logit_bias, max_tokens are NOT supported for o-series models
+)
+```
+
+## Important Limitations and Notes
+
+1. **Reasoning Models (O-Series)**:
+   - Do not support `temperature`, `top_p`, `presence_penalty`, `frequency_penalty`, `logit_bias`, or `max_tokens`
+   - Only work with `max_completion_tokens` parameter
+   - Support `reasoning_effort` (low/medium/high) to control thought depth
+   - Generate hidden reasoning tokens that aren't visible in output but are billed
+
+2. **Token Limits**:
+   - GPT-4o: 128K input / 4K output
+   - GPT-4o Mini: 128K input / 16K output
+   - O1: 200K input / 100K output 
+   - O1 Mini: 128K input / 65K output
+   - O1 Preview: 128K input / 32K output
+   - O3 Mini: 200K input / 100K output
+
+3. **Request IDs**:
+   - Use `response._request_id` to access the request ID
+   - For error handling, catch `APIStatusError` and use `e.request_id`
+
+4. **Retries**:
+   - Default is 2 retries with exponential backoff
+   - Configure with `max_retries` at client or request level
+
+5. **Agents SDK vs Assistants API**:
+   - Agents SDK is a lightweight framework for building multi-agent workflows
+   - Provides more control and flexibility than Assistants API
+   - Supports handoffs between specialized agents
+   - Includes built-in tracing for debugging and monitoring
+   - Operates primarily through the Chat Completions API

@@ -1,0 +1,661 @@
+---
+description: Anthropic Python SDK v0.49.0 Standards and Best Practices
+globs: *.py,*.pyi
+alwaysApply: false
+---
+
+# Anthropic Python SDK v0.49.0 Standards
+
+This rule provides guidance for working with the Anthropic Python SDK v0.49.0, ensuring correct patterns and best practices for building applications with Claude.
+
+## Core Information
+
+The Anthropic Python SDK v0.49.0 provides convenient access to the Anthropic REST API with:
+
+1. **Type Definitions**: Full typing support for request params and response fields
+2. **Synchronous and Asynchronous Clients**: Both styles of API access powered by httpx
+3. **Pydantic Models**: Structured responses with helper methods
+4. **Token Counting**: Estimate token usage before making API calls
+5. **Streaming Support**: Efficient streaming of responses with helpers
+6. **Batch Processing**: Asynchronous processing of large message volumes (50% discount)
+7. **Tool Use**: Support for function calling with Claude
+
+## Installation and Setup
+
+```python
+# Install the SDK
+pip install anthropic
+
+# Basic initialization
+import os
+from anthropic import Anthropic
+
+# Recommended: Use environment variables for API keys
+client = Anthropic()  # Uses ANTHROPIC_API_KEY from environment
+
+# Alternative: Pass API key directly (not recommended for production)
+client = Anthropic(api_key="your-api-key")
+```
+
+## Type System
+
+The Anthropic SDK uses a comprehensive type system that provides IDE autocomplete, documentation, and helps catch errors early.
+
+### CORRECT - Type Imports and Annotations
+
+```python
+from anthropic import Anthropic
+from anthropic.types import (
+    ContentBlock,
+    Message,
+    TextBlock,
+    MessageParam,
+    ToolUseBlock
+)
+from typing import List, Dict, Any, Optional
+
+# Using type annotations
+def process_message(message: Message) -> List[ContentBlock]:
+    # Access properly typed response fields
+    content_blocks: List[ContentBlock] = message.content
+    return content_blocks
+
+# Type-annotated request
+def create_user_message(content: str) -> MessageParam:
+    return {"role": "user", "content": content}
+
+client = Anthropic()
+messages: List[MessageParam] = [create_user_message("Hello, Claude")]
+
+# Response is properly typed
+response: Message = client.messages.create(
+    model="claude-3-7-sonnet-latest", # Updated model
+    max_tokens=1024,
+    messages=messages
+)
+```
+
+### CORRECT - Type Checking Configuration
+
+```python
+# For VS Code, add to settings.json:
+# {
+#   "python.analysis.typeCheckingMode": "basic"
+# }
+#
+# This enables type error highlighting for better code quality
+
+# For mypy, add to pyproject.toml:
+# [tool.mypy]
+# plugins = ["pydantic.mypy"]
+```
+
+### CORRECT - Working with Response Types
+
+```python
+from anthropic import Anthropic
+from anthropic.types import Message, TextBlock, ToolUseBlock
+
+client = Anthropic()
+
+response: Message = client.messages.create(
+    model="claude-3-7-sonnet-latest", # Updated model
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Write a poem"}]
+)
+
+# Type-safe content block handling
+for block in response.content:
+    # Different handling based on block type
+    if isinstance(block, TextBlock):
+        print(f"Text content: {block.text}")
+    elif isinstance(block, ToolUseBlock):
+        print(f"Tool: {block.name}, Input: {block.input}")
+```
+
+## Basic Usage Patterns
+
+### CORRECT - Basic Message Creation
+
+```python
+from anthropic import Anthropic
+from anthropic.types import Message, MessageParam
+
+client = Anthropic()
+
+# Request params are typed
+messages: list[MessageParam] = [
+    {"role": "user", "content": "Hello, Claude"}
+]
+
+# Response is a typed Pydantic model
+message: Message = client.messages.create(
+    model="claude-3-7-sonnet-latest", # Updated model
+    max_tokens=1024,
+    messages=messages
+)
+
+# Access the response content
+print(message.content)
+```
+
+### INCORRECT - Legacy Client Format
+
+```python
+# DO NOT USE - This is the deprecated v0.2.x format
+from anthropic import Client, HUMAN_PROMPT, AI_PROMPT
+
+client = Client("your-api-key")
+
+completion = client.completion(
+    prompt=f"{HUMAN_PROMPT} Hello, Claude{AI_PROMPT}",
+    model="claude-2",
+    max_tokens_to_sample=300,
+)
+print(completion.completion)
+```
+
+## Async Client
+
+### CORRECT - Async Client Usage
+
+```python
+import asyncio
+from anthropic import AsyncAnthropic
+from anthropic.types import Message, MessageParam
+from typing import List
+
+async def main():
+    client = AsyncAnthropic()
+
+    # Typed messages
+    messages: List[MessageParam] = [
+        {"role": "user", "content": "Hello, Claude"}
+    ]
+
+    # Async response is also properly typed
+    message: Message = await client.messages.create(
+        model="claude-3-7-sonnet-latest", # Updated model
+        max_tokens=1024,
+        messages=messages
+    )
+
+    print(message.content)
+
+asyncio.run(main())
+```
+
+## Streaming Responses
+
+### CORRECT - Streaming with Context Manager
+
+```python
+import asyncio
+from anthropic import AsyncAnthropic
+
+async def main():
+    client = AsyncAnthropic()
+
+    async with client.messages.stream(
+        max_tokens=1024,
+        messages=[
+            {"role": "user", "content": "Write a short poem about coding"}
+        ],
+        model="claude-3-7-sonnet-latest", # Updated model
+    ) as stream:
+        # Stream text as it's generated
+        async for text in stream.text_stream:
+            print(text, end="", flush=True)
+
+        # Get the complete final message
+        message = await stream.get_final_message()
+        print("\n\nFinal message JSON:", message.model_dump_json())
+
+asyncio.run(main())
+```
+
+### CORRECT - Low-Level Streaming
+
+```python
+import asyncio
+from anthropic import AsyncAnthropic
+
+async def main():
+    client = AsyncAnthropic()
+
+    # Lower-level streaming API (uses less memory)
+    stream = await client.messages.create(
+        max_tokens=1024,
+        messages=[
+            {"role": "user", "content": "Write a short poem about coding"}
+        ],
+        model="claude-3-7-sonnet-latest", # Updated model
+        stream=True,
+    )
+
+    async for event in stream:
+        if event.type == "content_block_delta":
+            print(event.delta.text, end="", flush=True)
+
+asyncio.run(main())
+```
+
+## Token Counting
+
+### CORRECT - Token Counting for Messages
+
+```python
+from anthropic import Anthropic
+
+client = Anthropic()
+
+# Count tokens without sending the actual message
+count = client.beta.messages.count_tokens(
+    messages=[
+        {"role": "user", "content": "Hello, Claude"}
+    ],
+    model="claude-3-7-sonnet-latest" # Updated model
+)
+
+print(f"Input tokens: {count.input_tokens}")
+```
+
+### CORRECT - Token Usage from Response
+
+```python
+from anthropic import Anthropic
+
+client = Anthropic()
+
+message = client.messages.create(
+    model="claude-3-7-sonnet-latest", # Updated model
+    max_tokens=1024,
+    messages=[
+        {"role": "user", "content": "Write a brief summary of quantum computing"}
+    ]
+)
+
+# Access token usage information
+print(f"Input tokens: {message.usage.input_tokens}")
+print(f"Output tokens: {message.usage.output_tokens}")
+```
+
+## Batch Processing
+
+The Message Batches API offers asynchronous processing of large volumes of Messages at a 50% discount.
+Pricing (as of late 2024): $5/million input tokens, $15/million output tokens. Batch discount applies.
+
+### CORRECT - Creating and Processing a Batch
+
+```python
+import asyncio
+from anthropic import AsyncAnthropic
+
+async def process_batch():
+    client = AsyncAnthropic()
+
+    # Create a batch of message requests
+    batch = await client.beta.messages.batches.create(
+        requests=[
+            {
+                "custom_id": "request-1",
+                "params": {
+                    "model": "claude-3-7-sonnet-latest", # Updated model
+                    "max_tokens": 1024,
+                    "messages": [{"role": "user", "content": "Explain quantum computing"}],
+                }
+            },
+            {
+                "custom_id": "request-2",
+                "params": {
+                    "model": "claude-3-5-sonnet-latest", # Updated model
+                    "max_tokens": 1024,
+                    "messages": [{"role": "user", "content": "Explain machine learning"}],
+                }
+            }
+        ]
+    )
+
+    print(f"Batch created: {batch.id}")
+    print(f"Processing status: {batch.processing_status}")
+
+    # Check batch status until processing completes
+    while batch.processing_status == "in_progress":
+        await asyncio.sleep(5)  # Poll every 5 seconds
+        batch = await client.beta.messages.batches.retrieve(batch.id)
+        print(f"Current status: {batch.processing_status}")
+
+    if batch.processing_status == "ended":
+        # Retrieve results
+        result_stream = await client.beta.messages.batches.results(batch.id)
+        async for entry in result_stream:
+            if entry.result.type == "succeeded":
+                print(f"Result for {entry.custom_id}:")
+                print(entry.result.message.content)
+
+asyncio.run(process_batch())
+```
+
+### IMPORTANT - Batch Limitations
+
+```python
+# A Message Batch is limited to:
+# - 100,000 Message requests OR
+# - 256 MB in size (whichever is reached first)
+#
+# Most batches complete within 1 hour, but can take up to 24 hours
+# Results are available for 29 days after creation
+```
+
+## Tool Use (Function Calling)
+
+### CORRECT - Defining and Using Tools
+
+```python
+from anthropic import Anthropic
+from anthropic.types import (
+    Message,
+    MessageParam,
+    ContentBlock,
+    ToolUseBlock,
+    TextBlock
+)
+from typing import Dict, Any, List, Optional, Union
+
+client = Anthropic()
+
+# Define the tools
+tools = [
+    {
+        "name": "get_weather",
+        "description": "Get the current weather in a given location",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "location": {
+                    "type": "string",
+                    "description": "The city and state, e.g. San Francisco, CA"
+                }
+            },
+            "required": ["location"]
+        }
+    }
+]
+
+# Process tool calls and handle the conversation
+def process_tool(tool_name: str, tool_input: Dict[str, Any]) -> Any:
+    if tool_name == "get_weather":
+        # In a real app, call a weather API here
+        return {"temperature": 72, "condition": "sunny"}
+    return None
+
+def talk_with_tools(user_message: str):
+    response = client.messages.create(
+        model="claude-3-7-sonnet-latest", # Updated model
+        max_tokens=1024,
+        tools=tools,
+        messages=[
+            {"role": "user", "content": user_message}
+        ]
+    )
+
+    # If Claude wants to use a tool
+    if response.stop_reason == "tool_use":
+        # Find the tool use block
+        tool_use = next(block for block in response.content if block.type == "tool_use")
+
+        # Process the tool call
+        tool_result = process_tool(tool_use.name, tool_use.input)
+
+        # Send the result back to Claude
+        final_response = client.messages.create(
+            model="claude-3-7-sonnet-latest", # Updated model
+            max_tokens=1024,
+            tools=tools,
+            messages=[
+                {"role": "user", "content": user_message},
+                {"role": "assistant", "content": response.content},
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "tool_result",
+                            "tool_use_id": tool_use.id,
+                            "content": str(tool_result)
+                        }
+                    ]
+                }
+            ]
+        )
+
+        return final_response
+
+    return response
+
+response = talk_with_tools("What's the weather like in San Francisco?")
+print(response.content)
+```
+
+## Error Handling
+
+### CORRECT - Proper Error Handling
+
+```python
+from anthropic import Anthropic
+from anthropic.types import Message, MessageParam
+from anthropic.errors import (
+    APIError,
+    AuthenticationError,
+    RateLimitError,
+    APIConnectionError
+)
+
+client = Anthropic()
+
+try:
+    message = client.messages.create(
+        model="claude-3-7-sonnet-latest", # Updated model
+        max_tokens=1024,
+        messages=[
+            {"role": "user", "content": "Hello, Claude"}
+        ]
+    )
+    print(message.content)
+except AuthenticationError:
+    print("Authentication failed. Check your API key.")
+except RateLimitError:
+    print("Rate limit exceeded. Please slow down your requests.")
+except APIConnectionError:
+    print("Network error. Check your connection and try again.")
+except APIError as e:
+    print(f"API error: {e}")
+```
+
+## Working with Responses
+
+### CORRECT - Handling Response Content Blocks
+
+```python
+from anthropic import Anthropic
+from anthropic.types import Message, TextBlock, ContentBlock
+
+client = Anthropic()
+
+message: Message = client.messages.create(
+    model="claude-3-7-sonnet-latest", # Updated model
+    max_tokens=1024,
+    messages=[
+        {"role": "user", "content": "Make a list of planets"}
+    ]
+)
+
+# Process content blocks individually with proper typing
+for block in message.content:
+    # Type-safe content block handling
+    if isinstance(block, TextBlock):
+        print(f"Text: {block.text}")
+    # Alternative approach using type checking
+    if block.type == "text":
+        text_block: TextBlock = block  # Cast for type safety
+        print(f"Text: {text_block.text}")
+```
+
+## Cloud Provider Integration
+
+### CORRECT - Using with Google Vertex AI
+
+```python
+from anthropic import AnthropicVertex
+
+# No API key needed - uses Google Cloud authentication
+client = AnthropicVertex()
+
+message = client.messages.create(
+    model="claude-3-5-sonnet@latest",  # Vertex AI model name format (check Vertex docs for exact name)
+    max_tokens=1024,
+    messages=[
+        {"role": "user", "content": "Hello, Claude"}
+    ]
+)
+
+print(message.content)
+```
+
+### CORRECT - Using with Amazon Bedrock
+
+```python
+# Install with bedrock extras
+# pip install "anthropic[bedrock]"
+
+from anthropic import AnthropicBedrock
+
+# Uses AWS credentials from environment
+client = AnthropicBedrock()
+
+message = client.messages.create(
+    model="anthropic.claude-3-7-sonnet-latest",  # Bedrock model name format (check Bedrock docs for exact name)
+    max_tokens=1024,
+    messages=[
+        {"role": "user", "content": "Hello, Claude"}
+    ]
+)
+
+print(message.content)
+```
+
+## Configuration Options
+
+### CORRECT - Client Configuration
+
+```python
+import httpx
+from anthropic import Anthropic
+
+# Configuring the client with options
+client = Anthropic(
+    api_key="your-api-key",
+
+    # Override the default base URL (e.g. for testing)
+    base_url="https://your-proxy.example.com",
+
+    # Set default headers
+    default_headers={"X-Custom-Header": "value"},
+
+    # Configure proxy
+    proxies="http://proxy.example.com:8080",
+
+    # Configure transport with options
+    transport=httpx.HTTPTransport(local_address="0.0.0.0"),
+
+    # Set default timeout (in seconds)
+    default_timeout=60.0
+)
+```
+
+## Type Documentation
+
+### CORRECT - Available Type Imports
+
+```python
+# Main type imports from anthropic.types
+from anthropic.types import (
+    # Message types
+    Message,
+    MessageParam,
+    MessageCreateParams,
+
+    # Content block types
+    ContentBlock,
+    ContentBlockParam,
+    TextBlock,
+    TextBlockParam,
+    ImageBlockParam,
+
+    # Tool use types
+    ToolUseBlock,
+    ToolResultBlock,
+    Tool,
+
+    # Usage information
+    Usage,
+
+    # Streaming event types
+    MessageStreamEvent,
+    ContentBlockDeltaEvent,
+    ContentBlockStartEvent,
+    ContentBlockStopEvent,
+
+    # Batch processing types (from beta)
+    # from anthropic.types.beta.messages import BetaMessageBatch as MessageBatch
+    # from anthropic.types.beta.messages import BetaMessageBatchResult as MessageBatchResult
+
+    # Error types
+    APIError,
+    RateLimitError,
+    AuthenticationError
+)
+```
+
+### CORRECT - Using Type Aliases
+
+```python
+from typing import List, Dict, Any, Optional, Union, TypedDict
+from anthropic.types import MessageParam, Message
+
+# Type alias for a conversation history
+ConversationHistory = List[MessageParam]
+
+# Function with proper typing
+def create_conversation(
+    system_prompt: Optional[str] = None
+) -> ConversationHistory:
+    history: ConversationHistory = []
+    if system_prompt:
+        history.append({"role": "system", "content": system_prompt})
+    return history
+
+# Use the type alias
+conversation: ConversationHistory = create_conversation(
+    "You are a helpful AI assistant."
+)
+```
+
+## Performance Best Practices
+
+1. **Use Async Client for High-Throughput Applications**: The async client reduces overhead for applications that make many requests.
+
+2. **Stream Responses for Long Outputs**: Use streaming for large outputs to improve user experience.
+
+3. **Use Batch Processing for Non-Time-Sensitive Tasks**: The 50% discount makes batch processing cost-effective.
+
+4. **Count Tokens First**: Use token counting to optimize your prompts and stay within context limits.
+
+5. **Enable Connection Pooling**: For high-volume applications, configure httpx to use connection pooling.
+
+6. **Handle Rate Limits**: Implement exponential backoff and retries for RateLimitErrors.
+
+7. **Implement Caching**: For identical requests, implement response caching to reduce API calls.
+
+8. **Enable Type Checking**: Use mypy or VS Code's type checking to catch errors early.
+
+By following these standards and patterns, your Anthropic-powered applications will be robust, maintainable, and cost-effective.

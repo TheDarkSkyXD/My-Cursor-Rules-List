@@ -1,0 +1,8 @@
+{
+  "description": "Rules for systematic debugging and problem resolution",
+  "globs": ["**/*"],
+  "alwaysApply": true,
+  "priority": 13,
+  "triggers": ["debug.*", "fix.*", "error.*"],
+  "content": "# Debugging Rules\n\n## Problem Identification\n- Reproduce issue\n- Document symptoms\n- Check security impact\n- Review logs\n- Update status\n\n## Analysis\n- Gather information\n- Check security\n- Review code\n- Test hypotheses\n- Document findings\n\n## Solution\n- Implement fix\n- Verify security\n- Test thoroughly\n- Document changes\n- Update status\n\n## Verification\n- Test solution\n- Check security\n- Verify fixes\n- Document results\n- Update progress"
+} 

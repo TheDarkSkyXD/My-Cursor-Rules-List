@@ -1,0 +1,8 @@
+{
+  "description": "Rules for managing the complete lifecycle of tasks",
+  "globs": ["**/*"],
+  "alwaysApply": true,
+  "priority": 1,
+  "triggers": ["task.*", "create.*", "complete.*"],
+  "content": "# Task Lifecycle Rules\n\n## Task Creation\n- Create feature branch from main/develop\n- Create task directory in .agent/state/tasks/\n- Initialize all required task files\n- Set task status in manifest.md\n- Update active.md if needed\n- Document initial plan\n\n## Task Execution\n- Follow task plan phases\n- Update progress after each step\n- Document questions and answers\n- Record key decisions\n- Maintain security documentation\n- Update context files as needed\n\n## Task Completion\n- Verify all requirements met\n- Complete all documentation\n- Update task status\n- Clean up temporary files\n- Archive task if needed\n- Merge feature branch to main/develop\n- Synchronize all context files\n- Update architecture.md\n- Update tools.md\n- Update security.md\n- Update principles.md\n- Verify documentation consistency\n\n## Task Blocking\n- Document blocking issues\n- Update task status\n- Create recovery plan\n- Notify if human intervention needed\n- Maintain progress state\n- Update documentation status"
+} 

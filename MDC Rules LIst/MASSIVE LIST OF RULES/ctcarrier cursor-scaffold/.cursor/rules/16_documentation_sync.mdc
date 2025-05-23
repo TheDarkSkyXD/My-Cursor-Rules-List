@@ -1,0 +1,107 @@
+---
+description: Rules for synchronizing documentation with task completion
+globs: ["**/*"]
+alwaysApply: true
+---
+# Documentation Sync Rules
+
+## Task Completion
+- Update progress.md with completion status
+- Mark completed items in plan.md
+- Update manifest.md with task status
+- Archive completed task files
+- Update active.md if needed
+
+## Context File Updates
+### architecture.md
+- Update system architecture if changed
+- Add new components if created
+- Document new patterns if introduced
+- Update deployment information
+- Add new services if implemented
+
+### tools.md
+- Add new tools if introduced
+- Update tool versions if changed
+- Document new configurations
+- Add setup instructions if needed
+- Update security tools if changed
+
+### security.md
+- Document new security measures
+- Update vulnerability status
+- Add new security configurations
+- Document security decisions
+- Update security best practices
+
+### principles.md
+- Add new coding standards
+- Document new patterns
+- Update best practices
+- Add new principles
+- Document architectural changes
+
+## Documentation Format
+Each update should include:
+- Date of update
+- Version number
+- Description of changes
+- Impact on system
+- Security implications
+
+## Validation Steps
+1. Pre-Update Checks
+   - Verify all context files exist
+   - Check file permissions
+   - Validate current format
+   - Backup existing files
+
+2. Update Process
+   - Update each file in sequence
+   - Add version tracking
+   - Include timestamps
+   - Track changes
+
+3. Post-Update Verification
+   - Verify all files updated
+   - Check for conflicts
+   - Validate cross-references
+   - Log update status
+
+## Error Handling
+1. File Access Issues
+   - Log error details
+   - Attempt backup restore
+   - Notify user
+   - Document failure
+
+2. Format Issues
+   - Preserve existing content
+   - Log format errors
+   - Suggest fixes
+   - Document issues
+
+3. Update Failures
+   - Rollback changes
+   - Preserve previous state
+   - Log failure details
+   - Create recovery plan
+
+## Consistency Checks
+1. Cross-Reference Validation
+   - Verify internal links
+   - Check external references
+   - Validate file paths
+   - Test documentation
+
+2. Content Validation
+   - Check for contradictions
+   - Verify completeness
+   - Validate accuracy
+   - Test clarity
+
+3. Format Validation
+   - Verify markdown syntax
+   - Check headings
+   - Validate lists
+   - Test code blocks 

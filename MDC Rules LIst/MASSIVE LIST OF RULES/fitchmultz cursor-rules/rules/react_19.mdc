@@ -1,0 +1,287 @@
+---
+description: React 19 Standards and Best Practices
+globs: *.js,*.jsx,*.ts,*.tsx
+alwaysApply: false
+---
+
+# React 19 Standards
+
+This rule provides guidance for working with React 19 projects, ensuring correct patterns and best practices.
+
+## Core Version 19 Information
+
+React 19 introduces several significant changes and improvements:
+
+1. **React Compiler**: Automatic performance optimization
+2. **Server Components**: RSC is now stable in React core
+3. **Actions**: Enhanced form and data mutation handling
+4. **New Hooks**: useActionState, useOptimistic, use
+5. **Functional Refs**: Direct ref support without forwardRef
+6. **Improved Error Handling**: Better hydration error messages
+
+## Code Patterns
+
+### Server Components
+
+Server Components allow rendering on the server:
+
+```jsx
+// CORRECT - Server Component
+// UserProfile.jsx
+export default async function UserProfile({ userId }) {
+  const user = await fetchUser(userId);
+  return <div>{user.name}</div>;
+}
+
+// CORRECT - Client Component
+// Counter.jsx
+"use client"
+
+import { useState } from 'react';
+
+export default function Counter() {
+  const [count, setCount] = useState(0);
+  return (
+    <button onClick={() => setCount(count + 1)}>
+      Count: {count}
+    </button>
+  );
+}
+```
+
+### Actions
+
+Use async functions in transitions for automatic state management:
+
+```jsx
+// CORRECT - Using actions
+"use client"
+
+import { useTransition } from 'react';
+import { updateUser } from './actions';
+
+function ProfileForm({ user }) {
+  const [isPending, startTransition] = useTransition();
+  
+  function handleSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    
+    startTransition(async () => {
+      await updateUser(formData);
+    });
+  }
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <input name="name" defaultValue={user.name} />
+      <button type="submit" disabled={isPending}>
+        {isPending ? 'Saving...' : 'Save'}
+      </button>
+    </form>
+  );
+}
+```
+
+### Server Actions
+
+Define server actions with the "use server" directive:
+
+```jsx
+// CORRECT - Server action
+"use server"
+
+export async function updateUser(formData) {
+  const name = formData.get('name');
+  // Update user in database
+  return { success: true };
+}
+
+// Using in a form
+"use client"
+
+import { updateUser } from './actions';
+
+export default function Form() {
+  return (
+    <form action={updateUser}>
+      <input name="name" />
+      <button type="submit">Update</button>
+    </form>
+  );
+}
+```
+
+### New Hooks
+
+#### useActionState
+
+Use for handling state in actions:
+
+```jsx
+// CORRECT - Using useActionState
+"use client"
+
+import { useActionState } from 'react';
+import { updateEmail } from './actions';
+
+function ChangeEmail({ email }) {
+  const [state, action, isPending, error] = useActionState(
+    updateEmail,
+    email
+  );
+  
+  return (
+    <form action={action}>
+      <input name="email" defaultValue={email} />
+      <button disabled={isPending}>
+        {isPending ? 'Updating...' : 'Update Email'}
+      </button>
+      {error && <p>{error.message}</p>}
+    </form>
+  );
+}
+```
+
+#### useOptimistic
+
+Use for optimistic UI updates:
+
+```jsx
+// CORRECT - Using useOptimistic
+"use client"
+
+import { useOptimistic } from 'react';
+import { addComment } from './actions';
+
+function Comments({ comments }) {
+  const [optimisticComments, addOptimisticComment] = useOptimistic(
+    comments,
+    (state, newComment) => [...state, newComment]
+  );
+  
+  function handleSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const text = formData.get('text');
+    
+    // Optimistically add the comment
+    const newComment = { id: 'temp-id', text, pending: true };
+    addOptimisticComment(newComment);
+    
+    // Submit the actual comment
+    addComment(formData);
+    event.target.reset();
+  }
+  
+  return (
+    <div>
+      <form onSubmit={handleSubmit}>
+        <input name="text" />
+        <button type="submit">Add Comment</button>
+      </form>
+      <ul>
+        {optimisticComments.map(comment => (
+          <li key={comment.id} style={{ opacity: comment.pending ? 0.5 : 1 }}>
+            {comment.text}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+#### use Hook
+
+The `use` hook lets you read resources (like Promises) during render:
+
+```jsx
+// CORRECT - Using the use hook
+import { use } from 'react';
+
+function UserProfile({ userPromise }) {
+  // Suspends until the promise resolves
+  const user = use(userPromise);
+  
+  return <div>{user.name}</div>;
+}
+```
+
+### Functional Refs
+
+React 19 supports refs directly on functional components:
+
+```jsx
+// CORRECT - Direct ref support
+function FancyInput(props, ref) {
+  return <input ref={ref} className="fancy-input" />;
+}
+
+// No need for forwardRef wrapper
+export default FancyInput;
+
+// Usage
+function Form() {
+  const inputRef = useRef(null);
+  
+  return (
+    <form>
+      <FancyInput ref={inputRef} />
+      <button type="button" onClick={() => inputRef.current?.focus()}>
+        Focus Input
+      </button>
+    </form>
+  );
+}
+```
+
+### React Compiler
+
+With React 19's compiler, you can skip manual optimizations:
+
+```jsx
+// CORRECT - No need for useMemo/useCallback with the compiler
+function ExpensiveComponent({ count }) {
+  // The compiler will optimize this automatically
+  const expensiveCalculation = calculateExpensiveValue(count);
+  
+  // No need for useCallback with the compiler
+  function handleClick() {
+    console.log('Clicked!');
+  }
+  
+  return (
+    <div>
+      <p>Result: {expensiveCalculation}</p>
+      <button onClick={handleClick}>Click me</button>
+    </div>
+  );
+}
+
+// INCORRECT - Manual optimizations not needed with compiler
+function ExpensiveComponent({ count }) {
+  const expensiveCalculation = useMemo(() => {
+    return calculateExpensiveValue(count);
+  }, [count]);
+  
+  const handleClick = useCallback(() => {
+    console.log('Clicked!');
+  }, []);
+  
+  return (
+    <div>
+      <p>Result: {expensiveCalculation}</p>
+      <button onClick={handleClick}>Click me</button>
+    </div>
+  );
+}
+```
+
+## Browser Compatibility
+
+React 19 targets modern browsers, with a focus on:
+- Chrome 93+
+- Firefox 103+
+- Safari 15.4+
+- Edge 93+

@@ -1,0 +1,34 @@
+---
+description: Rules for managing the complete lifecycle of tasks
+globs: ["**/*"]
+alwaysApply: true
+---
+# Task Lifecycle Rules
+
+## Task Creation
+- Create task directory in .agent/state/tasks/
+- Initialize all required task files
+- Set task status in manifest.md
+- Update active.md if needed
+- Document initial plan
+
+## Task Execution
+- Follow task plan phases
+- Update progress after each step
+- Document questions and answers
+- Record key decisions
+- Maintain security documentation
+
+## Task Completion
+- Verify all requirements met
+- Complete all documentation
+- Update task status
+- Clean up temporary files
+- Archive task if needed
+
+## Task Blocking
+- Document blocking issues
+- Update task status
+- Create recovery plan
+- Notify if human intervention needed
+- Maintain progress state 

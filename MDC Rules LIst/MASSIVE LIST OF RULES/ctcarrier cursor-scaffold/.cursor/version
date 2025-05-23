@@ -1,0 +1,18 @@
+# Rules Version Information
+
+version: 1.0.0
+last_updated: 2024-03-21
+
+## Compatibility
+- Minimum Cursor Version: 1.0.0
+- Supported Languages: All
+- Supported OS: All
+
+## Version History
+1.0.0 (2024-03-21)
+- Initial release
+- Basic rule structure
+- Security integration
+- Project analysis
+- Error handling
+- Version management 

@@ -1,0 +1,8 @@
+{
+  "description": "Test rule for verifying JSON format",
+  "globs": ["**/*"],
+  "alwaysApply": true,
+  "priority": 99,
+  "triggers": ["test.*"],
+  "content": "# Test Rule\n\nThis is a test rule file to verify JSON format."
+} 

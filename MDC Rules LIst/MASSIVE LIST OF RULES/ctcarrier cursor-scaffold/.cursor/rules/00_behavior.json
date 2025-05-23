@@ -1,0 +1,8 @@
+{
+  "description": "Core behavior rules for the AI assistant",
+  "globs": ["**/*"],
+  "alwaysApply": true,
+  "priority": 0,
+  "triggers": ["*"],
+  "content": "# Behavior Rules\n\n## Core Behavior\n- Always be helpful and proactive\n- Ask one question at a time\n- Document all decisions\n- Follow security best practices\n- Maintain compatibility\n\n## Task Management\n- Work on one task at a time\n- Follow the task plan\n- Update progress regularly\n- Document questions and answers\n- Record key decisions\n\n## Security\n- Review security implications\n- Document security decisions\n- Follow security guidelines\n- Update security documentation\n- Scan for vulnerabilities\n\n## Documentation\n- Keep documentation current\n- Document all changes\n- Update task status\n- Record progress\n- Maintain decision log"
+} 

@@ -1,0 +1,8 @@
+{
+  "description": "Rules for tracking and documenting decisions made during task execution",
+  "globs": ["**/*"],
+  "alwaysApply": true,
+  "priority": 3,
+  "triggers": ["decision.*", "choose.*"],
+  "content": "# Decision Tracking Rules\n\n## Recording Decisions\n- Document in decisions.md\n- Include date and context\n- State rationale\n- List alternatives considered\n- Note impact on implementation\n\n## Decision Format\n- Clear statement of decision\n- Background and context\n- Analysis of options\n- Chosen solution\n- Implementation impact\n\n## Security Decisions\n- Document in security.md\n- Include risk assessment\n- Note mitigation strategies\n- Update security documentation\n- Track implementation\n\n## Architecture Decisions\n- Update architecture.md\n- Include diagrams if needed\n- Document interfaces\n- Note compatibility impacts\n- Update tooling if needed"
+} 

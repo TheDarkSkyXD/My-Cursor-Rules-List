@@ -1,0 +1,116 @@
+---
+description: Rules for analyzing project structure and dependencies
+globs: ["**/*"]
+alwaysApply: true
+---
+# Project Analysis Rules
+
+## Command Trigger
+When user types "analyze <project_name>":
+1. Create task directory: `.agent/state/tasks/analyze-<project_name>/`
+2. Initialize task files:
+   - plan.md
+   - questions.md
+   - decisions.md
+   - progress.md
+   - security.md
+   - errors.md
+3. Set as active task in `.agent/state/active.md`
+4. Begin analysis process
+
+## Project Structure Analysis
+- Scan directory structure
+- Identify main components
+- Map dependencies
+- Document architecture
+- Update architecture.md
+
+## Dependency Analysis
+- List all dependencies
+- Check versions
+- Identify vulnerabilities
+- Note compatibility
+- Update tools.md
+
+## Security Analysis
+- Check configurations
+- Review security settings
+- Identify risks
+- Note vulnerabilities
+- Update security.md
+
+## Code Quality Analysis
+- Review code structure
+- Check standards
+- Identify issues
+- Note improvements
+- Update principles.md
+
+## Documentation Analysis
+- Check completeness
+- Verify accuracy
+- Identify gaps
+- Note updates needed
+- Update relevant files
+
+## Progress Updates
+After each analysis phase:
+1. Update progress.md
+2. Document findings
+3. Note any issues
+4. Update security status
+5. Check for blocking issues
+
+## Analysis Report
+Format:
+```markdown
+# Project Analysis Report: <project_name>
+
+## Analysis Overview
+- Date: <analysis_date>
+- Status: <analysis_status>
+- Duration: <analysis_duration>
+- Issues Found: <number_of_issues>
+
+## Structure Analysis
+- Main components
+- Architecture diagram
+- Key files
+- Configuration files
+
+## Dependency Analysis
+- Core dependencies
+- Version information
+- Security status
+- Compatibility notes
+
+## Security Analysis
+- Configuration status
+- Vulnerability report
+- Risk assessment
+- Recommendations
+
+## Code Quality
+- Standards compliance
+- Issues found
+- Improvement areas
+- Best practices
+
+## Documentation Status
+- Current state
+- Missing documentation
+- Update requirements
+- Priority items
+
+## Recommendations
+1. Immediate actions
+2. Short-term improvements
+3. Long-term goals
+4. Security priorities
+
+## Next Steps
+1. Address critical issues
+2. Implement recommendations
+3. Schedule follow-up
+4. Update documentation
+``` 

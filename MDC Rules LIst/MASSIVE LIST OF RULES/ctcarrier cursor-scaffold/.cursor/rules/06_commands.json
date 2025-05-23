@@ -1,0 +1,8 @@
+{
+  "description": "Rules for executing and documenting commands safely and securely",
+  "globs": ["**/*"],
+  "alwaysApply": true,
+  "priority": 6,
+  "triggers": ["run.*", "execute.*", "command.*"],
+  "content": "# Command Rules\n\n## Command Execution\n- Verify safety before running\n- Document in progress.md\n- Check for side effects\n- Validate permissions\n- Update security status\n\n## Command Format\n- Use clear, specific commands\n- Include necessary parameters\n- Document expected output\n- Note error conditions\n- Specify environment\n\n## Security Commands\n- Review security impact\n- Document in security.md\n- Verify permissions\n- Check for vulnerabilities\n- Update security status\n\n## Recovery Commands\n- Document recovery steps\n- Test in safe environment\n- Verify backup state\n- Check dependencies\n- Update documentation"
+} 

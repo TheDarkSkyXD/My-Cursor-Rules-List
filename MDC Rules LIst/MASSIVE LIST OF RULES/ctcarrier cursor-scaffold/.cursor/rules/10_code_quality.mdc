@@ -1,0 +1,34 @@
+---
+description: Rules for maintaining high code quality standards
+globs: ["**/*"]
+alwaysApply: true
+---
+# Code Quality Rules
+
+## Code Standards
+- Follow style guides
+- Write clean code
+- Document thoroughly
+- Test comprehensively
+- Review security
+
+## Testing
+- Write tests first
+- Cover edge cases
+- Include security tests
+- Document test cases
+- Maintain coverage
+
+## Documentation
+- Document code clearly
+- Include examples
+- Note security considerations
+- Update with changes
+- Cross-reference
+
+## Review
+- Self-review code
+- Check security
+- Verify tests
+- Validate documentation
+- Update status 

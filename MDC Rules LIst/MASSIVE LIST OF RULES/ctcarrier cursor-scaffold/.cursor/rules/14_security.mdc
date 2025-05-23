@@ -1,0 +1,34 @@
+---
+description: Rules for maintaining security throughout the development process
+globs: ["**/*"]
+alwaysApply: true
+---
+# Security Rules
+
+## General Security
+- Never hardcode secrets
+- Use environment variables
+- Validate all inputs
+- Sanitize all outputs
+- Follow least privilege
+
+## Dependency Security
+- Use latest stable versions
+- Scan for vulnerabilities
+- Update dependencies regularly
+- Document version requirements
+- Maintain compatibility
+
+## Code Security
+- Review for vulnerabilities
+- Follow secure coding practices
+- Document security decisions
+- Test security features
+- Handle errors securely
+
+## Configuration Security
+- Secure default settings
+- Document security settings
+- Regular security reviews
+- Access control
+- Audit logging 

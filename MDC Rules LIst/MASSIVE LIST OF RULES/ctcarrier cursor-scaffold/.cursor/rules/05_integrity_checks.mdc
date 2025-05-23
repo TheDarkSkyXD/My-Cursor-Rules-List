@@ -1,0 +1,34 @@
+---
+description: Rules for verifying the integrity of code, documentation, and environment
+globs: ["**/*"]
+alwaysApply: true
+---
+# Integrity Check Rules
+
+## Code Integrity
+- Run tests before commits
+- Check for vulnerabilities
+- Verify dependencies
+- Validate configurations
+- Review security settings
+
+## Documentation Integrity
+- Check all files present
+- Verify cross-references
+- Validate formats
+- Check for completeness
+- Update timestamps
+
+## State Integrity
+- Verify task status
+- Check progress tracking
+- Validate decisions
+- Review questions
+- Confirm security status
+
+## Environment Integrity
+- Verify tool versions
+- Check dependencies
+- Validate configurations
+- Test security tools
+- Confirm compatibility 

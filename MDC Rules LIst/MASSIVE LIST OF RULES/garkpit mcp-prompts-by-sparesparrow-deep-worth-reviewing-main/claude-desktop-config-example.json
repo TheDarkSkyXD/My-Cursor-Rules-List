@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "prompt-manager": {
+      "command": "node",
+      "args": ["/absolute/path/to/prompt-manager-mcp/build/index.js"]
+    }
+  }
+}

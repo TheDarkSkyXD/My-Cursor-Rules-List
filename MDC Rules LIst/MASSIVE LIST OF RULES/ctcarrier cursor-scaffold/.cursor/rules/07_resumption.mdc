@@ -1,0 +1,34 @@
+---
+description: Rules for recovering and resuming tasks after interruptions
+globs: ["**/*"]
+alwaysApply: true
+---
+# Resumption Rules
+
+## State Recovery
+- Load last known state
+- Verify task status
+- Check progress
+- Review decisions
+- Update security status
+
+## Context Recovery
+- Load environment state
+- Verify tool versions
+- Check dependencies
+- Validate configurations
+- Update documentation
+
+## Progress Recovery
+- Review progress.md
+- Check completed steps
+- Verify next steps
+- Update status
+- Document recovery
+
+## Security Recovery
+- Verify security state
+- Check vulnerabilities
+- Update security status
+- Review permissions
+- Document changes 

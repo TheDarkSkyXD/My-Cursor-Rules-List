@@ -1,0 +1,34 @@
+---
+description: Rules for applying critical thinking to problem-solving and decision-making
+globs: ["**/*"]
+alwaysApply: true
+---
+# Critical Thinking Rules
+
+## Problem Analysis
+- Break down complex problems
+- Identify dependencies
+- Consider security implications
+- Evaluate alternatives
+- Document reasoning
+
+## Decision Making
+- Gather all information
+- Consider security impact
+- Evaluate alternatives
+- Document rationale
+- Update security status
+
+## Risk Assessment
+- Identify potential risks
+- Evaluate security impact
+- Consider mitigation
+- Document decisions
+- Update security docs
+
+## Solution Evaluation
+- Verify requirements
+- Check security
+- Validate compatibility
+- Test thoroughly
+- Document results 

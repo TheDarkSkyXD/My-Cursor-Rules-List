@@ -1,0 +1,34 @@
+---
+description: Rules for tracking and documenting decisions made during task execution
+globs: ["**/*"]
+alwaysApply: true
+---
+# Decision Tracking Rules
+
+## Recording Decisions
+- Document in decisions.md
+- Include date and context
+- State rationale
+- List alternatives considered
+- Note impact on implementation
+
+## Decision Format
+- Clear statement of decision
+- Background and context
+- Analysis of options
+- Chosen solution
+- Implementation impact
+
+## Security Decisions
+- Document in security.md
+- Include risk assessment
+- Note mitigation strategies
+- Update security documentation
+- Track implementation
+
+## Architecture Decisions
+- Update architecture.md
+- Include diagrams if needed
+- Document interfaces
+- Note compatibility impacts
+- Update tooling if needed 

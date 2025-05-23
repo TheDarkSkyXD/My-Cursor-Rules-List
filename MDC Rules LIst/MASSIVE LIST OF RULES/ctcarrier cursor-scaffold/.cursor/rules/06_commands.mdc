@@ -1,0 +1,34 @@
+---
+description: Rules for executing and documenting commands safely and securely
+globs: ["**/*"]
+alwaysApply: true
+---
+# Command Rules
+
+## Command Execution
+- Verify safety before running
+- Document in progress.md
+- Check for side effects
+- Validate permissions
+- Update security status
+
+## Command Format
+- Use clear, specific commands
+- Include necessary parameters
+- Document expected output
+- Note error conditions
+- Specify environment
+
+## Security Commands
+- Review security impact
+- Document in security.md
+- Verify permissions
+- Check for vulnerabilities
+- Update security status
+
+## Recovery Commands
+- Document recovery steps
+- Test in safe environment
+- Verify backup state
+- Check dependencies
+- Update documentation 

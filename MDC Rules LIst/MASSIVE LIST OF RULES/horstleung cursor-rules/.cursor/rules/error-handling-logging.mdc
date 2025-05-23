@@ -1,0 +1,126 @@
+---
+description: Error Handling and Logging Standards
+globs: 
+alwaysApply: false
+---
+# Error Handling and Logging Standards Rule
+
+## Overview
+Consistent error handling and comprehensive logging are essential for maintaining a robust, debuggable application.
+
+## Error Handling Guidelines
+1. All errors should be appropriately caught and handled
+2. Never silently catch errors without handling or logging them
+3. Use custom error types for specific error conditions
+4. Provide meaningful error messages with appropriate context
+5. Preserve the original error context when rethrowing errors
+
+## Logging Guidelines
+1. Use appropriate log levels (DEBUG, INFO, WARN, ERROR, FATAL)
+2. Include relevant context with all log entries
+3. Avoid logging sensitive information (passwords, tokens, PII)
+4. Include correlation IDs for request tracking
+5. Structure logs for easy parsing and analysis
+
+## Error Handling Patterns
+- **Boundary Error Handling**: Handle errors at system boundaries (API endpoints, UI boundaries)
+- **Fail Fast**: Validate inputs early to prevent cascading errors
+- **Graceful Degradation**: Maintain core functionality when non-critical parts fail
+- **Retry Logic**: Implement appropriate retry for transient failures
+- **Circuit Breaker**: Prevent cascading failures by blocking calls to failing services
+
+## Logging Best Practices
+- **Structured Logging**: Use JSON or structured formats for machine readability
+- **Contextual Information**: Include user IDs, request IDs, and other context
+- **Log Rotation**: Implement log rotation to manage storage
+- **Centralized Logging**: Aggregate logs from all services in a central system
+- **Performance Consideration**: Log asynchronously to prevent performance impact
+
+## Examples
+
+### Error Handling Example (JavaScript)
+```javascript
+try {
+  // Operation that might fail
+  const result = await riskyOperation(params);
+  return result;
+} catch (error) {
+  if (error instanceof ValidationError) {
+    logger.warn('Validation error', { params, errorMessage: error.message });
+    throw new ApplicationError('Invalid input provided', { cause: error });
+  } else if (error instanceof NetworkError) {
+    logger.error('Network error during operation', { 
+      operation: 'riskyOperation',
+      params,
+      error: error.message
+    });
+    
+    // Retry logic for transient errors
+    if (isTransient(error) && retryCount < MAX_RETRIES) {
+      return await performWithRetry(params, retryCount + 1);
+    }
+    
+    throw new ApplicationError('Service temporarily unavailable', { cause: error });
+  } else {
+    logger.error('Unexpected error', { 
+      operation: 'riskyOperation',
+      params,
+      error: error.message,
+      stack: error.stack
+    });
+    throw new ApplicationError('An unexpected error occurred', { cause: error });
+  }
+}
+```
+
+### Logging Example (Python)
+```python
+import logging
+import uuid
+import json
+from contextlib import contextmanager
+
+logger = logging.getLogger(__name__)
+
+@contextmanager
+def log_context(operation_name, **context):
+    """Context manager for structured logging with consistent context."""
+    request_id = context.get('request_id', str(uuid.uuid4()))
+    start_time = time.time()
+    
+    # Log operation start
+    logger.info(f"Starting {operation_name}", extra={
+        'request_id': request_id,
+        'operation': operation_name,
+        'context': json.dumps(context)
+    })
+    
+    try:
+        yield
+        duration = time.time() - start_time
+        # Log successful completion
+        logger.info(f"Completed {operation_name}", extra={
+            'request_id': request_id,
+            'operation': operation_name,
+            'duration_ms': int(duration * 1000),
+            'status': 'success'
+        })
+    except Exception as e:
+        duration = time.time() - start_time
+        # Log error with details
+        logger.error(f"Failed {operation_name}: {str(e)}", extra={
+            'request_id': request_id,
+            'operation': operation_name,
+            'duration_ms': int(duration * 1000),
+            'status': 'error',
+            'error_type': e.__class__.__name__,
+            'error_message': str(e)
+        })
+        raise
+```
+
+## Enforcement
+- Use static analysis tools to identify improper error handling
+- Review error handling and logging patterns in code reviews
+- Test error scenarios to ensure proper handling
+- Monitor logs for uncaught exceptions and error patterns

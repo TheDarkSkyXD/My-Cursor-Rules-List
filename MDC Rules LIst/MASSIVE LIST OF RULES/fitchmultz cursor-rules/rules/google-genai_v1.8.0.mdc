@@ -1,0 +1,936 @@
+---
+description: Google GenAI Python SDK v1.8.0 Standards and Best Practices
+globs: gemini*
+alwaysApply: false
+---
+# Google GenAI Python SDK v1.8.0 Standards
+
+This rule provides guidance for working with the Google GenAI Python SDK v1.8.0, ensuring correct patterns and best practices for building applications with Google's generative AI models.
+
+## Core Information
+
+The Google GenAI Python SDK provides a unified interface for developers to integrate Google's generative models into their Python applications with:
+
+1. **Unified API**: Single interface for both Gemini Developer API and Vertex AI API
+2. **Pydantic Models**: Support for both TypedDict and Pydantic for parameters
+3. **Multimodal Support**: Generate content from text, images, and videos
+4. **File Processing**: Support for uploading and analyzing files
+5. **Embedding Models**: Generation of text embeddings for semantic search and RAG
+6. **Image Generation**: Support for generating, upscaling, and editing images
+7. **Tool Use**: Robust function calling capabilities with tools
+8. **Batched Processing**: Batch processing for high-volume requests
+9. **Streaming**: Efficient streaming of model responses
+10. **API Version Selection**: Support for both stable and beta API endpoints
+
+## Models Overview
+
+### Gemini Models
+
+#### Text and Multimodal Models
+
+- **Gemini 2.5 Pro Experimental** (`gemini-2.5-pro-exp-03-25`): Most advanced reasoning model with 2M token context window, supports thinking and complex reasoning tasks. Handles audio, images, video, and text inputs. Optimized for advanced coding, reasoning, and multimodal understanding.
+
+- **Gemini 2.0 Flash** (`gemini-2.0-flash-001`, `gemini-2.0-flash-002`): Production-ready model with next-gen features, 1M token context window, multimodal support. Optimized for speed, thinking capabilities, and realtime streaming.
+
+- **Gemini 2.0 Flash-Lite** (`gemini-2.0-flash-lite`): Cost-efficient model with 1M token context window. Good balance between performance and cost.
+
+- **Gemini 2.0 Experimental Models**:
+  - `gemini-2.0-flash-exp`: Experimental features
+  - `gemini-2.0-flash-exp-image-generation`: Image generation capabilities
+  - `gemini-2.0-flash-thinking`: Shows reasoning process
+
+- **Gemini 1.5 Models** (being phased out May 2025):
+  - `gemini-1.5-pro`: Higher intelligence for complex reasoning
+  - `gemini-1.5-flash`: Fast general-purpose model
+  - `gemini-1.5-flash-8b`: Small model for high-volume tasks
+
+- **Legacy Models** (being phased out April 2025):
+  - `gemini-1.0-pro`
+  - `gemini-1.0-pro-vision`
+
+#### Embedding Models
+
+- **Gemini Embedding Experimental** (`gemini-embedding-exp-03-07`): Latest experimental embedding model, 3072 dimensions and 8K token input limit. Offers elastic dimension options (3072, 1536, or 768). Vertex AI naming: `text-embedding-large-exp-03-07`.
+
+- **Text Embedding** (`text-embedding-005`): Production embedding model with 768 dimensions and 2K token input limit.
+
+- **Legacy Embedding** (`text-embedding-004`): Previous standard model.
+
+### Image Generation Models
+
+- **Imagen 3.0** (`imagen-3.0-generate-002`): Latest model for generating high-quality images from text prompts. Supports upscaling and image editing capabilities.
+
+- **Vertex AI Image Models**:
+  - `imagegeneration@002`: Latest Vertex AI model
+  - `imagegeneration@001`: Previous version
+
+- **Image Editing** (Vertex AI only):
+  - `imagen-3.0-capability-001`: For image manipulation and editing
+
+### Model Version Patterns
+
+- **Latest**: `<model>-<generation>-<variation>-latest` (e.g., `gemini-1.5-pro-latest`)
+- **Latest Stable**: `<model>-<generation>-<variation>` (e.g., `gemini-1.5-pro`)
+- **Stable**: `<model>-<generation>-<variation>-<version>` (e.g., `gemini-1.5-pro-001`)
+- **Experimental**: `<model>-<generation>-<variation>-exp-<version>` (e.g., `gemini-2.5-pro-exp-03-25`)
+
+## Installation and Setup
+
+```python
+# Install the SDK
+pip install google-genai
+
+# Basic imports
+from google import genai
+from google.genai import types
+
+# Initialize the client with API key for Gemini Developer API
+client = genai.Client(api_key='YOUR_API_KEY')
+
+# OR for Vertex AI
+client = genai.Client(
+    vertexai=True,
+    project='your-project-id',
+    location='us-central1'
+)
+
+# Alternative: Use environment variables
+# For Gemini API:
+# export GOOGLE_API_KEY='your-api-key'
+
+# For Vertex AI:
+# export GOOGLE_GENAI_USE_VERTEXAI=true
+# export GOOGLE_CLOUD_PROJECT='your-project-id'
+# export GOOGLE_CLOUD_LOCATION='us-central1'
+
+# Configure API version (v1 stable or v1alpha for beta features)
+client = genai.Client(
+    api_key='YOUR_API_KEY',
+    http_options=types.HttpOptions(api_version='v1')  # or 'v1alpha' for beta
+)
+```
+
+## Basic Text Generation
+
+### CORRECT - Generate Content
+
+```python
+from google import genai
+from google.genai import types
+
+client = genai.Client()
+
+# Using the latest experimental model
+response = client.models.generate_content(
+    model='gemini-2.5-pro-exp-03-25',
+    contents='Explain quantum computing in simple terms',
+)
+
+print(response.text)  # Access the response text
+
+# Using production model with configuration
+response = client.models.generate_content(
+    model='gemini-2.0-flash-001',
+    contents='Write a short poem',
+    config=types.GenerateContentConfig(
+        temperature=0.7,
+        top_p=0.95,
+        top_k=40,
+        candidate_count=1,
+        max_output_tokens=200,
+        stop_sequences=['END'],
+        system_instruction='You are a poetic assistant that creates rhyming poems.'
+    )
+)
+
+print(response.text)
+```
+
+### CORRECT - Stream Content
+
+```python
+from google import genai
+
+client = genai.Client()
+
+# Stream response using experimental model for long-form content
+response = client.models.generate_content(
+    model='gemini-2.5-pro-exp-03-25',
+    contents='Write a comprehensive essay about climate change',
+    stream=True
+)
+
+# Process the streaming response
+for chunk in response:
+    if hasattr(chunk, 'text'):
+        print(chunk.text, end='', flush=True)
+    else:
+        print(f"\nFinished with status: {chunk.usage}")
+```
+
+## Chat Conversations
+
+### CORRECT - Chat Sessions
+
+```python
+from google import genai
+
+client = genai.Client()
+
+# Start a chat session with latest experimental model
+chat = client.start_chat(model='gemini-2.5-pro-exp-03-25')
+
+# Send messages and get responses
+response = chat.send_message('Tell me about the solar system')
+print(response.text)
+
+# Continue the conversation
+response = chat.send_message('How many planets are there?')
+print(response.text)
+
+# Access chat history
+for message in chat.history:
+    print(f"{message.role}: {message.parts[0].text}")
+
+# Stream chat responses
+for chunk in chat.send_message('Tell me more about Jupiter', stream=True):
+    if hasattr(chunk, 'text'):
+        print(chunk.text, end='', flush=True)
+```
+
+## Multimodal Content
+
+### CORRECT - Text and Image Input
+
+```python
+from google import genai
+from PIL import Image
+
+client = genai.Client()
+
+# Load an image file
+image = Image.open('image.jpg')
+
+# Create a multimodal message with text and image
+response = client.models.generate_content(
+    model='gemini-2.0-pro-vision',
+    contents=[
+        'What can you see in this image?',
+        image
+    ]
+)
+
+print(response.text)
+```
+
+### CORRECT - File Analysis
+
+```python
+from google import genai
+
+client = genai.Client()
+
+# Upload a file
+file = client.files.upload(file='document.pdf')
+
+# Ask about the file content using experimental model
+response = client.models.generate_content(
+    model='gemini-2.5-pro-exp-03-25',
+    contents=[
+        'Could you summarize this file?',
+        file
+    ]
+)
+
+print(response.text)
+```
+
+## Embeddings
+
+### CORRECT - Text Embeddings
+
+```python
+from google import genai
+from google.genai.types import EmbedContentConfig
+
+client = genai.Client()
+
+# Single content embedding using experimental model
+response = client.models.embed_content(
+    model='gemini-embedding-exp-03-07',
+    contents='How do neural networks work?',
+)
+
+# Access the embedding vector
+vector = response.embeddings[0].values
+print(f"Embedding dimension: {len(vector)}")
+print(f"Token count: {response.embeddings[0].statistics.token_count}")
+
+# Multiple content embedding with configuration
+response = client.models.embed_content(
+    model='gemini-embedding-exp-03-07',
+    contents=[
+        'What is machine learning?',
+        'How do neural networks work?'
+    ],
+    config=EmbedContentConfig(
+        output_dimensionality=1024,  # Optional reduced dimension using MRL
+        task_type='RETRIEVAL_QUERY'  # For search queries
+        # Alternative: 'RETRIEVAL_DOCUMENT' for documents to be searched
+        # Alternative: 'SEMANTIC_SIMILARITY' for comparing text similarity
+        # Alternative: 'CLASSIFICATION' for text classification tasks
+    )
+)
+
+# Access metadata about the embedding process
+print(f"Billable character count: {response.metadata.billable_character_count}")
+```
+
+### CORRECT - Embedding Models
+
+```python
+from google import genai
+from google.genai.types import EmbedContentConfig
+
+client = genai.Client()
+
+# Available embedding models
+EMBEDDING_MODELS = {
+    'gemini-embedding-exp-03-07': {
+        'dimensions': 3072,
+        'max_tokens': 8192,
+        'description': 'Experimental Gemini-based embedding with MRL',
+        'vertex_name': 'text-embedding-large-exp-03-07'
+    },
+    'text-embedding-005': {
+        'dimensions': 768,
+        'max_tokens': 2048,
+        'description': 'Production embedding model'
+    },
+    'text-embedding-004': {
+        'dimensions': 768,
+        'max_tokens': 2048,
+        'description': 'Previous standard model'
+    }
+}
+
+# Use the Gemini experimental embedding model
+response = client.models.embed_content(
+    model='gemini-embedding-exp-03-07',
+    contents='Complex technical question about machine learning architectures',
+    config=EmbedContentConfig(
+        # Optional: Reduce dimensions with Matryoshka Representation Learning
+        output_dimensionality=1024,
+        # Optional: Set task type for specialized embeddings
+        task_type='RETRIEVAL_QUERY'  # For search queries
+    )
+)
+
+embedding = response.embeddings[0].values
+print(f"Embedding dimension: {len(embedding)}")
+print(f"Token count: {response.embeddings[0].statistics.token_count}")
+```
+
+## Image Generation and Manipulation
+
+### CORRECT - Generate Images
+
+```python
+from google import genai
+from google.genai.types import GenerateImagesConfig
+from PIL import Image
+
+client = genai.Client()
+
+# Generate an image with advanced configuration
+response = client.models.generate_images(
+    model='imagen-3.0-generate-002',
+    prompt='A serene mountain landscape with a lake at sunset',
+    config=GenerateImagesConfig(
+        number_of_images=4,  # Generate multiple options (1-4)
+        include_rai_reason=True,  # Responsible AI check
+        output_mime_type='image/jpeg',
+        aspect_ratio='16:9',  # Options: '1:1', '16:9', '9:16', '3:4', '4:3'
+        negative_prompt='blurry, distorted, low quality',  # Elements to avoid
+        seed=42,  # Optional: Set seed for reproducible results
+        safety_filter_level='block_medium_and_above',  # Safety filtering level
+    )
+)
+
+# Access the generated images
+for i, gen_image in enumerate(response.generated_images):
+    # Display the image
+    image = gen_image.image
+    image.show()
+    
+    # Save the image
+    image.save(f'generated_image_{i+1}.jpg')
+    
+    # Check if RAI filtering was applied
+    if hasattr(gen_image, 'rai_result') and gen_image.rai_result:
+        print(f"Image {i+1} RAI check: {gen_image.rai_result}")
+```
+
+### CORRECT - Upscale and Edit Images
+
+```python
+from google import genai
+from google.genai.types import (
+    UpscaleImageConfig,
+    RawReferenceImage,
+    MaskReferenceImage,
+    EditImageConfig,
+    MaskReferenceConfig
+)
+from PIL import Image
+
+client = genai.Client()
+
+# First generate an image
+response1 = client.models.generate_images(
+    model='imagen-3.0-generate-002',
+    prompt='A colorful umbrella in a rainy city',
+    config=GenerateImagesConfig(
+        number_of_images=1,
+        output_mime_type='image/jpeg',
+    )
+)
+original_image = response1.generated_images[0].image
+
+# Upscale the image
+response2 = client.models.upscale_image(
+    model='imagen-3.0-generate-002',
+    image=original_image,
+    upscale_factor='x2',
+    config=UpscaleImageConfig(
+        include_rai_reason=True,
+        output_mime_type='image/jpeg',
+    )
+)
+upscaled_image = response2.generated_images[0].image
+
+# Edit the image (only supported in Vertex AI)
+raw_ref_image = RawReferenceImage(
+    reference_id=1,
+    reference_image=original_image,
+)
+
+# Create a mask for background editing
+mask_ref_image = MaskReferenceImage(
+    reference_id=2,
+    config=MaskReferenceConfig(
+        mask_mode='MASK_MODE_BACKGROUND',
+        mask_dilation=0,
+    ),
+)
+
+response3 = client.models.edit_image(
+    model='imagen-3.0-capability-001',
+    prompt='Sunlight and clear sky',
+    reference_images=[raw_ref_image, mask_ref_image],
+    config=EditImageConfig(
+        edit_mode='EDIT_MODE_INPAINT_INSERTION',
+        number_of_images=1,
+        include_rai_reason=True,
+        output_mime_type='image/jpeg',
+    ),
+)
+edited_image = response3.generated_images[0].image
+```
+
+## Function Calling and Tools
+
+### CORRECT - Tool Definition and Use
+
+```python
+from google import genai
+from google.genai.types import Tool, FunctionDeclaration
+
+client = genai.Client()
+
+# Define a function for the model to call
+weather_function = FunctionDeclaration(
+    name="get_weather",
+    description="Get the current weather in a location",
+    parameters={
+        "type": "object",
+        "properties": {
+            "location": {
+                "type": "string",
+                "description": "The city and state, e.g. San Francisco, CA"
+            },
+            "unit": {
+                "type": "string",
+                "enum": ["celsius", "fahrenheit"],
+                "description": "Temperature unit"
+            }
+        },
+        "required": ["location"]
+    }
+)
+
+# Create a tool with the function
+weather_tool = Tool(
+    function_declarations=[weather_function],
+)
+
+# Create a chat with tools using experimental model
+chat = client.start_chat(
+    model='gemini-2.5-pro-exp-03-25',
+    tools=[weather_tool]
+)
+
+# Send a message that requires tool use
+response = chat.send_message("What's the weather like in Tokyo?")
+
+# Handle tool calls
+if hasattr(response, 'candidates') and response.candidates[0].function_calls:
+    for function_call in response.candidates[0].function_calls:
+        if function_call.name == "get_weather":
+            location = function_call.args.get("location")
+            unit = function_call.args.get("unit", "celsius")
+            
+            # Mock weather data - would be a real API call
+            weather_data = {
+                "temperature": 22 if unit == "celsius" else 72,
+                "condition": "Sunny",
+                "humidity": 45,
+                "location": location,
+                "unit": unit
+            }
+            
+            # Send function response back to the model
+            final_response = chat.send_message(
+                function_response={
+                    "name": "get_weather",
+                    "response": weather_data
+                }
+            )
+            
+            print(final_response.text)
+```
+
+### CORRECT - Response Schema Specification
+
+```python
+from google import genai
+from google.genai.types import GenerateContentConfig
+from typing import List, Optional
+from pydantic import BaseModel
+
+client = genai.Client()
+
+# Define a response schema using Pydantic
+class WeatherInfo(BaseModel):
+    location: str
+    temperature: float
+    condition: str
+    humidity: Optional[float] = None
+    forecast: List[str] = []
+
+# Request structured output with experimental model
+response = client.models.generate_content(
+    model='gemini-2.5-pro-exp-03-25',
+    contents='What is the weather like in San Francisco today?',
+    config=GenerateContentConfig(
+        response_schema=WeatherInfo.model_json_schema()
+    )
+)
+
+# Parse structured response
+structured_data = response.parsed
+print(f"Location: {structured_data['location']}")
+print(f"Temperature: {structured_data['temperature']}")
+print(f"Condition: {structured_data['condition']}")
+if 'humidity' in structured_data:
+    print(f"Humidity: {structured_data['humidity']}")
+if 'forecast' in structured_data:
+    print("Forecast:")
+    for item in structured_data['forecast']:
+        print(f"- {item}")
+```
+
+## Batch Processing
+
+### CORRECT - Batch Operations
+
+```python
+from google import genai
+from google.genai.types import ListBatchJobsConfig
+
+client = genai.Client()
+
+# Create a batch job with experimental model
+batch_job = client.batches.create(
+    model="gemini-2.5-pro-exp-03-25",
+    requests=[
+        {
+            "id": "request-1",
+            "contents": "What is machine learning?",
+            "config": {
+                "max_output_tokens": 1024
+            }
+        },
+        {
+            "id": "request-2",
+            "contents": "Explain neural networks",
+            "config": {
+                "max_output_tokens": 1024
+            }
+        }
+    ]
+)
+
+print(f"Batch job created: {batch_job.name}")
+
+# List batch jobs with pagination
+pager = client.batches.list(
+    config=ListBatchJobsConfig(page_size=10)
+)
+
+print("First page of batch jobs:")
+for job in pager:
+    print(f"- {job.name}: {job.state}")
+
+# Get next page
+next_page = pager.next_page()
+if next_page:
+    print("Second page of batch jobs:")
+    for job in next_page:
+        print(f"- {job.name}: {job.state}")
+
+# Get batch job by name
+job = client.batches.get(name=batch_job.name)
+print(f"Job state: {job.state}")
+
+# Delete a batch job
+client.batches.delete(name=batch_job.name)
+print("Batch job deleted")
+```
+
+## Error Handling
+
+### CORRECT - Proper Error Handling
+
+```python
+from google import genai
+from google.genai import errors
+
+client = genai.Client()
+
+try:
+    response = client.models.generate_content(
+        model='gemini-2.5-pro-exp-03-25',
+        contents='Generate creative content'
+    )
+    print(response.text)
+except errors.APIError as e:
+    print(f"API error: {e}")
+    print(f"Error code: {e.code}")
+    print(f"Error message: {e.message}")
+except Exception as e:
+    print(f"Unexpected error: {e}")
+```
+
+## Asynchronous API
+
+### CORRECT - Async Client
+
+```python
+import asyncio
+from google import genai
+
+async def main():
+    # Create async client
+    client = genai.Client()
+    
+    # Generate content asynchronously with experimental model
+    response = await client.aio.models.generate_content(
+        model='gemini-2.5-pro-exp-03-25',
+        contents='Tell me about neural networks'
+    )
+    print(response.text)
+    
+    # Stream content asynchronously
+    async for chunk in client.aio.models.generate_content_stream(
+        model='gemini-2.5-pro-exp-03-25',
+        contents='Explain quantum computing in detail'
+    ):
+        if hasattr(chunk, 'text'):
+            print(chunk.text, end='', flush=True)
+    
+    # Chat asynchronously
+    chat = await client.aio.start_chat(model='gemini-2.5-pro-exp-03-25')
+    
+    response = await chat.send_message('Hello there!')
+    print(f"\nResponse: {response.text}")
+    
+    # Streaming chat
+    async for chunk in await chat.send_message_stream('Tell me a long story'):
+        if hasattr(chunk, 'text'):
+            print(chunk.text, end='', flush=True)
+    
+    # Batch operations
+    async_pager = await client.aio.batches.list(
+        config=genai.types.ListBatchJobsConfig(page_size=10)
+    )
+    print(f"\nPage size: {async_pager.page_size}")
+    if len(async_pager) > 0:
+        print(f"First job: {async_pager[0].name}")
+    
+    await async_pager.next_page()
+    if len(async_pager) > 0:
+        print(f"Job from next page: {async_pager[0].name}")
+
+# Run the async code
+asyncio.run(main())
+```
+
+## Supported Models
+
+### Text and Multimodal Models
+
+```
+# Gemini 2.5 models (latest experimental)
+'gemini-2.5-pro-exp-03-25'      # Most advanced reasoning (2M context window)
+
+# Gemini 2.0 models (production)
+'gemini-2.0-pro'                # Powerful model for complex tasks
+'gemini-2.0-pro-vision'         # Multimodal vision support
+'gemini-2.0-flash-001'          # Fast, efficient model
+'gemini-2.0-flash-002'          # Improved flash model
+'gemini-2.0-flash-lite'         # Most cost-efficient model
+
+# Gemini 2.0 experimental models
+'gemini-2.0-flash-exp'                  # Experimental features
+'gemini-2.0-flash-exp-image-generation' # Image generation capabilities
+'gemini-2.0-flash-thinking'             # Model that shows its reasoning
+
+# Gemini 1.5 models (being phased out May 2025)
+'gemini-1.5-pro'                # Powerful model
+'gemini-1.5-pro-vision'         # Multimodal vision support
+'gemini-1.5-flash'              # Fast, efficient model
+'gemini-1.5-flash-8b'           # Small/lightweight model
+
+# Legacy models (being phased out April 2025)
+'gemini-1.0-pro'
+'gemini-1.0-pro-vision'
+```
+
+### Embedding Models
+
+```
+# Text embedding models (latest first)
+'gemini-embedding-exp-03-07'      # Experimental Gemini model (3072 dimensions, 8K tokens)
+'text-embedding-large-exp-03-07'  # Same as above, Vertex AI naming
+'text-embedding-005'              # Production embedding model (768 dimensions, 2K tokens)
+'text-embedding-004'              # Previous standard model (768 dimensions, 2K tokens)
+```
+
+### Image Models
+
+```
+# Image generation (Imagen 3.0)
+'imagen-3.0-generate-002'   # Latest Imagen 3 model for generating images
+'imagen-3.0-generate-001'   # Previous Imagen 3 model
+
+# Image models in Vertex AI
+'imagegeneration@002'       # Latest Vertex AI Imagen model
+'imagegeneration@001'       # Previous Vertex AI Imagen model
+
+# Image upscaling
+'imagen-3.0-generate-002'   # For upscaling images
+
+# Image editing (Vertex AI only)
+'imagen-3.0-capability-001'  # For editing and manipulating images
+```
+
+## Token Counting
+
+Understanding and tracking token usage is essential for optimization and cost management.
+
+### CORRECT - Understanding Tokens and Context Windows
+
+```python
+from google import genai
+
+client = genai.Client()
+
+# Get model info to check context window limits
+model_info = client.models.get("gemini-2.5-pro-exp-03-25")
+
+# Find input and output token limits
+print(f"Input token limit: {model_info.input_token_limit}")
+print(f"Output token limit: {model_info.output_token_limit}")
+```
+
+### CORRECT - Basic Token Counting
+
+```python
+from google import genai
+
+client = genai.Client()
+
+# Count tokens in text input before sending request
+text = "What are the major tech innovations of 2025?"
+count_result = client.models.count_tokens(
+    model="gemini-2.5-pro-exp-03-25",
+    contents=text
+)
+print(f"Input token count: {count_result.total_tokens}")
+
+# Count tokens after generating content
+response = client.models.generate_content(
+    model="gemini-2.5-pro-exp-03-25",
+    contents=text
+)
+
+# Access token usage metadata in response
+print(f"Input tokens used: {response.usage.prompt_tokens}")
+print(f"Output tokens used: {response.usage.candidates_tokens}")
+print(f"Total tokens used: {response.usage.total_tokens}")
+```
+
+### CORRECT - Multimodal Token Counting
+
+```python
+from google import genai
+from PIL import Image
+
+client = genai.Client()
+
+# Images are tokenized at ~258 tokens per 384x384 image tile
+image = Image.open("sample.jpg")
+text = "Describe this image"
+
+# Count tokens for multimodal input
+token_count = client.models.count_tokens(
+    model="gemini-2.5-pro-exp-03-25",
+    contents=[text, image]
+)
+print(f"Multimodal input tokens: {token_count.total_tokens}")
+
+# For video and audio files
+# Video: ~263 tokens per second
+# Audio: ~32 tokens per second
+```
+
+### CORRECT - Chat Token Counting
+
+```python
+from google import genai
+
+client = genai.Client()
+
+# Start a chat
+chat = client.start_chat(model="gemini-2.5-pro-exp-03-25")
+
+# Count tokens in existing chat history
+history_tokens = client.models.count_tokens(
+    model="gemini-2.5-pro-exp-03-25",
+    contents=chat.history
+)
+print(f"Current history tokens: {history_tokens.total_tokens}")
+
+# Count tokens including potential next message
+next_message = "What is quantum computing?"
+combined_content = chat.history + [{"role": "user", "parts": [next_message]}]
+ 
+future_tokens = client.models.count_tokens(
+    model="gemini-2.5-pro-exp-03-25", 
+    contents=combined_content
+)
+print(f"Tokens after next message: {future_tokens.total_tokens}")
+```
+
+### CORRECT - System Instructions and Tools Token Impact
+
+```python
+from google import genai
+from google.genai.types import Tool, FunctionDeclaration
+
+client = genai.Client()
+
+# Count tokens with plain prompt
+prompt = "Calculate 25 × 36"
+basic_count = client.models.count_tokens(
+    model="gemini-2.5-pro-exp-03-25",
+    contents=prompt
+)
+print(f"Basic prompt tokens: {basic_count.total_tokens}")
+
+# Define calculator function
+calculator_function = FunctionDeclaration(
+    name="multiply",
+    description="Multiply two numbers",
+    parameters={
+        "type": "object",
+        "properties": {
+            "a": {"type": "number"},
+            "b": {"type": "number"}
+        },
+        "required": ["a", "b"]
+    }
+)
+
+calculator_tool = Tool(function_declarations=[calculator_function])
+
+# Count tokens with tool
+tool_count = client.models.count_tokens(
+    model="gemini-2.5-pro-exp-03-25",
+    contents=prompt,
+    tools=[calculator_tool]
+)
+print(f"Prompt + tool tokens: {tool_count.total_tokens}")
+
+# System instructions also increase token count
+system_count = client.models.count_tokens(
+    model="gemini-2.5-pro-exp-03-25",
+    contents=prompt,
+    system_instruction="You are a mathematical assistant that provides step-by-step solutions."
+)
+print(f"Prompt + system instruction tokens: {system_count.total_tokens}")
+```
+
+## Performance Best Practices
+
+1. **Use Appropriate API Version**:
+   - Use `v1` (stable API) for production applications
+   - Use `v1alpha` (beta API) for access to the latest features
+
+2. **Choose the Right Model**:
+   - Use `gemini-2.5-pro-exp-03-25` for cutting-edge capabilities and advanced reasoning
+   - Use `gemini-2.0-flash-*` for faster, less complex tasks
+   - Use `gemini-2.0-pro` for more complex reasoning tasks
+   - Use `gemini-2.0-pro-vision` for multimodal inputs
+
+3. **Optimize Embeddings**: 
+   - For highest quality, use `gemini-embedding-exp-03-07`
+   - For production, use `text-embedding-005`
+   - Use MRL to reduce dimensions only when necessary (`output_dimensionality` param)
+
+4. **Stream Long Responses**:
+   - Use streaming for long-form content to improve user experience
+   - Implement proper handling of streaming chunks
+
+5. **Batch Processing**:
+   - Use batch operations for non-time-critical, high-volume tasks
+   - Implement pagination for listing batch jobs
+
+6. **Error Handling**:
+   - Implement robust error handling with specific exception types
+   - Use exponential backoff for rate limit errors
+
+7. **Async for Concurrency**:
+   - Use async APIs for better concurrency and performance
+   - Leverage async generators for streaming
+
+8. **Optimize Token Usage**:
+   - Use specific system instructions
+   - Set appropriate `max_output_tokens` to control response length
+
+9. **Type Safety**:
+   - Leverage Pydantic models for type safety
+   - Use response_schema for structured outputs
+
+By following these standards and patterns, your Google GenAI-powered applications will be robust, maintainable, and efficient.

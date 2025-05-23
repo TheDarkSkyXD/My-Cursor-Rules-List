@@ -1,0 +1,8 @@
+{
+  "description": "Rules for maintaining and synchronizing context across tasks and sessions",
+  "globs": ["**/*"],
+  "alwaysApply": true,
+  "priority": 4,
+  "triggers": ["sync.*", "state.*"],
+  "content": "# Context Sync Rules\n\n## State Management\n- Keep state files current\n- Update status regularly\n- Track active task\n- Maintain progress\n- Document changes\n\n## Documentation Sync\n- Update all relevant files\n- Maintain consistency\n- Cross-reference when needed\n- Version documentation\n- Archive old versions\n\n## Environment Sync\n- Track tool versions\n- Update dependencies\n- Document changes\n- Maintain compatibility\n- Update security status\n\n## Recovery\n- Maintain backup state\n- Document recovery steps\n- Track session state\n- Preserve progress\n- Enable resumption"
+} 

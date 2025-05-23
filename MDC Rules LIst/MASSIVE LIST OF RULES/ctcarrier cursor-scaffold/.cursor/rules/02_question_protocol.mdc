@@ -1,0 +1,34 @@
+---
+description: Rules for managing and documenting questions during task execution
+globs: ["**/*"]
+alwaysApply: true
+---
+# Question Protocol Rules
+
+## Asking Questions
+- Ask one question at a time
+- Document in questions.md
+- Include context and impact
+- Note urgency if critical
+- Wait for response before proceeding
+
+## Question Format
+- Clear and specific
+- Include background
+- State impact on implementation
+- Note dependencies
+- Suggest possible answers
+
+## Handling Answers
+- Document in questions.md
+- Update implementation if needed
+- Record in decisions.md if significant
+- Update security documentation if relevant
+- Proceed with next steps
+
+## Blocking Questions
+- Mark as blocking if critical
+- Update task status
+- Document impact on timeline
+- Suggest alternatives if possible
+- Wait for resolution 
