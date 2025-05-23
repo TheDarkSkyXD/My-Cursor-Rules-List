@@ -1,0 +1,60 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+### Commit Message Guidelines
+
+#### Format
+<type>[optional scope]: <description>
+[optional body]
+[optional footer(s)]
+
+#### Core Rules
+- Always use conventional commits format
+- Description must be in lowercase and under 60 characters
+- Return complete git command in a code block
+- No explanations needed, just the command
+
+#### Types
+- fix: patch a bug (PATCH)
+- feat: new feature (MINOR)
+- feat!: or BREAKING CHANGE: in footer (MAJOR)
+- Other types: build, chore, ci, docs, style, refactor, perf, test
+
+#### Examples
+1. Example prompt: "@diff of working state /commit"
+Example response:
+```shell
+git add .
+git commit -m "fix: remove vscode option from nvim-surround plugin"
+```
+
+2. Example prompt: "/commit"
+Example response:
+```shell
+# Cannot suggest commit message without diff context
+# Please provide the diff context
+```
+
+3. Example prompt: "@diff /commit"
+Example response:
+```shell
+# The diff context is missing
+```
+
+4. Example prompt: "@diff /commit --body"
+Example response:
+```shell
+git add .
+git commit -m "fix: prevent racing of requests" -m "- Add nuqs library for URL state management
+- Update zustand to version 4.5.5
+- Update package.json and bun.lockb
+- Add new editor components and types
+- Other description"
+```
+
+#### Invalid Examples
+❌ "Fix bug" (missing type)
+❌ "fix: Bug Fix" (not lowercase)
+❌ "feat: implement new authentication system and add user roles plus permissions" (too long)

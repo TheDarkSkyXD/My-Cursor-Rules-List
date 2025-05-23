@@ -1,0 +1,77 @@
+---
+description: Next.js project conventions and commit guidelines
+globs: **/*.tsx, **/*.ts, src/**/*.ts, src/**/*.tsx
+---
+
+# Project Guidelines
+
+## Next.js Development
+
+### Structure
+- App Router architecture with route components in `app/` directory
+- Shared components in `components/` directory, utilities in `lib/`
+- Use kebab-case for directories (e.g., `components/auth-wizard`)
+
+### Components
+- Default to Server Components, mark client components with 'use client'
+- Wrap client components in Suspense with appropriate fallbacks
+- Use dynamic imports for non-critical components
+- Implement error boundaries for robust error handling
+- Place types/interfaces at file end
+
+### Performance
+- Optimize images with WebP format and proper sizing
+- Minimize client-side state and effects
+- Implement appropriate caching strategies
+- Use Server Components for data fetching when possible
+- Handle loading and error states consistently
+
+### Best Practices
+- Use absolute imports
+- Use Zod for form validation
+- Use `lucide-react` for icons
+- Prefer server state over client state
+- Implement loading states for all async operations
+
+## Git Commit Convention
+
+### Format
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Types
+- `feat`: New feature (MINOR in semver)
+- `fix`: Bug fix (PATCH in semver)
+- `docs`: Documentation changes
+- `style`: Code style changes (formatting, etc.)
+- `refactor`: Code changes that neither fix bugs nor add features
+- `perf`: Performance improvements
+- `test`: Test-related changes
+- `build`: Build system or dependency changes
+- `ci`: CI configuration changes
+- `chore`: Miscellaneous tasks
+
+### Scopes
+- `ui`: UI components
+- `api`: API functionality
+- `core`: Core application logic
+- `data`: Data and state management
+- `config`: Configuration
+- `deps`: Dependencies
+- `test`: Testing infrastructure
+
+### Breaking Changes
+- Add `!` before colon: `feat(api)!: remove endpoints`
+- Or include `BREAKING CHANGE:` in footer
+
+### Examples
+- `feat(ui): add drawing canvas component`
+- `fix(api): resolve image generation issue`
+- `docs: update setup instructions`
+- `refactor(core): improve rendering pipeline`
+- `chore(deps): update dependencies` 

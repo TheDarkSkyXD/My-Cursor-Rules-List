@@ -1,0 +1,202 @@
+---
+description: Best practices for using Tailwind CSS in your project
+globs: *.tsx
+alwaysApply: false
+---
+
+# Tailwind CSS Best Practices
+
+## 1. Organization and Structure
+
+### Use Consistent Class Order
+Follow a consistent order for your utility classes:
+- Layout (display, position)
+- Spacing (margin, padding)
+- Sizing (width, height)
+- Typography
+- Backgrounds
+- Borders
+- Effects
+- Transitions
+- Interactivity
+
+// ✅ Good
+<div className="flex items-center p-4 w-full text-sm bg-gray-100 rounded-lg hover:bg-gray-200">
+
+// ❌ Bad - inconsistent ordering
+<div className="text-sm hover:bg-gray-200 flex w-full bg-gray-100 p-4 items-center rounded-lg">
+
+### Extract Common Patterns
+Use @apply for frequently reused patterns:
+
+```css
+/* tailwind.css */
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors;
+  }
+}
+```
+
+## 2. Responsive Design
+
+### Use Mobile-First Approach
+Start with mobile styles and add breakpoint modifiers for larger screens:
+
+```tsx
+// ✅ Good
+<div className="w-full md:w-1/2 lg:w-1/3">
+
+// ❌ Bad - desktop-first approach
+<div className="w-1/3 md:w-1/2 sm:w-full">
+```
+
+## 3. Performance
+
+### Avoid Large Class Lists
+Break down components when class lists become too long:
+
+```tsx
+// ✅ Good
+const CardHeader = () => (
+  <div className="flex items-center p-4 border-b">
+    {/* content */}
+  </div>
+);
+
+const Card = () => (
+  <div className="rounded-lg shadow-lg bg-white">
+    <CardHeader />
+    {/* other content */}
+  </div>
+);
+
+// ❌ Bad
+<div className="rounded-lg shadow-lg bg-white flex items-center p-4 border-b hover:shadow-xl transition-shadow duration-300 cursor-pointer active:scale-95">
+```
+
+## 4. Maintainability
+
+### Use Custom Theme Values
+Extend theme in tailwind.config.js for consistent values:
+
+```js
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#f0f9ff',
+          500: '#0ea5e9',
+          900: '#0c4a6e',
+        },
+      },
+      spacing: {
+        'screen-90': '90vh',
+      },
+    },
+  },
+}
+```
+
+### Group Related Classes with clsx/cn
+Use utility functions for conditional classes:
+
+```tsx
+import { cn } from "@/lib/utils";
+
+// ✅ Good
+<button
+  className={cn(
+    "px-4 py-2 rounded-lg",
+    "transition-colors duration-200",
+    isActive ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+  )}
+>
+
+// ❌ Bad
+<button className={`px-4 py-2 rounded-lg ${isActive ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"}`}>
+```
+
+## 5. Dark Mode
+
+### Use Dark Mode Classes Consistently
+Implement dark mode with the 'dark:' prefix:
+
+```tsx
+// ✅ Good
+<div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+
+// ❌ Bad - inconsistent or missing dark mode styles
+<div className="bg-white text-gray-900">
+```
+
+## 6. Accessibility
+
+### Use Semantic HTML with Tailwind
+Maintain semantic HTML while styling with Tailwind:
+
+```tsx
+// ✅ Good
+<main className="container mx-auto px-4">
+  <h1 className="text-2xl font-bold">Title</h1>
+  <nav className="flex gap-4">
+    <a href="#" className="hover:underline">Link</a>
+  </nav>
+</main>
+
+// ❌ Bad - non-semantic HTML
+<div className="container mx-auto px-4">
+  <div className="text-2xl font-bold">Title</div>
+  <div className="flex gap-4">
+    <span className="hover:underline">Link</span>
+  </div>
+</div>
+```
+
+## 7. State Management
+
+### Use State Variants Consistently
+Handle interactive states with consistent patterns:
+
+```tsx
+// ✅ Good
+<button className="
+  bg-blue-500
+  hover:bg-blue-600
+  active:bg-blue-700
+  disabled:bg-gray-300
+  disabled:cursor-not-allowed
+">
+
+// ❌ Bad - inconsistent or missing states
+<button className="bg-blue-500 hover:bg-blue-600">
+```
+
+## 8. Media Queries
+
+### Use Built-in Breakpoints
+Stick to Tailwind's default breakpoints or extend them in config:
+
+```tsx
+// ✅ Good
+<div className="
+  grid
+  grid-cols-1 
+  sm:grid-cols-2 
+  md:grid-cols-3 
+  lg:grid-cols-4
+">
+
+// ❌ Bad - custom media queries
+<div className="grid grid-cols-1 @media(min-width: 678px):grid-cols-2">
+```
+
+Remember:
+- Keep components focused and single-responsibility
+- Use meaningful class names that reflect component purpose
+- Leverage Tailwind's configuration for customization
+- Maintain consistency across your project
+- Consider performance implications of utility classes
+- Always prioritize accessibility

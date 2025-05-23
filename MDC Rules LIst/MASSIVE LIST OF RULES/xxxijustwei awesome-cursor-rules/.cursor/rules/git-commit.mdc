@@ -1,0 +1,65 @@
+---
+description: A comprehensive guide for standardizing Git commit messages using conventional commits format, ensuring consistent and semantic versioning-friendly commit history across the project.
+globs: 
+alwaysApply: true
+---
+### Commit Message Guidelines
+
+#### Format
+<type>[optional scope]: <description>
+[optional body]
+[optional footer(s)]
+
+#### Core Rules
+- Always use conventional commits format
+- Description must be in lowercase and under 60 characters
+- Return complete git command in a code block
+- No explanations needed, just the command
+
+#### Types
+- fix: patch a bug (PATCH)
+- feat: new feature (MINOR)
+- feat!: or BREAKING CHANGE: in footer (MAJOR)
+- Other types: build, chore, ci, docs, style, refactor, perf, test
+
+#### Multi-line Commits
+Use -m flag multiple times for complex changes:
+```shell
+git add .
+git commit -m "type: primary change" -m "- detail 1
+- detail 2
+- detail 3"
+```
+
+#### Examples
+1. Simple fix:
+```shell
+git add .
+git commit -m "fix: resolve memory leak in worker pool"
+```
+
+2. Feature with scope:
+```shell
+git add .
+git commit -m "feat(auth): add google oauth support"
+```
+
+3. Breaking change:
+```shell
+git add .
+git commit -m "feat!: change api response format" -m "BREAKING CHANGE: new response structure requires client update"
+```
+
+4. Multiple changes with body:
+```shell
+git add .
+git commit -m "refactor: improve code organization" -m "- extract shared utilities
+- implement new folder structure
+- update import paths
+- add type definitions"
+```
+
+#### Invalid Examples
+❌ "Fix bug" (missing type)
+❌ "fix: Bug Fix" (not lowercase)
+❌ "feat: implement new authentication system and add user roles plus permissions" (too long)

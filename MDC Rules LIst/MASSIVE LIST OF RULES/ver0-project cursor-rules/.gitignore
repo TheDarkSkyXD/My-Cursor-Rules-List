@@ -1,0 +1,6 @@
+.idea
+.vscode
+.DS_Store
+
+.cursor/rules/local/*
+!.cursor/rules/local/.gitkeep

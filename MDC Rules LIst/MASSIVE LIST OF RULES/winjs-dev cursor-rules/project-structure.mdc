@@ -1,0 +1,69 @@
+---
+description: Defines the recommended folder structure for a WinJS project to maintain consistency and organization.
+globs: src/**/*
+---
+
+- Recommended folder structure:
+  - `config`：
+    - `config.ts`：配置文件
+  - `dist`：存放构建输出结果的目录
+  - `mock`：
+    - `app.ts｜tsx`：模拟相关的代码文件
+  - `public`：存放静态资源的目录
+  - `src`：
+    - `.win`：临时文件目录
+    - `.win-production`：生产环境临时文件目录
+    - `assets`：
+      - `fonts`：字体文件目录
+      - `img`：图片文件目录
+      - `style`：样式文件目录
+      - `js`：js文件目录
+    - `components`：
+      - `componentName`：组件名称，采用大驼峰规范
+        - `index.ts`：组件入口文件
+        - `index.less`：组件样式文件
+        - `index.vue`：组件文件
+    - `icons`: svg 图标文件目录
+    - `layouts`：
+      - `BasicLayout.vue`：基础布局组件
+      - `index.less`：布局相关样式文件
+    - `models`：
+      - `global.ts`：全局数据模型相关文件
+      - `index.ts`：数据模型入口文件
+    - `pages`：
+      - `index.less`：页面样式文件
+      - `index.vue`：页面组件
+    - `utils`（推荐目录）：
+      - `index.ts`：工具函数文件
+    - `services`（推荐目录）：
+      - `api.ts`：网络请求相关文件
+    - `app.(ts|tsx)`：运行时配置文件
+    - `constant.(ts|js)`：定义常量的文件
+    - `global.ts`：全局相关文件
+    - `global.(css|less|sass|scss)`：全局样式文件
+    - `overrides.(css|less|sass|scss)`：样式覆盖文件
+    - `favicon.(ico|gif|png|jpg|jpeg|svg|avif|webp)`：站点图标文件
+  - `node_modules`：
+    - `.cache`：
+      - `bundler-webpack`：webpack 打包缓存相关
+      - `mfsu`：模块联邦服务工具相关缓存
+      - `mfsu-deps`：模块联邦服务工具依赖相关缓存
+  - `.env`：环境变量配置文件
+  - `.editorconfig`：编辑器编码风格配置文件
+  - `.eslintignore`：eslint 校验忽略文件
+  - `.eslintrc.js`：eslint 校验配置文件
+  - `.gitignore`：git 忽略文件
+  - `.npmrc`：npm 源地址配置文件
+  - `.markdownlint.json`：markdown lint 工具配置文件
+  - `.markdownlintignore`：markdown lint 忽略文件
+  - `.prettierignore`：prettier 代码格式化忽略文件
+  - `.prettierrc.js`：prettier 代码格式化配置文件
+  - `.stylelintrc.js`：stylelint css 代码规范配置文件
+  - `.stylelintignore`：stylelint css 忽略文件
+  - `commitlint.config.js`：git commit 规范配置文件
+  - `f2elint.config.js`：f2elint 配置文件
+  - `plugin.ts`：用于定制项目需求的文件
+  - `.winrc.ts`：与`config/config`文件二选一的配置文件
+  - `package.json`：项目依赖管理及脚本配置文件
+  - `tsconfig.json`：TypeScript 编译配置文件
+  - `typings.d.ts`：类型声明文件

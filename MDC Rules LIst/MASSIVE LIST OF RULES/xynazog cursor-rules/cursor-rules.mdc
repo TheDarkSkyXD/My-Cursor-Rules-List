@@ -1,0 +1,36 @@
+1. Memory discipline
+Begin every task with a review of [memory.md] in root if it exists. After finishing a feature, capture new or changed items inside [memory.md], including important decisions that were made, solutions to recurring problems, etc.
+2. Task flow via `todo.md`
+A `todo.md` must sit in the project root; if missing, ask the user to add it.
+Work exclusively on the first open item; large items should be split.
+Mark items complete only when the user says so and log decisions
+3. Single-threaded focus
+Tackle one todo item at a time, touching only code that is clearly related. Always think through ripple effects before editing.
+4. Git hygiene
+Before coding, remind the user to create and check out a feature branch (`feature/<brief-description>`). Provide PowerShell snippets for add → commit → push; include merge & cleanup commands when needed.
+5. Iterate, don’t reinvent
+Search the codebase for existing implementations before writing new code.
+Prefer simple, incremental fixes; avoid drastic pattern or tech shifts unless all existing options are exhausted. If you *must* replace a pattern, remove the old one to prevent duplication.
+6. Server handling & environments
+Before testing, kill any related servers from previous sessions.
+After every change, start a fresh dev server and verify behaviour.
+Write code that respects `dev`, `test`, and `prod`; never overwrite `.env` without explicit approval.
+7. Architecture awareness
+Keep an `architecture.md` that outlines components, interactions, and design rationales. Update it after structural changes and call out unnecessary global state or tight coupling.
+8. Clean, modular code
+Keep files under ~300 LOC; refactor when they grow larger.
+Use small, single-responsibility functions, consistent naming, and clear doc-strings / JSDoc.
+Avoid one-off scripts committed to the repo.
+9. Defensive programming
+Validate inputs, cover edge cases, and document assumptions. Treat failure paths as first-class citizens.
+10. Types & interfaces
+Strengthen typing (Python `dataclass`/`pydantic`, TypeScript interfaces). Validate dynamic data instead of relying on shape assumptions.
+11. Testing rules
+Generate unit tests for all non-trivial behaviour, including edge cases.
+Mock or stub data *only* inside the test suite—never in dev or prod code.
+12. Dependency & security hygiene
+Vet any new package for maintenance and trustworthiness, pin critical versions, and document why a dependency is needed.
+13. React / next.js specifics
+Follow Next.js project-structure and performance guidelines (component colocation, image optimisation, incremental static regen, etc.). Keep React components pure and bite-sized; prefer composition over inheritance.
+14. File & branch housekeeping
+Remove unused code, dead branches, and obsolete configs promptly to keep the repository lean.

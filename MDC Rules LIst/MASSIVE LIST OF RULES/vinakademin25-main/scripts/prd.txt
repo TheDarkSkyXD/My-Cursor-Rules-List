@@ -1,0 +1,260 @@
+# Overview
+Vinakademin is a modern, comprehensive swedish wine education platform designed for both wine enthusiasts and aspiring professionals. The platform addresses the gap between casual wine consumption and professional sommelier expertise by providing structured, accessible wine education combined with practical tools. Vinakademin solves the problem of fragmented wine knowledge by offering a unified ecosystem where users can learn about wine, track their preferences, get AI-powered recommendations, and engage with expert content.
+
+# Core Features
+
+## 1. Structured Wine Courses
+- **Tiered Educational Content**: A progression of courses from beginner to advanced levels
+- **Multimedia Learning**: Video lessons, interactive tastings, downloadable worksheets and guides
+- **Assessment System**: Quizzes, tests and completion certificates to validate knowledge
+- **Mixed Access Model**: Free introductory content with premium advanced courses
+
+## 2. Monetization Model
+- **Individual Course Purchases**: À la carte course purchases for targeted learning
+- **Subscription Access**: Monthly/annual subscription for unlimited access to all premium content
+- **Payment Processing**: Secure payment handling with multiple currency options
+- **Promotional System**: Discount codes, bundle offers, and referral incentives
+
+## 3. Wine Review & Collection
+- **Expert Wine Reviews**: Curated database of professionally reviewed wines
+- **Personal Wine Collection**: User-maintained lists of tried, favorite, and wishlist wines
+- **User Reviews**: Ability for users to rate and review wines with personalized notes
+- **Collection Analytics**: Insights into user preferences and collection composition
+
+## 4. AI Wine Sommelier
+- **Food-Wine Pairing**: AI-powered recommendations for wine with food and food with wine
+- **Personalized Recommendations**: Suggestions based on user preferences and past ratings
+- **Learning Integration**: AI sommelier that reinforces course content in practical applications
+- **Interactive Guidance**: Conversational interface for wine discovery and education
+
+## 5. Content Management System
+- **PayloadCMS Integration**: Leveraging PayloadCMS V.3 for flexible, robust content management
+- **NextJS Frontend**: Fast, responsive user experience built on modern web standards
+- **Blog Platform**: Wine news, trends, and educational articles
+- **User-Generated Content**: Community input integrated with expert content
+
+# User Experience
+
+## User Personas
+
+### 1. Wine Novice (Ana)
+- 30-45 years old
+- Enjoys wine casually but wants to learn more
+- Limited wine vocabulary and knowledge
+- Seeks approachable, non-intimidating education
+
+### 2. Enthusiast (Marcus)
+- 40-60 years old
+- Maintains a home wine collection
+- Reads wine publications regularly
+- Wants to deepen knowledge and refine palate
+
+### 3. Aspiring Professional (Sofia)
+- 25-40 years old
+- Working in hospitality or retail
+- Seeking professional certification
+- Needs structured, in-depth education
+
+### 4. Wine Collector (Robert)
+- 50+ years old
+- Substantial wine collection
+- Focused on investment and aging potential
+- Requires sophisticated collection management
+
+## Key User Flows
+
+### Course Enrollment and Consumption
+1. User browses available courses
+2. User selects desired course
+3. System processes payment (if premium content)
+4. User accesses course materials
+5. User completes lessons, downloads resources
+6. User takes assessments and receives feedback
+
+### Wine Collection Management
+1. User discovers wines through reviews or AI recommendations
+2. User adds wines to personal collection
+3. User categorizes wines (tried, wishlist, etc.)
+4. User adds personal ratings and tasting notes
+5. System provides insights on collection
+
+### AI Sommelier Interaction
+1. User inputs meal or food ingredients
+2. AI suggests appropriate wine pairings
+3. User can filter by preferences or available wines
+4. User saves pairings for future reference
+5. User provides feedback to improve future recommendations
+
+## UI/UX Considerations
+- **Responsive Design**: Optimized experience across desktop, tablet, and mobile
+- **Intuitive Navigation**: Clear pathways between educational content and tools
+- **Visual Learning**: Rich imagery and video to enhance wine education
+- **Accessibility**: Inclusive design for users of all abilities
+- **Personalized Dashboard**: Customized entry point based on user interests and progress
+
+# Technical Architecture
+
+## System Components
+- **Frontend**: NextJS application with React components
+- **Backend**: PayloadCMS V.3 with custom extensions
+- **Database**: PostgreSQL for structured data storage
+- **Authentication**: JWT-based auth system with role-based permissions
+- **Payment Processing**: Integration with payment gateway (Stripe)
+- **Media Handling**: Cloud storage for videos and downloadable content
+- **AI Service**: OpenAI API integration for sommelier functionality
+
+## Data Models
+
+### Users
+- Authentication credentials
+- Profile information
+- Subscription status
+- Learning progress
+- Wine preferences
+
+### Courses
+- Hierarchical structure (courses > modules > lessons)
+- Mixed media content references
+- Assessment components
+- Access control flags
+
+### Wines
+- Detailed wine information (region, varietal, vintage, etc.)
+- Expert ratings and reviews
+- User ratings and notes
+- Food pairing suggestions
+
+### Transactions
+- Purchase records
+- Subscription details
+- Payment method information
+- Invoice generation
+
+### Content
+- Blog articles
+- Wine reviews
+- Static pages
+- Downloadable resources
+
+## APIs and Integrations
+- **PayloadCMS API**: Core content management and delivery
+- **Payment Gateway API**: Processing transactions securely
+- **OpenAI API**: Powering the AI sommelier functionality
+- **Email Service API**: User notifications and marketing
+- **Analytics Integration**: User behavior tracking and insights
+
+## Infrastructure Requirements
+- **Hosting**: Cloud-based hosting with auto-scaling
+- **CDN**: Content delivery network for media assets
+- **Database**: Managed PostgreSQL instance
+- **Backup System**: Regular automated backups
+- **CI/CD Pipeline**: Automated testing and deployment
+- **Monitoring**: Performance and error tracking
+
+# Development Roadmap
+
+## Phase 1: Foundation (MVP)
+- Basic user authentication and profile management
+- Core CMS implementation with PayloadCMS V.3 and NextJS
+- Database schema and initial data modeling
+- Simple content presentation for courses (text and images)
+- Basic payment processing for individual courses
+- Minimal viable blog functionality
+
+## Phase 2: Core Educational Platform
+- Full course structure with video integration
+- Quiz and assessment functionality
+- User progress tracking
+- Downloadable resources implementation
+- Subscription model implementation
+- Enhanced blog with categories and search
+
+## Phase 3: Wine Collection Features
+- Expert wine review database
+- Personal wine collection functionality
+- User wine rating and review capabilities
+- Collection visualization and insights
+- Wine categorization and tagging system
+
+## Phase 4: AI Integration and Enhancement
+- AI sommelier implementation for basic food-wine pairing
+- Personalized wine recommendations
+- Integration of AI with course content
+- User preference learning system
+- Enhanced search with AI-powered capabilities
+
+## Phase 5: Platform Expansion
+- Community features (comments, sharing)
+- Advanced analytics for users and administrators
+- Mobile app development
+- Expanded payment options and currencies
+- Partner integrations (wine retailers, events)
+
+# Logical Dependency Chain
+
+1. **Authentication & User Management**: Foundation for user-specific experiences
+2. **Basic CMS Implementation**: Enable content creation and management
+3. **Course Content Structure**: Framework for educational content
+4. **Payment Processing**: Enable monetization
+5. **Blog Functionality**: Provide supplementary content and SEO benefits
+6. **Subscription System**: Enhance monetization model
+7. **Wine Database**: Foundation for collection features
+8. **Personal Collections**: Enable user engagement with wines
+9. **Assessment System**: Complete educational experience
+10. **AI Sommelier**: Add unique value proposition
+11. **Enhanced Personalization**: Leverage user data for improved experience
+12. **Community Features**: Increase engagement and retention
+
+# Risks and Mitigations
+
+## Technical Challenges
+- **Risk**: Integration complexity between PayloadCMS, NextJS, and AI components
+  - **Mitigation**: Begin with simplified integrations, establish clear API contracts, use middleware for complex interactions
+
+- **Risk**: Performance issues with large media files (videos, high-res images)
+  - **Mitigation**: Implement CDN, lazy loading, adaptive streaming, and image optimization
+
+- **Risk**: Data privacy concerns with user preferences and payment information
+  - **Mitigation**: Implement robust security practices, minimize data collection, clear privacy policies
+
+## MVP Scoping
+- **Risk**: Feature creep extending development timeline
+  - **Mitigation**: Strictly prioritize features based on value/effort, implement clear acceptance criteria
+
+- **Risk**: Focusing on technical features at the expense of content quality
+  - **Mitigation**: Parallel content development strategy, early user testing with content prototypes
+
+- **Risk**: Building complex features before validating basic user needs
+  - **Mitigation**: Phased approach with user feedback after each milestone
+
+## Resource Constraints
+- **Risk**: Limited expertise in wine domain
+  - **Mitigation**: Partner with wine experts for content validation, iterative content development
+
+- **Risk**: AI implementation requiring specialized knowledge
+  - **Mitigation**: Start with simpler rule-based recommendations, gradually integrate machine learning
+
+- **Risk**: Content creation bottlenecks
+  - **Mitigation**: Develop content templates, establish clear guidelines, consider partial outsourcing
+
+# Appendix
+
+## Technology Stack Specifics
+- NextJS 14+
+- PayloadCMS V.3
+- PostgreSQL
+- TypeScript
+- Tailwind CSS
+- OpenAI API (GPT-4 or equivalent)
+- Stripe Payment Processing
+
+## Wine Education Standards
+- Alignment with recognized wine education certification programs
+- Incorporation of established tasting methodologies
+- Standardized wine terminology and classification systems
+
+## User Research Insights
+- Educational wine content most valued by 30-50 age demographic
+- Strong correlation between structured learning and wine purchasing behavior
+- Mobile usage patterns indicate need for bite-sized learning modules
+- Growing interest in personalized recommendations among wine consumers 

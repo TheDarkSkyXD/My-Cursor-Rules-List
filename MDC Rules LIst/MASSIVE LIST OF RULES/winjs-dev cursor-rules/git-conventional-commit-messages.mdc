@@ -1,0 +1,63 @@
+---
+description: 生成一个符合规范的中文 Git Commit Message
+---
+
+# 生成一个符合规范的中文 Git Commit Message，要求：
+
+## 遵循以下模板：
+```
+<type>(<scope>): <subject>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+## 注意事项：
+- 每行不超过 72 个字符
+- Header 必填，Body 和 Footer 可选
+- 使用清晰的动词开头
+- 提供必要的上下文信息
+
+## type 类型包括：
+- feat: 新功能 ✨
+- fix: 修复 bug 🐛
+- docs: 文档更新 📚
+- style: 格式调整 🎨
+- refactor: 重构 🧹
+- test: 测试相关 🧪
+- chore: 构建/工具相关 🔧
+
+## scope 范围包括：
+- 模块名（如：auth、user、order、product等）
+- 文件名（如：index、login、register等）
+- 函数名（如：login、register、getUserInfo等）
+- 组件名（如：Button、Input、Table等）
+- 路由名（如：/login、/register、/user/:id等）
+- 接口名（如：getUserInfo、createOrder等）
+- 变量名（如：user、order、product等）
+- 常量名（如：API_BASE_URL、API_TIMEOUT等）
+- 枚举名（如：UserRole、OrderStatus等）
+- 类型名（如：User、Order、Product等）
+- 接口名（如：UserService、OrderService、ProductService等）
+- 其他（如：config、env、utils等）
+
+### 规范详情
+
+本文档中的关键词 “必须（MUST）”、“不得（MUST NOT）”、“要求（REQUIRED）”、“应（SHALL）”、“不应（SHALL NOT）”、“应该（SHOULD）”、“不应该（SHOULD NOT）”、“推荐（RECOMMENDED）”、“可以（MAY）” 和 “可选（OPTIONAL）” 应按照 RFC 2119 中的描述进行解释。
+提交记录必须以一个类型作为前缀，该类型由一个名词（如 “feat”（新特性）、“fix”（修复）等）组成，后面可选择性地跟作用域、可选择性地跟 “!”，以及必须有的冒号和空格。
+当提交为你的应用程序或库添加了新功能时，必须使用类型 “feat”。
+当提交表示对你的应用程序的一个错误修复时，必须使用类型 “fix”。
+在类型之后可以提供一个作用域。作用域必须由一个名词组成，该名词描述代码库的一个部分，并用括号括起来，例如 “fix (parser):” 。
+在类型 / 作用域前缀后的冒号和空格之后，必须紧接着是一段描述。这段描述是对代码变更的简短总结，例如 “fix: 修复字符串中包含多个空格时的数组解析问题”。
+在简短描述之后可以提供更长的提交内容主体，以提供关于代码变更的更多背景信息。主体必须在描述之后空一行开始。
+提交内容主体格式自由，可以由任意数量的以换行符分隔的段落组成。
+在内容主体之后空一行，可以提供一个或多个脚注。每个脚注必须由一个单词标记组成，后面跟着 “:< 空格 >” 或 “< 空格 >#” 分隔符，再后面跟着一个字符串值（这受到了 git trailer 约定的启发）。
+脚注的标记必须使用 “-” 来代替空白字符，例如 “Acked-by”（这有助于将脚注部分与多段落的内容主体区分开来）。“BREAKING CHANGE” 是个例外，它也可以用作标记。
+脚注的值可以包含空格和换行符，并且当观察到下一个有效的脚注标记 / 分隔符对时，解析必须终止。
+重大变更必须在提交的类型 / 作用域前缀中指明，或者作为脚注中的一项来指明。
+如果作为脚注包含在内，重大变更必须由大写文本 “BREAKING CHANGE” 组成，后面跟着一个冒号、一个空格和一段描述，例如 “BREAKING CHANGE: 现在环境变量优先于配置文件”。
+如果包含在类型 / 作用域前缀中，重大变更必须通过在冒号之前紧邻一个 “!” 来指明。如果使用了 “!”，则脚注部分中可以省略 “BREAKING CHANGE:”，并且提交描述应该用于描述该重大变更。
+除了 “feat” 和 “fix” 之外的其他类型也可以用在你的提交信息中，例如 “docs: 更新参考文档”。
+构成规范提交的信息单元，实现者不得将其视为区分大小写，“BREAKING CHANGE” 除外，它必须是大写的。
+当 “BREAKING-CHANGE” 在脚注中用作标记时，它必须与 “BREAKING CHANGE” 同义。

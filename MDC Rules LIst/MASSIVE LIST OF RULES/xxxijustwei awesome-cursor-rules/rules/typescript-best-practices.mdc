@@ -1,0 +1,237 @@
+---
+description: TypeScript best practices guide covering type safety, patterns, and architectural principles for maintainable and robust applications.
+globs: *.tsx,*.ts
+alwaysApply: false
+---
+# TypeScript Best Practices Guide
+
+## Core Principles
+
+### Type Safety
+- Use strict TypeScript configuration
+- Avoid using `any` type; prefer `unknown` for truly unknown values
+- Enable strict null checks and strict function types
+
+```ts
+// ❌ Bad
+let value: any;
+function process(data: any) { }
+
+// ✅ Good
+let value: unknown;
+function process<T>(data: T) { }
+```
+
+### Type Declarations
+- Use explicit return types for functions
+- Prefer interfaces over type aliases for object definitions
+- Use const assertions for literal types
+
+```ts
+// ❌ Bad
+const handler = (event) => {
+  // ...
+};
+
+// ✅ Good
+const handler = (event: MouseEvent): void => {
+  // ...
+};
+
+// ✅ Good - Interface for objects
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// ✅ Good - Const assertions
+const config = {
+  apiUrl: 'https://api.example.com',
+  timeout: 5000,
+} as const;
+```
+
+### Null Handling
+- Use optional chaining and nullish coalescing
+- Implement proper null checks
+
+```ts
+// ❌ Bad
+const userName = user && user.profile && user.profile.name;
+
+// ✅ Good
+const userName = user?.profile?.name ?? 'Anonymous';
+```
+
+## Advanced Patterns
+
+### Discriminated Unions
+- Use literal types for discriminators
+- Implement exhaustive type checking
+
+```ts
+type Success = {
+  status: 'success';
+  data: unknown;
+};
+
+type Error = {
+  status: 'error';
+  error: string;
+};
+
+type Result = Success | Error;
+
+function handleResult(result: Result): void {
+  switch (result.status) {
+    case 'success':
+      // TypeScript knows result.data exists
+      console.log(result.data);
+      break;
+    case 'error':
+      // TypeScript knows result.error exists
+      console.error(result.error);
+      break;
+  }
+}
+```
+
+### Generic Constraints
+- Use constraints to ensure type safety
+- Implement bounded polymorphism when needed
+
+```ts
+interface HasId {
+  id: string;
+}
+
+// Generic constraint ensures T has an id property
+function findById<T extends HasId>(items: T[], id: string): T | undefined {
+  return items.find(item => item.id === id);
+}
+```
+
+### Type Guards
+- Implement custom type guards for runtime type checking
+- Use assertion functions for complex validations
+
+```ts
+function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+function assertIsString(value: unknown): asserts value is string {
+  if (typeof value !== 'string') {
+    throw new Error('Value must be a string');
+  }
+}
+```
+
+## Error Handling
+
+### Error Types
+- Define custom error types
+- Use discriminated unions for error handling
+
+```ts
+class ApiError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+type Result<T> = 
+  | { success: true; data: T }
+  | { success: false; error: ApiError };
+```
+
+### Async Operations
+- Use async/await with proper error handling
+- Implement retry mechanisms for unreliable operations
+
+```ts
+async function fetchWithRetry<T>(
+  url: string,
+  options: RequestInit,
+  retries = 3
+): Promise<T> {
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new ApiError('Request failed', response.status);
+    }
+    return await response.json();
+  } catch (error) {
+    if (retries > 0) {
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    throw error;
+  }
+}
+```
+
+## Performance Considerations
+
+### Type Inference
+- Let TypeScript infer types when possible
+- Use explicit types for function parameters and returns
+
+```ts
+// ❌ Bad - Redundant type annotation
+const numbers: number[] = [1, 2, 3];
+
+// ✅ Good - Type inference
+const numbers = [1, 2, 3];
+
+// ✅ Good - Explicit function types
+function calculateTotal(items: number[]): number {
+  return items.reduce((sum, item) => sum + item, 0);
+}
+```
+
+### Optimization
+- Use readonly arrays and tuples when applicable
+- Implement proper type caching for complex types
+
+```ts
+// Readonly arrays
+const VALID_STATUSES = ['active', 'inactive'] as const;
+type Status = typeof VALID_STATUSES[number];
+
+// Type caching
+type CachedComplexType = {
+  // Complex type definition
+} & {
+  readonly [K in keyof Base]: Base[K];
+};
+```
+
+## Testing
+
+### Type Testing
+- Use `expectType` and `expectError` from `tsd`
+- Implement proper type coverage
+
+```ts
+import { expectType } from 'tsd';
+
+// Type testing
+expectType<string>('hello');
+expectType<number>(42);
+
+### Best Practices
+- Write tests that verify type behavior
+- Use TypeScript-aware testing frameworks
+
+describe('type safety', () => {
+  it('should handle nullable values', () => {
+    const result = processNullable(null);
+    expectType<string | null>(result);
+  });
+});
+```

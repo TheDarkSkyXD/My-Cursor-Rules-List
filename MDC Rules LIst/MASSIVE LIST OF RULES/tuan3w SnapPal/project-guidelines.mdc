@@ -1,0 +1,55 @@
+---
+description: Next.js project conventions and commit guidelines
+globs: **/*.tsx, **/*.ts, src/**/*.ts, src/**/*.tsx
+---
+
+# Project Guidelines
+
+## Next.js Development
+
+### Structure
+- App Router architecture with route components in `app/` directory
+- Shared components in `components/` directory, utilities in `lib/`
+- Use kebab-case for directories (e.g., `components/auth-wizard`)
+
+### Components
+- Default to Server Components, mark client components with 'use client'
+- Wrap client components in Suspense with appropriate fallbacks
+- Use dynamic imports for non-critical components
+- Implement error boundaries for robust error handling
+- Place types/interfaces at file end
+
+### Performance
+- Optimize images with WebP format and proper sizing
+- Minimize client-side state and effects
+- Implement appropriate caching strategies
+- Use Server Components for data fetching when possible
+- Handle loading and error states consistently
+
+### Best Practices
+- Use absolute imports
+- Use Zod for form validation
+- Use `lucide-react` for icons
+- Prefer server state over client state
+- Implement loading states for all async operations
+
+## Git Commit Convention
+
+Use concise, descriptive commits with the following format:
+```
+<type>[optional scope]: <description>
+```
+
+### Common Types
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `refactor`: Code improvements without feature changes
+- `chore`: Maintenance tasks
+
+Add `!` before colon for breaking changes: `feat!: breaking change`
+
+Examples:
+- `feat(ui): add drawing canvas`
+- `fix(api): resolve image generation issue`
+- `docs: update README`
