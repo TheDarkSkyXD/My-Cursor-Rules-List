@@ -1,0 +1,68 @@
+---
+description: Python Structured Logging
+globs: *.py
+---
+# Python Structured Logging
+
+Enforces the use of structured logging with key-value pairs.
+
+<rule>
+name: python_structured_logging
+description: Use structured logging with key-value pairs and appropriate log levels
+filters:
+  # Match Python files
+  - type: file_extension
+    pattern: "\\.py$"
+  # Match logging statements
+  - type: content
+    pattern: "(?:logger|log)\\.(debug|info|warning|error|critical)\\("
+
+actions:
+  - type: suggest
+    message: |
+      When adding logging statements:
+
+      1. Use structured logging with key-value pairs
+      2. Choose appropriate log levels:
+         - DEBUG: Detailed information, typically for troubleshooting
+         - INFO: General information about program operation
+         - WARNING: Something unexpected but not an error
+         - ERROR: Something failed but operation can continue
+         - CRITICAL: Something failed and operation cannot continue
+      3. Include relevant context in log messages
+      4. Use consistent naming for log keys
+      5. Never log sensitive information (passwords, tokens, PII)
+
+      Examples:
+      ```python
+      # Good:
+      logger.info("Processing zone data", 
+                 zone_id=zone.id, 
+                 building_id=zone.building_id,
+                 num_devices=len(zone.devices))
+
+      # Bad:
+      logger.info(f"Processing zone {zone.id} in building {zone.building_id} with {len(zone.devices)} devices")
+      ```
+
+  - type: lint
+    conditions:
+      - pattern: "(?:logger|log)\\.(debug|info|warning|error|critical)\\(f?\"[^\"]*{[^}]*}[^\"]*\"\\)"
+        message: "Use structured logging with key-value pairs instead of f-strings"
+
+examples:
+  - input: |
+      # Bad: Using f-strings in logging
+      logger.info(f"Processing zone {zone.id} in building {zone.building_id} with {len(zone.devices)} devices")
+      
+      # Good: Using structured logging
+      logger.info("Processing zone data", 
+                 zone_id=zone.id, 
+                 building_id=zone.building_id,
+                 num_devices=len(zone.devices))
+    output: "Logging statement with proper structured format"
+
+metadata:
+  priority: high
+  version: 1.0
+</rule>

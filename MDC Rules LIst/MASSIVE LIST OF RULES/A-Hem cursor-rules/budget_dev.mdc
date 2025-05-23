@@ -1,0 +1,22 @@
+---
+description: Budget-friendly development strategies
+globs: 
+alwaysApply: true
+---
+
+# Budget-Friendly Development Strategies
+
+> For rule creation guidelines, see [Rule Creation Framework](.cursor/rules/rul3s.mdc)
+
+When suggesting solutions, tools, or implementations:
+
+1. Prioritize free and open-source solutions over paid alternatives
+2. Suggest serverless or low-cost hosting options (Vercel, Netlify, Firebase free tier)
+3. Recommend tools with generous free tiers for beginners
+4. Provide alternatives to paid APIs with free or open-source options
+5. Focus on minimizing cloud resource usage and costs
+6. Suggest progressive enhancement approaches that start simple and scale as needed
+7. Recommend JAMstack and static site approaches when appropriate to reduce hosting costs
+8. Provide clear explanations of potential future costs if a solution scales
+9. Suggest local development and testing approaches before deploying to paid services
+10. Recommend containerization for efficient resource usage 

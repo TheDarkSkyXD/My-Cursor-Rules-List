@@ -1,0 +1,249 @@
+---
+description: "Ensures safe AWS CLI operations through GitHub Actions and IAM policies"
+alwaysApply: true
+---
+# AWS CLI Safety Rule
+# Ensures safe AWS CLI operations through GitHub Actions and IAM policies
+
+<rule>
+name: aws_cli_safety
+description: Enforces AWS CLI safety through GitHub Actions and IAM policies
+filters:
+  - type: content
+    pattern: "(aws\\s+(\\w+)\\s+(\\w+)|AWS CLI|aws-actions)"
+  - type: content
+    pattern: "(create|update|put|delete|modify|add|remove|attach|detach)"
+
+actions:
+  - type: enforce
+    message: |
+      # ⚠️ AWS Resource Modification Safety Check ⚠️
+
+      You are about to execute AWS CLI commands that will MODIFY AWS resources.
+      
+      ## SAFETY MECHANISMS
+      
+      1. **GitHub Actions Safety**:
+         - Use aws-actions/configure-aws-credentials@v4
+         - Store credentials in GitHub Secrets
+         - Use environment-specific credentials
+         - Implement branch-based access control
+      
+      2. **IAM Safety**:
+         - Create dedicated CI/CD IAM users
+         - Apply least-privilege policies
+         - Scope resources by account and region
+         - Regular credential rotation
+      
+      3. **Environment Separation**:
+         - Sandbox (test branch):
+           - Account: 881490112168
+           - Region: us-east-2
+         - Production (main branch):
+           - Account: 352676346183
+           - Region: us-east-1
+      
+      ## REQUIRED SAFETY CHECKS
+      
+      1. **Account Context**:
+         - Verify correct AWS account ID
+         - Confirm appropriate region
+         - Check branch-environment mapping
+      
+      2. **Resource Scope**:
+         - List affected resources
+         - Verify resource ARNs
+         - Check resource boundaries
+      
+      3. **Permission Boundaries**:
+         - Review required permissions
+         - Verify IAM policy scope
+         - Check role trust relationships
+      
+      4. **CI/CD Integration**:
+         - Use GitHub environments
+         - Implement required reviewers
+         - Set environment protection rules
+      
+      ## IMPLEMENTATION GUIDELINES
+      
+      1. **GitHub Actions Configuration**:
+         ```yaml
+         env:
+           AWS_ACCESS_KEY_ID: ${{ github.ref == 'refs/heads/main' && secrets.AWS_PROD_ACCESS_KEY_ID || secrets.AWS_SANDBOX_ACCESS_KEY_ID }}
+           AWS_SECRET_ACCESS_KEY: ${{ github.ref == 'refs/heads/main' && secrets.AWS_PROD_SECRET_ACCESS_KEY || secrets.AWS_SANDBOX_SECRET_ACCESS_KEY }}
+           AWS_REGION: ${{ github.ref == 'refs/heads/main' && secrets.AWS_PROD_REGION || secrets.AWS_SANDBOX_REGION }}
+         ```
+      
+      2. **IAM Policy Template**:
+         ```json
+         {
+           "Version": "2012-10-17",
+           "Statement": [
+             {
+               "Effect": "Allow",
+               "Action": ["specific:Actions"],
+               "Resource": ["arn:aws:service:region:account:resource/*"],
+               "Condition": {
+                 "StringEquals": {
+                   "aws:RequestedRegion": ["us-east-2"],
+                   "aws:PrincipalAccount": ["881490112168"]
+                 }
+               }
+             }
+           ]
+         }
+         ```
+      
+      3. **Local Development**:
+         - Use named profiles
+         - Verify account context
+         - Test with minimal permissions
+      
+      ## IMPORTANT GUIDELINES
+      
+      - NEVER commit AWS credentials
+      - Always use GitHub Secrets
+      - Implement environment protection rules
+      - Regular security audits
+      - Maintain clear documentation
+      
+      ## Example Implementation:
+      
+      ```yaml
+      # GitHub Actions Workflow
+      name: Deploy
+      
+      on:
+        push:
+          branches: [main, test]
+      
+      jobs:
+        deploy:
+          runs-on: ubuntu-latest
+          environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'sandbox' }}
+          
+          steps:
+            - uses: aws-actions/configure-aws-credentials@v4
+              with:
+                aws-access-key-id: ${{ github.ref == 'refs/heads/main' && secrets.AWS_PROD_ACCESS_KEY_ID || secrets.AWS_SANDBOX_ACCESS_KEY_ID }}
+                aws-secret-access-key: ${{ github.ref == 'refs/heads/main' && secrets.AWS_PROD_SECRET_ACCESS_KEY || secrets.AWS_SANDBOX_SECRET_ACCESS_KEY }}
+                aws-region: ${{ github.ref == 'refs/heads/main' && secrets.AWS_PROD_REGION || secrets.AWS_SANDBOX_REGION }}
+      ```
+
+examples:
+  - input: |
+      aws iam create-user --user-name github-ci-deploy
+    output: |
+      This operation requires:
+      1. GitHub Actions environment configuration
+      2. Appropriate IAM policy
+      3. Branch protection rules
+      4. Environment-specific credentials
+      
+      Implement in workflow:
+      ```yaml
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      ```
+  
+  - input: |
+      aws s3 cp file.zip s3://bucket/
+    output: |
+      This operation requires:
+      1. S3-specific IAM permissions
+      2. Bucket access verification
+      3. Environment-specific configuration
+      
+      Implement in workflow:
+      ```yaml
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Upload to S3
+        run: aws s3 cp file.zip s3://${{ secrets.S3_BUCKET }}/
+      ```
+
+metadata:
+  priority: critical
+  version: 2.0
+  tags:
+    - aws
+    - security
+    - ci-cd
+    - github-actions
+  last_updated: "2025-04-07 17:14:03 UTC"
+
+## CLOUDFORMATION STACK SAFETY
+
+⚠️ **CRITICAL: STACK DELETION PROHIBITED** ⚠️
+
+CloudFormation stacks are the foundation of our infrastructure. Deleting stacks can have severe consequences:
+- Loss of infrastructure state
+- Service disruptions
+- Data loss risks
+- DNS and routing issues
+- Cascading failures
+
+### Stack Issue Resolution Guidelines
+
+1. **For UPDATE_ROLLBACK_FAILED:**
+   - Use `continue-update-rollback` with skip resources
+   - Investigate and fix specific resource failures
+   - Consider manual resource cleanup if needed
+   - Document all manual interventions
+
+2. **For CREATE_FAILED:**
+   - Review CloudFormation logs
+   - Fix template issues
+   - Remove failed resources manually if needed
+   - Retry stack creation
+
+3. **For UPDATE_FAILED:**
+   - Check resource dependencies
+   - Review IAM permissions
+   - Fix resource configurations
+   - Use change sets for validation
+
+### Prohibited Operations
+The following operations are strictly prohibited:
+```bash
+aws cloudformation delete-stack  # NEVER USE
+aws cloudformation delete-stack --retain-resources  # NEVER USE
+```
+
+### Safe Recovery Commands
+```bash
+# Review stack status
+aws cloudformation describe-stack-events
+
+# Continue failed rollbacks
+aws cloudformation continue-update-rollback
+aws cloudformation continue-update-rollback --skip-resources [ResourceId]
+
+# List resources for investigation
+aws cloudformation list-stack-resources
+
+# Get detailed resource status
+aws cloudformation describe-stack-resource
+```
+
+## IMPORTANT GUIDELINES
+
+- NEVER delete CloudFormation stacks
+- Always use continue-update-rollback for failed states
+- Document all stack modifications
+- Maintain complete stack history
+- Regular stack drift detection
+- Keep stack templates in version control
+- NEVER commit AWS credentials
+- Always use GitHub Secrets
+- Implement environment protection rules
+- Regular security audits
+- Maintain clear documentation 

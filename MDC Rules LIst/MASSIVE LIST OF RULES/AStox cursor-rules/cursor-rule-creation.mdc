@@ -1,0 +1,120 @@
+---
+description: 
+globs: *.mdc,*.md
+alwaysApply: false
+---
+
+# Cursor Rules Creation
+
+Rule for creating Cursor rule files by first creating in root directory, then moving to .cursor/rules.
+
+<rule>
+name: cursor_rule_creation
+description: Standards for creating Cursor rule files to avoid content loss
+filters:
+  - type: event
+    pattern: "file_create"
+  - type: content
+    pattern: "cursor.*rule"
+  - type: file_extension
+    pattern: "\\.mdc$"
+
+actions:
+
+- type: suggest
+  message: |
+  When creating new Cursor rules:
+
+  1. Use Root Directory First:
+
+     ```
+     - Create the file in the root directory with .md extension
+     - Then move the file to .cursor/rules and rename to .mdc
+     - Example: mv rule-name.md .cursor/rules/rule-name.mdc
+     ```
+
+  2. File Structure:
+
+     ```
+     - Always include the frontmatter with description
+     - Set globs: * by default unless rule is specific to certain file types
+     - Follow the standard rule format with <rule> tags
+     - Include name, description, filters, actions, examples, and metadata
+     ```
+
+  3. Glob Patterns:
+
+     ```
+     - Use globs: * for rules that apply to all files
+     - Use specific patterns for targeted rules (e.g., "*.sol" for Solidity)
+     - Multiple patterns can be specified as a list: ["*.sol", "*.js"]
+     - Be as specific as possible to avoid unnecessary rule application
+     ```
+
+  4. Verification:
+
+     ```
+     - After moving the file, verify its contents
+     - Check the file size or line count
+     - Ensure the file has the expected content
+     ```
+
+  5. Never Use:
+     ```
+     - Direct creation of .mdc files in .cursor/rules directory
+     - Always create in root first, then move to .cursor/rules
+     ```
+
+examples:
+
+- input: |
+
+  # Good: Root directory first with proper glob
+
+  ***
+
+  description: My general rule
+  globs: "\*"
+  alwaysApply: false
+
+  ***
+
+  # My Rule
+
+    <rule>
+    ...
+    </rule>
+  output: "Rule file with proper glob pattern"
+
+- input: |
+
+  # Good: Specific glob for targeted rule
+
+  ***
+
+  description: Solidity-specific rule
+  globs: "\*.sol"
+  alwaysApply: false
+
+  ***
+
+  # Solidity Rule
+
+    <rule>
+    ...
+    </rule>
+  output: "Rule file with specific glob pattern"
+
+- input: |
+  # Bad: Missing glob pattern
+  ***
+  description: My rule
+  globs:
+  alwaysApply: false
+  ***
+  output: "Missing default glob pattern"
+
+metadata:
+priority: high
+version: 1.0
+</rule>

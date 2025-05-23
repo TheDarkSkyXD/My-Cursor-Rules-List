@@ -1,0 +1,12 @@
+---
+description: Key Conventions
+globs:
+---
+  1. Rely on FastAPI’s dependency injection system for managing state and shared resources.
+  2. Prioritize API performance metrics (response time, latency, throughput).
+  3. Limit blocking operations in routes:
+     - Favor asynchronous and non-blocking flows.
+     - Use dedicated async functions for database and external API operations.
+     - Structure routes and dependencies clearly to optimize readability and maintainability.
+
+  Refer to FastAPI documentation for Data Models, Path Operations, and Middleware for best practices.

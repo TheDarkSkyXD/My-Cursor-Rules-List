@@ -1,0 +1,231 @@
+# GitHub CLI Capabilities Rule
+# Standardizes the use of GitHub CLI commands across the project
+
+<rule>
+name: github_cli_capabilities
+description: Documents GitHub CLI capabilities and common commands for repository management
+filters:
+  - type: file_extension
+    pattern: ".*"
+  - type: content
+    pattern: "(github|gh)"
+
+actions:
+  - type: suggest
+    message: |
+      # GitHub CLI Command Reference
+
+      ## Repository Management
+      ```bash
+      # Clone repository
+      gh repo clone <repository>
+      
+      # Create repository
+      gh repo create [name] --public|--private
+      
+      # Fork repository
+      gh repo fork <repository>
+      
+      # View repository
+      gh repo view [repository]
+      
+      # List repositories
+      gh repo list [owner]
+      ```
+
+      ## Pull Requests
+      ```bash
+      # Create PR
+      gh pr create --title "title" --body "body"
+      
+      # List PRs
+      gh pr list
+      
+      # Check out PR
+      gh pr checkout <number>
+      
+      # Review PR
+      gh pr review [<number>] --approve|--comment|--request-changes
+      
+      # Merge PR
+      gh pr merge [<number>] --merge|--squash|--rebase
+
+      # View PR details and comments
+      gh pr view <number>                                    # Basic PR information
+      gh pr view <number> --json comments,reviews            # Get all comments and reviews in JSON format
+      gh pr view <number> --comments                        # View all comments
+      
+      # View PR review comments using GitHub API
+      gh api repos/owner/repo/pulls/<number>/comments       # Get inline review comments
+      gh api repos/owner/repo/pulls/<number>/reviews        # Get all reviews
+      
+      # Advanced PR viewing with jq for better formatting
+      gh pr view <number> --json comments,reviews | jq '.comments[] | {author: .author.login, body: .body}'
+      ```
+
+      ## Issues
+      ```bash
+      # Create issue
+      gh issue create --title "title" --body "body"
+      
+      # List issues
+      gh issue list
+      
+      # View issue
+      gh issue view <number>
+      
+      # Close issue
+      gh issue close <number>
+      ```
+
+      ## Secrets & Deploy Keys
+      ```bash
+      # List secrets
+      gh secret list
+      
+      # Set secret
+      gh secret set <secret-name> [<value>]
+      # Or from file:
+      gh secret set <secret-name> < file
+      
+      # Remove secret
+      gh secret remove <secret-name>
+      
+      # Add deploy key
+      gh repo deploy-key add <key-file> --title "title" [--allow-write]
+      
+      # List deploy keys
+      gh repo deploy-key list
+      ```
+
+      ## Workflows
+      ```bash
+      # List workflows
+      gh workflow list
+      
+      # View workflow
+      gh workflow view [<workflow-id>]
+      
+      # Run workflow
+      gh workflow run [<workflow-id>]
+      
+      # List workflow runs
+      gh run list
+      
+      # View run
+      gh run view [<run-id>]
+      ```
+
+      ## Releases
+      ```bash
+      # Create release
+      gh release create <tag> [<files>...] --title "title" --notes "notes"
+      
+      # List releases
+      gh release list
+      
+      # Download release assets
+      gh release download <tag>
+      ```
+
+      ## Gists
+      ```bash
+      # Create gist
+      gh gist create [<filename>...]
+      
+      # List gists
+      gh gist list
+      
+      # View gist
+      gh gist view <id>
+      ```
+
+      ## Authentication
+      ```bash
+      # Login
+      gh auth login
+      
+      # Logout
+      gh auth logout
+      
+      # Status
+      gh auth status
+      ```
+
+      ## Extensions
+      ```bash
+      # List extensions
+      gh extension list
+      
+      # Install extension
+      gh extension install <repository>
+      
+      # Update extensions
+      gh extension upgrade [<extension>]
+      ```
+
+      ## Best Practices
+      1. Always use `--confirm` flag for destructive operations
+      2. Use `--json` flag for scripting and automation
+      3. Leverage `gh api` for custom API calls
+      4. Use environment variables for sensitive data
+      5. Consider using aliases for common commands
+      
+      ## PR Comment Best Practices
+      1. Use `--json` with specific fields for programmatic access:
+         ```bash
+         # Get specific fields
+         gh pr view <number> --json number,title,body,comments,reviews
+         
+         # Format output with jq
+         gh pr view <number> --json comments,reviews | jq '.'
+         ```
+      
+      2. For inline review comments, use the GitHub API:
+         ```bash
+         # Get all inline comments
+         gh api repos/owner/repo/pulls/<number>/comments
+         
+         # Get specific review comments
+         gh api repos/owner/repo/pulls/<number>/reviews/<review-id>/comments
+         ```
+      
+      3. When viewing comments, consider:
+         - Regular comments (on the PR itself)
+         - Review comments (inline code comments)
+         - Review summaries
+         - System comments (from GitHub Actions, bots)
+      
+      4. Use jq filters for better readability:
+         ```bash
+         # Get just author and comment body
+         gh pr view <number> --json comments | jq '.comments[] | {author: .author.login, body: .body}'
+         
+         # Get review comments with file context
+         gh api repos/owner/repo/pulls/<number>/comments | jq '.[] | {path: .path, body: .body, line: .line}'
+         ```
+
+      ## Environment Variables
+      - GH_TOKEN: Authentication token
+      - GH_ENTERPRISE_TOKEN: Enterprise authentication token
+      - GH_HOST: GitHub Enterprise host
+      - GH_REPO: Override current repository
+
+examples:
+  - input: |
+      # Setting a secret from environment variable
+      export MY_SECRET="secret-value"
+      gh secret set MY_SECRET
+      
+      # Creating a PR with labels and assignees
+      gh pr create --title "Feature: New API" --body "Implements new API" --label "enhancement" --assignee "@me"
+
+metadata:
+  priority: high
+  version: 1.0
+  tags:
+    - github
+    - cli
+    - automation
+  last_updated: "2025-04-01"
+</rule> 

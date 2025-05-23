@@ -1,0 +1,74 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Development Workflow
+
+Rule for implementing features in a sequential, verified manner.
+
+<rule>
+name: development_workflow
+description: Standards for implementing features based on user requirements
+filters:
+  - type: event
+    pattern: "feature_implementation"
+  - type: file_change
+    pattern: "*"
+
+actions:
+  - type: suggest
+    message: |
+      When implementing features:
+
+      1. Requirements Processing:
+         ```
+         - Read requirements from user-provided file
+         - Break down into implementable units
+         - Verify understanding before starting
+         ```
+
+      2. Implementation Cycle:
+         ```
+         - Work on one requirement at a time
+         - Build/compile after each change
+         - Run and verify functionality
+         - Test the implementation
+         - Commit only when requirement is complete
+         ```
+
+      3. Verification Steps:
+         ```
+         - Build/compile successfully
+         - Run without errors
+         - Test functionality
+         - Verify against requirement
+         - Clean up any debug code
+         ```
+
+      4. Commit Process:
+         ```
+         - Use conventional commits
+         - One commit per completed requirement
+         - Include all related changes
+         - Verify clean working tree
+         ```
+
+examples:
+  - input: |
+      # Requirement: Add user login
+      1. Implement login form
+      2. Add validation
+      3. Connect to auth service
+      4. Add error handling
+    output: |
+      feat(auth): implement user login form
+      feat(auth): add form validation
+      feat(auth): connect authentication service
+      feat(auth): add error handling
+
+metadata:
+  priority: high
+  version: 1.0
+</rule>

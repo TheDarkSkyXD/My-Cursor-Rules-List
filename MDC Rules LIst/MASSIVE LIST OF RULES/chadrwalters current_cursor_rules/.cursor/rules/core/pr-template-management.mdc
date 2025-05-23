@@ -1,0 +1,117 @@
+---
+description: R Template Management Rule Standardizes PR creation process using templates
+globs: 
+---
+
+<rule>
+name: pr_template_management
+description: Manages PR template discovery, usage, and cleanup with fallback to repo-template
+filters:
+  - type: content
+    pattern: "(pull request|pr create|pr description|gh pr)"
+  - type: file_path
+    pattern: ".*\\.github.*"
+
+constants:
+  default_template_path: "../repo-template/.github/pull_request_template.md"
+  local_template_path: ".github/pull_request_template.md"
+  temp_pr_dir: ".github/tmp"
+  temp_pr_file: "pr_description.md"
+
+actions:
+  - type: suggest
+    message: |
+      ### PR Template Management
+      
+      #### Template Discovery
+      1. First checks for local template:
+         `.github/pull_request_template.md`
+      
+      2. Falls back to repo-template:
+         `../repo-template/.github/pull_request_template.md`
+      
+      #### Usage Process
+      ```bash
+      # 1. Create temporary directory if needed
+      mkdir -p .github/tmp
+      
+      # 2. Copy appropriate template
+      if [ -f .github/pull_request_template.md ]; then
+        cp .github/pull_request_template.md .github/tmp/pr_description.md
+      else
+        cp ../repo-template/.github/pull_request_template.md .github/tmp/pr_description.md
+      fi
+      
+      # 3. Create PR with description
+      gh pr create --title "<title>" --body-file .github/tmp/pr_description.md
+      
+      # 4. Cleanup
+      rm .github/tmp/pr_description.md
+      ```
+      
+      #### Integration with Branch Names
+      - Automatically extracts issue number from branch name
+      - Updates Linear issue reference in template
+      - Maintains consistent formatting
+      
+      #### Template Structure
+      Standard sections from template:
+      - Linear Issue Reference
+      - Description
+      - Type of Change
+      - Testing Details
+      - Implementation Details
+      - Checklist
+      - Environment Tested
+      - Screenshots/Videos
+
+  - type: prompt
+    when: "creating_pr"
+    required_fields:
+      - name: "pr_title"
+        description: "Enter the PR title"
+        required: true
+      - name: "issue_number"
+        description: "Enter the Linear issue number (e.g., LIN-123)"
+        pattern: "LIN-[0-9]+"
+        required: true
+
+  - type: validate
+    conditions:
+      - check: "template_exists"
+        message: "No PR template found in either local .github directory or repo-template"
+      - check: "issue_number_format"
+        message: "Issue number must follow format: LIN-XXX"
+      - check: "gh_cli_installed"
+        message: "GitHub CLI (gh) must be installed and authenticated"
+
+examples:
+  - input: |
+      "Creating a PR for feature implementation"
+      "Need to submit a pull request"
+    output: |
+      1. Checking for local template
+      2. Using template from: .github/pull_request_template.md
+      3. Creating PR with formatted description
+      4. Cleaning up temporary files
+
+  - input: |
+      "Quick PR for hotfix"
+    output: |
+      1. No local template found
+      2. Using template from: ../repo-template/.github/pull_request_template.md
+      3. Creating PR with formatted description
+      4. Cleaning up temporary files
+
+metadata:
+  priority: high
+  version: 1.0
+  tags:
+    - git
+    - workflow
+    - pr
+    - templates
+  dependencies:
+    - branch-naming.mdc
+  last_updated: "2024-03-24"
+</rule> 

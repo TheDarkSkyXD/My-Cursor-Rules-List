@@ -1,0 +1,46 @@
+---
+description: Rules for debugging technical code that has math
+globs: 
+alwaysApply: false
+---
+Your task is to make **very minor** modifications to fix the user-specified problem, **only after** describing your reasoning in detail and receiving explicit approval from the user to proceed. Assume that most of the code is working properly and we need to make few changes VERY CAREFULLY AND METICULOUSLY. Do not modify the code until you have:
+
+1. Presented potential root causes.
+2. Outlined your proposed solution approach.
+3. Obtained user confirmation.
+
+More specifically, you must follow these rules:
+
+1. **Think Out Loud & Propose Hypotheses**  
+   - **Explain the Theory**: Summarize how the relevant math or algorithm is *supposed* to work in theory. Reference known formulas, derivations, or standard implementations.  
+   - **List Possible Issues**: Present multiple plausible errors (e.g., dimension mismatch, sign error, hyperparameter misconfiguration, numerical instability, boundary conditions, etc.).  
+   - **Wait for Approval**: Do **not** proceed with any code changes until the user reviews your hypotheses and **confirms** that you can move forward.
+
+2. **Validate Equations, Dimensions, and Data Flow**  
+   - **Matrix/Vector Checks**: Highlight where you suspect dimension misalignments or invalid shape operations.  
+   - **Range/Domain Constraints**: Pinpoint any potential violations of constraints (e.g., probabilities > 1 or negative learning rates).  
+   - **Minimal Hand-Checked Test**: Outline how you would test the code with trivial inputs or known outputs to verify correctness.
+
+3. **Investigate Numerical Stability**  
+   - **Precision or Overflow Concerns**: Indicate points in the code that might cause underflow, overflow, or precision loss.  
+   - **Stable Alternatives**: Suggest stable library methods or well-known numerical techniques (e.g., `logsumexp`, scaled exponentials) *if relevant.*  
+   - **Wait for Approval**: Again, pause for confirmation if you’re proposing any changes—**no code modifications** yet.
+
+4. **Check Convergence and Parameter Tuning**  
+   - **Hyperparameter Review**: Walk through your reasoning on learning rates, decay factors, or iteration counts, and why they might be problematic.  
+   - **Comparison to Baselines**: Propose comparing results to simpler or known-correct solutions to confirm where the gap lies.  
+   - **Ask Before Tweaking**: If changes to hyperparameters are needed, present a rationale and specific new values, and request user confirmation.
+
+5. **Propose Targeted Fixes**  
+   - **Detail the Specific Fixes**: For each line or parameter you intend to change, explain *why* it solves the suspected issue.  
+   - **Minimal & Meticulous**: Emphasize how you will implement the smallest possible fix with minimal side effects.  
+   - **Pause for Approval**: **Do not** implement these fixes until the user explicitly says “Yes, go ahead with that fix.”
+
+6. **Implement Changes Only After Approval**  
+   - Once you have received clear user confirmation, apply the **pre-discussed** code changes as precisely as possible.  
+   - Provide a diff or snippet of the exact modifications for final review.
+
+7. **Validate & Monitor**  
+   - **Post-Fix Testing**: Run the minimal tests you proposed in Step 2 (or any additional tests) to confirm the fix.  
+   - **Track Key Metrics**: For ML/RL, watch training curves, losses, or performance metrics; for numerical methods, verify that results align with known solutions.  
+   - **Report Findings**: Summarize the outcome and remain available for further iterations if needed.

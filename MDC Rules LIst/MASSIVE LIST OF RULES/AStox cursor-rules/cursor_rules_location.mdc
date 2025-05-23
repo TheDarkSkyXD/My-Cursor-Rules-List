@@ -1,0 +1,120 @@
+---
+description: Cursor Rules Location
+globs: *.mdc,*.md
+alwaysApply: false
+---
+
+# Cursor Rules Location
+
+Rules for placing and organizing Cursor rule files in the repository.
+
+<rule>
+name: cursor_rules_location
+description: Standards for placing Cursor rule files in the correct directory
+filters:
+  # Match any .mdc files
+  - type: file_extension
+    pattern: "\\.mdc$"
+  # Match files that look like Cursor rules
+  - type: content
+    pattern: "(?s)<rule>.*?</rule>"
+  # Match file creation events
+  - type: event
+    pattern: "file_create"
+
+actions:
+
+- type: reject
+  conditions:
+
+  - pattern: "^(?!\\.\\/\\.cursor\\/rules\\/(?:global|project)\\/.\*\\.mdc$)"
+    message: "Cursor rule files (.mdc) must be placed in the .cursor/rules/global or .cursor/rules/project directories"
+
+- type: suggest
+  message: |
+  When creating Cursor rules:
+
+  1. Always place rule files in one of these directories:
+
+     ```
+     .cursor/rules/global/   # Git submodule shared across projects
+     .cursor/rules/project/  # Project-specific rules (not tracked in git)
+     ```
+
+  2. Follow the naming convention:
+
+     - Use kebab-case for filenames
+     - Always use .mdc extension
+     - Make names descriptive of the rule's purpose
+
+  3. Directory structure:
+
+     ```
+     PROJECT_ROOT/
+     ├── .cursor/
+     │   └── rules/
+     │       ├── global/     # Git submodule (shared across projects)
+     │       │   ├── global-rule-name.mdc
+     │       │   └── ...
+     │       └── project/    # Project-specific (not tracked in git)
+     │           ├── project-rule-name.mdc
+     │           └── ...
+     └── ...
+     ```
+
+  4. Global vs Project Rules:
+
+     - Global: Reusable rules shared across projects (imported as a git submodule)
+     - Project: Specific to this project only (not tracked in git)
+
+  5. When updating global rules:
+
+     - Remember to commit changes to the submodule
+     - Use conventional commit messages
+     - Consider impacts across all projects using the submodule
+     - Follow these steps after making changes:
+       ```
+       cd .cursor/rules/global
+       git add <changed-files>
+       git commit -m "feat(rules): your descriptive message here"
+       cd -
+       git add .cursor/rules/global
+       git commit -m "chore: update global rules submodule"
+       ```
+
+  6. Never place rule files:
+     - Directly in .cursor/rules/ (use subdirectories)
+     - In the project root
+     - In subdirectories outside .cursor/rules/
+     - In any other location
+
+examples:
+
+- input: |
+
+  # Bad: Rule file in wrong location
+
+  rules/my-rule.mdc
+  my-rule.mdc
+  .cursor/rules/my-rule.mdc
+
+  # Good: Rule file in correct location
+
+  .cursor/rules/global/my-global-rule.mdc
+  .cursor/rules/project/my-project-rule.mdc
+  output: "Correctly placed Cursor rule file"
+
+- input: |
+  # After updating a global rule:
+  cd .cursor/rules/global
+  git add global-rule-name.mdc
+  git commit -m "feat(rules): improve rule description"
+  cd -
+  git add .cursor/rules/global
+  git commit -m "chore: update global rules submodule"
+  output: "Properly committed changes to a global rule in the submodule"
+
+metadata:
+priority: high
+version: 1.0
+</rule>

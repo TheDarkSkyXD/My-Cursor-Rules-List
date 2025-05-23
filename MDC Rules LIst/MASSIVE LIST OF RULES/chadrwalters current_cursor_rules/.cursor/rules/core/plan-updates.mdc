@@ -1,0 +1,79 @@
+---
+description: Guidelines for making surgical, focused updates to plan files
+globs: *.md
+---
+# Plan Updates Rule
+# Guidelines for making surgical, focused updates to plan files
+
+<rule>
+name: plan_updates
+description: Defines how to make precise, focused updates to project planning documents
+filters:
+  - type: file_extension
+    pattern: "\\.md$"
+  - type: content
+    pattern: "(project-plan|plan|updates)"
+
+actions:
+  - type: suggest
+    message: |
+      # Plan Update Guidelines
+
+      ## 1. Update Sequence
+      1. Get current timestamp
+      2. Update highest level first (project-plan.md)
+      3. Update implementation details (plan.md)
+      4. Document progress (updates.md)
+
+      ## 2. Change Scope
+      - Make minimal necessary changes
+      - Update only affected tasks
+      - Preserve unrelated sections
+      - Keep formatting consistent
+
+      ## 3. Status Updates
+      - Use consistent markers: [ ], [x], [INCOMPLETE]
+      - Update parent tasks when children complete
+      - Include verification status
+      - Reference task numbers
+
+      ## 4. Version Control
+      - Commit after significant updates
+      - Use descriptive commit messages
+      - Reference task numbers in commits
+      - Keep atomic commits
+
+      ## 5. Cross-References
+      - Maintain consistent task numbering
+      - Update all related documents
+      - Check for broken references
+      - Verify document links
+
+      ## 6. Quality Checks
+      - Verify format consistency
+      - Check task number sequence
+      - Validate status markers
+      - Ensure timestamps current
+
+examples:
+  - input: |
+      # Before Update
+      ### Task 2.1: Device Discovery
+      - [ ] Implementation
+        - [ ] Who-Is handling
+      
+      # After Update
+      ### Task 2.1: Device Discovery
+      - [x] Implementation
+        - [x] Who-Is handling
+        _Completed 2025-03-23, verified working_
+
+metadata:
+  priority: high
+  version: 1.1
+  tags:
+    - planning
+    - documentation
+    - process
+  last_updated: "2025-03-23"
+</rule> 

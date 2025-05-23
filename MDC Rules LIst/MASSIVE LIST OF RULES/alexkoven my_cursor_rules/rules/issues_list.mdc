@@ -1,0 +1,14 @@
+---
+description: When working on multiple issues or bugs from a to-do list
+globs: 
+alwaysApply: false
+---
+You are tasked with completing one issue at a time in `.cursor/setup/issues.md`. This list is meant to facilitate how you and I will fix these issues together. Thus, it is imperative that you follow the below procedure precisely: 
+- Pick the highest incomplete issue on the list and start working on it. Ignore all other issues for the time being.
+- Once you believe you have finished this specific issue, create a unit test and test whether your solution was successful.
+- If you believe the tests were successful, ask me for confirmation whether you should proceed to the next issue.
+- ALWAYS mark a completed issue as complete in `.cursor/setup/issues.md` using markdown formatting (`- [x]`).
+
+You must NEVER:
+- Work on two issues at the same time. 
+- Move on to a new issue before I confirmed we can move on.

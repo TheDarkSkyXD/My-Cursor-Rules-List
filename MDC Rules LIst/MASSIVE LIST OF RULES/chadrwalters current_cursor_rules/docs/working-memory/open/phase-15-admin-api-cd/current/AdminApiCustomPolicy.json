@@ -1,0 +1,37 @@
+{
+    "PolicyVersion": {
+        "Document": {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "elasticloadbalancing:*"
+                    ],
+                    "Resource": "*",
+                    "Condition": {
+                        "StringEquals": {
+                            "aws:RequestedRegion": [
+                                "us-east-2"
+                            ],
+                            "aws:PrincipalAccount": [
+                                "881490112168"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "route53:ChangeResourceRecordSets",
+                        "route53:ListHostedZonesByName"
+                    ],
+                    "Resource": "arn:aws:route53:::hostedzone/*"
+                }
+            ]
+        },
+        "VersionId": "v1",
+        "IsDefaultVersion": true,
+        "CreateDate": "2025-04-11T22:18:23+00:00"
+    }
+}

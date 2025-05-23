@@ -1,0 +1,86 @@
+---
+description: Python Type Hints
+globs: *.py
+---
+# Python Type Hints
+
+Ensures all Python functions include proper type hints that are compatible with Python 3.9.
+
+<rule>
+name: python_type_hints
+description: All Python functions must include parameter and return type hints that are compatible with Python 3.9
+filters:
+  # Match Python files
+  - type: file_extension
+    pattern: "\\.py$"
+  # Exclude __init__.py files
+  - type: filename
+    pattern: "^(?!.*__init__\\.py$).*$"
+  # Match function definitions
+  - type: content
+    pattern: "def\\s+\\w+\\s*\\("
+
+actions:
+  - type: suggest
+    message: |
+      When writing or modifying Python functions, follow these type hint requirements for Python 3.9 compatibility:
+
+      1. ALL functions must include parameter and return type hints
+      2. Use proper return types (None, Any, or specific types)
+      3. For collections, use typing module capitalized generics (List[str], Dict[str, int], etc.) - not lowercase versions
+      4. For optional parameters, use Optional[Type] - NOT Type | None
+      5. For union types, use Union[Type1, Type2] - NOT Type1 | Type2
+      6. For async functions, wrap return type in Awaitable if appropriate
+      7. For callbacks, use Callable[[ArgType], ReturnType]
+
+      Python 3.9 Compatibility:
+      - DO NOT use the pipe operator (|) for union types
+      - DO NOT use built-in generics without importing from typing (list[str], dict[str, int])
+      - DO import capitalized versions from typing module (List, Dict, Optional, Union, etc.)
+
+      Examples:
+      ```python
+      # BAD - Not Python 3.9 compatible:
+      def process_data(data: str | int) -> list[str]:
+          # function body
+
+      # GOOD - Python 3.9 compatible:
+      from typing import Union, List
+      def process_data(data: Union[str, int]) -> List[str]:
+          # function body
+      ```
+
+  - type: lint
+    conditions:
+      - pattern: "def\\s+\\w+\\s*\\([^\\)]*\\)\\s*(?!->)\\s*:"
+        message: "Function is missing return type annotation"
+      - pattern: ":\\s*\\w+\\s*\\|"
+        message: "Using | operator for type unions is not compatible with Python 3.9. Use Union[Type1, Type2] instead."
+      - pattern: "->\\s*\\w+\\s*\\|"
+        message: "Using | operator for type unions is not compatible with Python 3.9. Use Union[Type1, Type2] instead."
+      - pattern: ":\\s*list\\["
+        message: "Using list[] syntax is not compatible with Python 3.9. Import and use List[] from typing module instead."
+      - pattern: ":\\s*dict\\["
+        message: "Using dict[] syntax is not compatible with Python 3.9. Import and use Dict[] from typing module instead."
+      - pattern: "->\\s*list\\["
+        message: "Using list[] syntax is not compatible with Python 3.9. Import and use List[] from typing module instead."
+      - pattern: "->\\s*dict\\["
+        message: "Using dict[] syntax is not compatible with Python 3.9. Import and use Dict[] from typing module instead."
+
+examples:
+  - input: |
+      # Bad: Not Python 3.9 compatible
+      def process_data(input_data: str | int, max_items: int = None) -> list[dict[str, any]]:
+          return processed_result
+
+      # Good: Python 3.9 compatible
+      from typing import Union, List, Dict, Any, Optional
+      def process_data(input_data: Union[str, int], max_items: Optional[int] = None) -> List[Dict[str, Any]]:
+          return processed_result
+    output: "Function with proper Python 3.9 compatible type annotations"
+
+metadata:
+  priority: high
+  version: 1.1
+  last_updated: "2025-03-25"
+</rule>

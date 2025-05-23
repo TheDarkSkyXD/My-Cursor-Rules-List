@@ -1,0 +1,85 @@
+---
+description: Python Test AAA Pattern
+globs: tests/*.py
+---
+# Python Test AAA Pattern
+
+Enforces the Arrange-Act-Assert pattern in test functions.
+
+<rule>
+name: python_test_aaa_pattern
+description: Follow the AAA (Arrange-Act-Assert) pattern in test functions
+filters:
+  # Match Python test files
+  - type: file_path
+    pattern: "tests/.*\\.py$"
+  # Match test functions
+  - type: content
+    pattern: "def\\s+test_\\w+"
+
+actions:
+  - type: suggest
+    message: |
+      When writing test functions, follow the AAA (Arrange-Act-Assert) pattern:
+
+      1. Arrange: Set up test data, objects, and conditions
+      2. Act: Execute the code being tested
+      3. Assert: Verify the results match expectations
+
+      Each section should be separated by a blank line, and consider adding comments to clearly mark each section.
+
+      Examples:
+      ```python
+      def test_process_zone_data():
+          # Arrange
+          zone_data = {
+              "id": "zone-123",
+              "building_id": "building-456",
+              "devices": [{"id": "device-1"}, {"id": "device-2"}]
+          }
+          expected_result = ZoneModel(id="zone-123", building_id="building-456", device_count=2)
+          
+          # Act
+          result = process_zone_data(zone_data)
+          
+          # Assert
+          assert result.is_ok()
+          assert result.unwrap() == expected_result
+      ```
+
+examples:
+  - input: |
+      # Bad: Mixed arrangement, action, and assertions
+      def test_process_zone_data():
+          zone_data = {
+              "id": "zone-123",
+              "building_id": "building-456",
+              "devices": [{"id": "device-1"}, {"id": "device-2"}]
+          }
+          result = process_zone_data(zone_data)
+          assert result.is_ok()
+          expected_result = ZoneModel(id="zone-123", building_id="building-456", device_count=2)
+          assert result.unwrap() == expected_result
+      
+      # Good: Clear AAA pattern
+      def test_process_zone_data():
+          # Arrange
+          zone_data = {
+              "id": "zone-123",
+              "building_id": "building-456",
+              "devices": [{"id": "device-1"}, {"id": "device-2"}]
+          }
+          expected_result = ZoneModel(id="zone-123", building_id="building-456", device_count=2)
+          
+          # Act
+          result = process_zone_data(zone_data)
+          
+          # Assert
+          assert result.is_ok()
+          assert result.unwrap() == expected_result
+    output: "Test function following the AAA pattern"
+
+metadata:
+  priority: medium
+  version: 1.0
+</rule>

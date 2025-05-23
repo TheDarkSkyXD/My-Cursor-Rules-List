@@ -1,0 +1,87 @@
+---
+description: Python Google-Style Docstrings
+globs: *.py
+---
+# Python Google-Style Docstrings
+
+Enforces Google-style docstrings for classes and public functions.
+
+<rule>
+name: python_google_docstrings
+description: All classes and public functions must have Google-style docstrings
+filters:
+  # Match Python files
+  - type: file_extension
+    pattern: "\\.py$"
+  # Match class and function definitions
+  - type: content
+    pattern: "(class\\s+\\w+|def\\s+[a-zA-Z_]\\w*\\s*\\()"
+
+actions:
+  - type: suggest
+    message: |
+      All classes and public functions must have Google-style docstrings:
+
+      1. Start with a one-line summary
+      2. Follow with a blank line and a detailed description if needed
+      3. Use sections for Args, Returns, Raises, etc.
+      4. Document all parameters, return values, and exceptions
+      5. Use indentation for section content
+
+      Examples:
+      ```python
+      def process_zone_data(zone_data: Dict[str, Any]) -> Result[ZoneModel, ProcessError]:
+          """Process raw zone data into a structured model.
+          
+          Validates the input data and transforms it into a ZoneModel instance.
+          
+          Args:
+              zone_data: Dictionary containing raw zone data with fields:
+                  id: Unique identifier for the zone
+                  building_id: Identifier of the building that contains this zone
+                  devices: List of device dictionaries associated with the zone
+          
+          Returns:
+              Result containing either:
+                  - Ok with ZoneModel on success
+                  - Err with ProcessError on failure
+          
+          """
+          # Function implementation
+      ```
+
+  - type: lint
+    conditions:
+      - pattern: "(class\\s+\\w+|def\\s+[a-zA-Z_]\\w*\\s*\\()(?!.*?\"\"\")"
+        message: "Classes and public functions should have docstrings"
+
+examples:
+  - input: |
+      # Bad: Function without docstring
+      def process_zone_data(zone_data: Dict[str, Any]) -> Result[ZoneModel, ProcessError]:
+          # Function implementation
+      
+      # Good: Function with Google-style docstring
+      def process_zone_data(zone_data: Dict[str, Any]) -> Result[ZoneModel, ProcessError]:
+          """Process raw zone data into a structured model.
+          
+          Validates the input data and transforms it into a ZoneModel instance.
+          
+          Args:
+              zone_data: Dictionary containing raw zone data with fields:
+                  id: Unique identifier for the zone
+                  building_id: Identifier of the building that contains this zone
+                  devices: List of device dictionaries associated with the zone
+          
+          Returns:
+              Result containing either:
+                  - Ok with ZoneModel on success
+                  - Err with ProcessError on failure
+          """
+          # Function implementation
+    output: "Function with proper Google-style docstring"
+
+metadata:
+  priority: medium
+  version: 1.0
+</rule>

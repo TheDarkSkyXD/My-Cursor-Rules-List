@@ -1,0 +1,127 @@
+---
+description: Node.js deployment on DigitalOcean
+globs: ["**/package.json", "**/*.js", "**/*.ts"]
+alwaysApply: false
+---
+
+# Node.js Deployment on DigitalOcean
+
+> For rule creation guidelines, see [Rule Creation Framework](.cursor/rules/rul3s.mdc)
+
+## Context
+Node.js applications can be deployed to DigitalOcean in several ways. This rule provides specific guidance for deploying, configuring, and optimizing Node.js applications on DigitalOcean.
+
+> **Get Started**: Sign up using [this referral link](https://m.do.co/c/d5a4da02539a) to receive $200 in free credit for 60 days.
+
+## Deployment Options for Node.js
+
+### App Platform Deployment
+**Best for**: Simple Node.js applications, APIs, and projects where you want minimal infrastructure management.
+
+1. **Configure Build Command**: Set `npm ci` or `npm install` as your build command
+2. **Set Start Command**: Use `npm start` or specify the direct command (e.g., `node index.js`)
+3. **Define Node Version**: Specify the Node.js version in your `package.json` using the `engines` field
+4. **Configure Environment Variables**: Set NODE_ENV to "production" and add other required variables
+5. **Enable Auto-deploy**: Configure automatic deployments on Git repository changes
+6. **Set Up Health Checks**: Define a health check endpoint in your application
+7. **Configure Resource Scaling**: Set appropriate CPU and memory limits based on your application needs
+
+### Droplet Deployment
+**Best for**: Node.js applications requiring custom system configurations or specific dependencies.
+
+1. **Choose Node.js 1-Click App**: Start with the Node.js 1-Click App for a pre-configured environment
+2. **Update System Packages**: Run `apt update && apt upgrade` to ensure all packages are up to date
+3. **Install Node Version Manager**: Use NVM to manage Node.js versions
+4. **Set Up Process Manager**: Install PM2 with `npm install -g pm2` to manage your Node.js processes
+5. **Configure Nginx**: Set up Nginx as a reverse proxy to your Node.js application
+6. **Set Up SSL**: Use Certbot to configure free SSL certificates from Let's Encrypt
+7. **Configure Firewall**: Set up UFW to allow only necessary ports (80, 443, 22)
+8. **Set Up Monitoring**: Install and configure Node.js monitoring tools
+
+## Node.js Application Optimization
+
+1. **Use Clustering**: Leverage Node.js cluster module or PM2 cluster mode to utilize all CPU cores
+2. **Implement Caching**: Use Redis or in-memory caching for frequently accessed data
+3. **Optimize Static Assets**: Serve static assets through Nginx rather than Node.js
+4. **Configure Memory Limits**: Set appropriate memory limits for your Node.js application
+5. **Implement Error Handling**: Set up proper error handling and logging
+6. **Use Compression**: Enable gzip compression for responses
+7. **Optimize Database Queries**: Use connection pooling and optimize database queries
+8. **Implement Rate Limiting**: Protect your APIs with rate limiting
+
+## PM2 Configuration
+
+1. **Create Ecosystem File**: Use a PM2 ecosystem.config.js file for configuration
+```javascript
+module.exports = {
+  apps: [{
+    name: "app",
+    script: "index.js",
+    instances: "max",
+    exec_mode: "cluster",
+    env: {
+      NODE_ENV: "production",
+    },
+    max_memory_restart: "500M"
+  }]
+}
+```
+2. **Configure Auto-restart**: Set up PM2 to automatically restart crashed applications
+3. **Set Up Startup Script**: Run `pm2 startup` to ensure your app starts on server reboot
+4. **Monitor Application**: Use `pm2 monit` to monitor application performance
+5. **Configure Logs**: Set up log rotation with `pm2 install pm2-logrotate`
+6. **Set Memory Limits**: Configure memory limits to prevent server crashes
+
+## Nginx Configuration for Node.js
+
+1. **Create Server Block**: Set up a server block for your domain
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com www.yourdomain.com;
+    
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+2. **Configure SSL**: Set up SSL with Let's Encrypt
+3. **Enable Gzip**: Configure gzip compression for better performance
+4. **Set Up Caching**: Configure caching for static assets
+5. **Configure WebSockets**: Ensure proper WebSocket support if needed
+6. **Set Buffer Sizes**: Configure appropriate buffer sizes for your application
+
+## Continuous Deployment
+
+1. **Set Up GitHub Actions**: Create a workflow file for automatic deployment
+```yaml
+name: Deploy to DigitalOcean
+on:
+  push:
+    branches: [ main ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Deploy to Droplet
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            cd ~/app
+            git pull
+            npm ci
+            pm2 restart all
+```
+2. **Configure Secrets**: Set up necessary secrets in your GitHub repository
+3. **Implement Rollback Strategy**: Create scripts for rolling back to previous versions
+4. **Set Up Staging Environment**: Configure a staging environment for testing before production
+5. **Automate Database Migrations**: Include database migration steps in your deployment process 

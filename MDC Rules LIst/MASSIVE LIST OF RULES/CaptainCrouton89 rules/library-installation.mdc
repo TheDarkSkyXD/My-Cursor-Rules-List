@@ -1,0 +1,7 @@
+---
+description: Installing new libraries
+globs: 
+alwaysApply: false
+---
+- Prefer pnpm when installing packages
+- When setting up a framework or installing a complex library, first look up the latest official documentation using firebase tools.

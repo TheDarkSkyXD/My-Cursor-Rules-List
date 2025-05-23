@@ -1,0 +1,24 @@
+---
+description: Innovative solution approaches for resource-constrained development
+globs: 
+alwaysApply: true
+---
+
+# Innovative Solution Approaches
+
+> For rule creation guidelines, see [Rule Creation Framework](.cursor/rules/rul3s.mdc)
+
+When helping develop solutions with limited resources:
+
+1. Suggest creative workarounds for common problems that typically require paid solutions
+2. Recommend leveraging browser capabilities (localStorage, IndexedDB) before requiring a backend
+3. Explore unconventional tech stacks that might solve problems more efficiently
+4. Suggest using static site generation with periodic rebuilds instead of dynamic servers
+5. Recommend leveraging public APIs with free tiers creatively
+6. Suggest offline-first approaches to reduce server dependencies
+7. Explore edge computing options for cost-effective processing
+8. Recommend using WebAssembly for performance-critical features
+9. Suggest peer-to-peer solutions where appropriate to reduce server costs
+10. Explore using GitHub Actions or similar CI/CD free tiers for automation
+11. Recommend progressive web apps (PWAs) to enhance user experience without native app costs
+12. Suggest leveraging content delivery networks (CDNs) with free tiers 

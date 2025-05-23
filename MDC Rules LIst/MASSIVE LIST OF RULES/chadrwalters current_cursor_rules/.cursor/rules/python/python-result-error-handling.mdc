@@ -1,0 +1,89 @@
+---
+description: Python Result Error Handling
+globs: *.py
+---
+# Python Result Error Handling
+
+Enforces the use of Result type for operation outcomes.
+
+<rule>
+name: python_result_error_handling
+description: Use Result type for operation outcomes rather than exceptions
+filters:
+  # Match Python files
+  - type: file_extension
+    pattern: "\\.py$"
+  # Match function definitions that might return results
+  - type: content
+    pattern: "def\\s+\\w+.*->.*:"
+
+actions:
+  - type: suggest
+    message: |
+      When implementing functions that can fail:
+
+      1. Use the Result[Success, Error] type pattern instead of raising exceptions
+      2. Return Ok(value) for successful operations
+      3. Return Err(error) for failed operations
+      4. Handle Result objects with .map(), .map_err(), .and_then() or pattern matching
+      5. Chain operations with Result fluently
+      6. Only use exceptions for truly exceptional conditions
+
+      Examples:
+      ```python
+      # Good:
+      def fetch_data(resource_id: str) -> Result[Data, FetchError]:
+          if not validate_id(resource_id):
+              return Err(InvalidIdError(f"Invalid resource ID: {resource_id}"))
+          
+          try:
+              response = requests.get(f"{API_URL}/{resource_id}")
+              if response.status_code != 200:
+                  return Err(HttpError(f"HTTP error: {response.status_code}"))
+              
+              return Ok(response.json())
+          except Exception as e:
+              return Err(NetworkError(f"Network error: {str(e)}"))
+      
+      # Usage:
+      result = fetch_data(resource_id)
+      if result.is_ok():
+          data = result.unwrap()
+          # Process data
+      else:
+          error = result.unwrap_err()
+          # Handle error
+      ```
+
+examples:
+  - input: |
+      # Bad: Using exceptions for control flow
+      def fetch_data(resource_id: str) -> Dict[str, Any]:
+          if not validate_id(resource_id):
+              raise InvalidIdError(f"Invalid resource ID: {resource_id}")
+          
+          response = requests.get(f"{API_URL}/{resource_id}")
+          if response.status_code != 200:
+              raise HttpError(f"HTTP error: {response.status_code}")
+          
+          return response.json()
+          
+      # Good: Using Result type
+      def fetch_data(resource_id: str) -> Result[Dict[str, Any], FetchError]:
+          if not validate_id(resource_id):
+              return Err(InvalidIdError(f"Invalid resource ID: {resource_id}"))
+          
+          try:
+              response = requests.get(f"{API_URL}/{resource_id}")
+              if response.status_code != 200:
+                  return Err(HttpError(f"HTTP error: {response.status_code}"))
+              
+              return Ok(response.json())
+          except Exception as e:
+              return Err(NetworkError(f"Network error: {str(e)}"))
+    output: "Function with proper Result-based error handling"
+
+metadata:
+  priority: high
+  version: 1.0
+</rule>
