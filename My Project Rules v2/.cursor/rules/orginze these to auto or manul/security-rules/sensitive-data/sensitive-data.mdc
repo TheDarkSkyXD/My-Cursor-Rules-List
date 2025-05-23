@@ -1,0 +1,119 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Sensitive Data Protection
+
+Rule for preventing hardcoded API keys and other sensitive data in source code.
+
+---
+
+description: Prevents hardcoding API keys and sensitive data in source code
+globs: "\*"
+alwaysApply: true
+
+---
+
+<rule>
+name: sensitive_data_protection
+description: Standards for handling sensitive data like API keys, passwords, and tokens
+filters:
+  - type: content
+    pattern: "(?i)(?:api[_-]?key|password|secret|token|credential)s?['\"]?\\s*[:=]\\s*['\"][^'\"]+['\"]"
+  - type: file_extension
+    pattern: "\\.(js|ts|jsx|tsx|py|rb|php|java|go|sh|bash|zsh|md|mdc|sol)$"
+  - type: file_path
+    pattern: "(?!.*\\.env(\\.example|\\.sample)?).*"
+
+actions:
+
+- type: reject
+  conditions:
+
+  - pattern: "(?i)(?:api[_-]?key|password|secret|token|credential)s?['\"]?\\s*[:=]\\s*['\"][^'\"]{8,}['\"]"
+    message: "Hardcoded sensitive data detected. Use environment variables instead."
+
+- type: suggest
+  message: |
+  When handling sensitive data:
+
+  1. NEVER hardcode sensitive data:
+
+     ```
+     - API keys
+     - Passwords
+     - Private keys
+     - Access tokens
+     - Database credentials
+     - Any other secrets
+     ```
+
+  2. ALWAYS use environment variables:
+
+     ```
+     - Store sensitive data in .env files (add to .gitignore)
+     - Access via process.env.KEY_NAME, os.environ['KEY_NAME'], etc.
+     - Use dotenv or similar libraries to load .env files
+     - Include .env.example with placeholder values
+     ```
+
+  3. For scripts and deployment:
+
+     ```
+     - Pass sensitive data as environment variables
+     - Use secret management services in CI/CD
+     - Never log sensitive values
+     - Mask sensitive values in logs
+     ```
+
+  4. For documentation:
+     ```
+     - Use placeholders like YOUR_API_KEY
+     - Provide clear instructions on obtaining and using keys
+     - Never include real credentials, even in examples
+     ```
+
+examples:
+
+- input: |
+
+  # Bad: Hardcoded API key
+
+  const apiKey = "1a2b3c4d5e6f7g8h9i0j";
+
+  # Good: Using environment variable
+
+  const apiKey = process.env.API_KEY;
+  output: "Using environment variables for sensitive data"
+
+- input: |
+
+  # Bad: Hardcoded credentials in a script
+
+  forge verify-contract --api-key "1a2b3c4d5e6f7g8h9i0j" $CONTRACT_ADDRESS
+
+  # Good: Using environment variables
+
+  forge verify-contract --api-key "$ETHERSCAN_API_KEY" $CONTRACT_ADDRESS
+  output: "Using environment variables in scripts"
+
+- input: |
+  # Bad: Hardcoded values in configuration
+  module.exports = {
+  database: {
+  password: "super_secret_password",
+  }
+  };
+  # Good: Using environment variables
+  module.exports = {
+  database: {
+  password: process.env.DB_PASSWORD,
+  }
+  };
+  output: "Using environment variables in configuration"
+
+metadata:
+priority: critical
+version: 1.0
+</rule>

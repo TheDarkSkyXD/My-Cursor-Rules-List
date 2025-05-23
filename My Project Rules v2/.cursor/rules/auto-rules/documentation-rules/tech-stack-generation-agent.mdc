@@ -1,0 +1,179 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Generate and Maintain `docs/TECH_STACK.md` from Project Dependencies
+
+**Your Core Task: Create or update the `docs/TECH_STACK.md` file. This document MUST strictly adhere to the 10-section structure defined below. Populate its content PRIMARILY by identifying and parsing the project's main dependency file(s) (e.g., `package.json` for JavaScript/TypeScript, `requirements.txt` for Python, etc.). If critical information for a section is not derivable from the dependency file(s) or requires broader project context, insert a specific `<!-- TODO: ... -->` comment.**
+
+Your entire output for this rule invocation **MUST BE ONLY** the complete, raw Markdown content of the `docs/TECH_STACK.md` file.
+
+## Critical Rules
+
+### I. Strict Operational Constraints (MANDATORY)
+
+-   **Permitted File Operations:**
+    -   **Read-Only:** Project dependency file(s) (e.g., `package.json`, `requirements.txt`, `pom.xml`, `build.gradle`, `Gemfile`, `*.csproj`, `go.mod`, etc.). The AI must attempt to identify the correct file for the project type.
+    -   **Read/Write:** `docs/TECH_STACK.md` (this is the only file you will modify or create).
+    -   **No Other Files:** Do not access, read, or write any other files for the primary purpose of populating `docs/TECH_STACK.md` content beyond the identified dependency file(s) and `docs/TECH_STACK.md` itself.
+-   **Communication Protocol (ABSOLUTE):**
+    -   **NO Conversational Output:** You are strictly forbidden from generating ANY conversational output, commentary, preamble, introductions, or summaries before, during, or after generating the `docs/TECH_STACK.md` content.
+    -   **Sole Output = File Content:** Your *only* output is the complete Markdown content intended for `docs/TECH_STACK.md`.
+-   **User Interaction:**
+    -   You operate based on an implicit or explicit request to manage `docs/TECH_STACK.md`.
+    -   You do not converse directly with the user during this process.
+    -   Deficiencies in information are handled *within* the `docs/TECH_STACK.md` file itself, as per the TODO logic below.
+
+### II. The Blueprint: `docs/TECH_STACK.md` Structure & Content Source
+
+The `docs/TECH_STACK.md` file **MUST** be organized into the following ten sections. The questions within each item of the "Tech Stack Definition Outline" (below) define the required content. Information derived from dependency files should be used where applicable. For other information, `<!-- TODO: ... -->` comments are expected.
+
+#### Tech Stack Definition Outline (Mandatory Structure for `docs/TECH_STACK.md`)
+
+1.  **`## 1. Project Overview & Goals`**
+    -   Briefly, what is the project this tech stack is for?
+    -   What are the primary goals influencing technology choices (e.g., scalability, speed of development, specific integrations, team expertise, budget)?
+
+2.  **`## 2. Core Languages & Runtimes`**
+    -   What primary programming language(s) will be used for the backend? (Attempt to infer from dependency file type/contents, e.g., presence of `typescript` in `package.json`). Specify version(s) if found or critical.
+    -   What primary programming language(s) and/or frameworks will be used for the frontend? (Attempt to infer). Specify version(s) if found or critical.
+    -   Are there specific runtime environments required (e.g., Node.js version from `engines` in `package.json`, Python version, JVM version, .NET version)?
+    -   Why were these languages/runtimes chosen?
+
+3.  **`## 3. Frameworks & Libraries (Backend)`**
+    -   What backend frameworks are being used or are listed as dependencies (e.g., Django, Ruby on Rails, Spring Boot, Express.js, NestJS, ASP.NET Core)? List versions if available in the dependency file.
+    -   List key libraries essential for the backend found in dependencies (e.g., ORM/database interaction, authentication/authorization, caching, background job processing, API documentation generation). List versions.
+    -   Justify the choice of major frameworks/libraries.
+
+4.  **`## 4. Frameworks & Libraries (Frontend)`**
+    -   What frontend frameworks/libraries are being used or are listed as dependencies (e.g., React, Angular, Vue, Svelte, Blazor)? List versions if available.
+    -   List key UI component libraries (e.g., Material UI, Bootstrap, Tailwind CSS, Ant Design) or state management solutions (e.g., Redux, Zustand, Pinia, NgRx) found in dependencies. List versions.
+    -   Justify the choice of major frameworks/libraries.
+
+5.  **`## 5. Database & Data Storage`**
+    -   What database client libraries are listed as dependencies (e.g., `pg` for PostgreSQL, `mysql2`, `mongodb`, `redis`)? List versions.
+    -   Based on client libraries or other indicators, what type of database is likely being used (e.g., Relational/SQL, NoSQL Document)?
+    -   Specify the chosen database system(s) (e.g., PostgreSQL, MySQL, MongoDB, Cassandra, Neo4j, InfluxDB). Why this choice?
+    -   Are other data storage solutions indicated by dependencies (e.g., caching clients like Redis/Memcached, object storage SDKs, message queue clients)?
+
+6.  **`## 6. Infrastructure & Deployment`**
+    -   Where will the application be hosted (e.g., AWS, Azure, GCP, DigitalOcean, Vercel, Netlify, on-premise)?
+    -   What specific services will be used (e.g., EC2, Lambda, Azure App Service, Google Kubernetes Engine)?
+    -   Are containerization technologies (e.g., Docker, Podman) or orchestration tools (e.g., Kubernetes, Docker Swarm) indicated by dependencies (e.g., Dockerfile-related tools, K8s client libraries)?
+    -   What CI/CD tools and processes are planned (e.g., Jenkins, GitLab CI, GitHub Actions, CircleCI)? Are any related tools in dependencies?
+
+7.  **`## 7. APIs & Integrations`**
+    -   Will the project expose its own APIs? If so, what style (e.g., REST, GraphQL, gRPC, WebSockets)? (Frameworks listed in Sec 3 might imply this, e.g. Express.js for REST).
+    -   What critical third-party services or APIs will be integrated, as indicated by client SDKs or libraries in dependencies (e.g., `stripe`, `auth0-js`, AWS SDK, `twilio`)? List versions.
+
+8.  **`## 8. Development Tools & Standards`**
+    -   What version control system will be used (e.g., Git)? Where will repositories be hosted (e.g., GitHub, GitLab, Bitbucket)?
+    -   Are there specific IDEs commonly associated with the tech stack?
+    -   What linters (e.g., ESLint, Pylint), code formatters (e.g., Prettier, Black), or build tools (e.g., Webpack, Babel, Vite, Maven, Gradle) are listed in `devDependencies` or equivalent?
+    -   What testing frameworks and libraries are found in dependencies (e.g., Jest, PyTest, JUnit, Cypress, Selenium, Mocha, Chai)? List versions.
+
+9.  **`## 9. Security Considerations`**
+    -   What are the key security requirements for the chosen technologies (e.g., OWASP Top 10 mitigations)?
+    -   Are there specific security-related libraries, tools (e.g., linters like `eslint-plugin-security`, dependency scanners like `npm audit` or `snyk`), or practices for security indicated by dependencies or common to the identified stack?
+
+10. **`## 10. Rationale & Alternatives Considered`**
+    -   For major technology choices (especially languages, frameworks, databases, hosting), briefly explain the rationale and any significant alternatives that were considered and why they were not chosen. (This will almost always require a TODO unless explicitly found elsewhere or if a previous `TECH_STACK.md` had it).
+
+### III. Workflow for Generating/Updating `docs/TECH_STACK.md`
+
+1.  **Identify and Access Dependency File(s):**
+    -   Attempt to identify the primary project dependency file(s) based on common patterns for different languages/ecosystems (e.g., `package.json` for Node.js/JavaScript/TypeScript, `requirements.txt` or `pyproject.toml` for Python, `pom.xml` or `build.gradle` for Java/Kotlin, `Gemfile` for Ruby, `*.csproj` for C#/.NET, `go.mod` for Go).
+    -   Read the content of the identified dependency file(s).
+    -   Read the current content of `docs/TECH_STACK.md` if it already exists (to preserve existing human-added information or TODOs where possible).
+    -   *The dependency file(s) are your PRIMARY source of information for populating `docs/TECH_STACK.md`.* If a dependency file cannot be found or is unparsable, relevant sections in `TECH_STACK.md` will need `<!-- TODO: ... -->` comments.
+
+2.  **Manage `docs/TECH_STACK.md` Content:**
+    -   **Initialization:** If `docs/TECH_STACK.md` does not exist, create it. Your output will be the initial version containing all ten section headers (as listed in the "Tech Stack Definition Outline") followed by content or TODOs as per the logic below.
+    -   **Content Integration (Section by Section):** For each of the ten mandatory sections:
+        -   Analyze the parsed dependencies and any other information from the dependency file(s) (e.g., `scripts`, `engines` in `package.json`).
+        -   Synthesize and write the information into the corresponding section of your `docs/TECH_STACK.md` output. List libraries, tools, and their versions if found.
+        -   If updating an existing `docs/TECH_STACK.md`, try to intelligently merge new findings from dependencies with existing human-written content or TODOs. Prioritize information directly from dependencies for sections designed to list them.
+
+3.  **Identify Gaps & Insert TODOs (Strict Logic):**
+    -   After attempting to populate a section using the dependency file(s):
+        -   A `<!-- TODO: ... -->` comment **MUST BE** inserted if the section in your generated `docs/TECH_STACK.md` remains **genuinely empty** OR if critical information explicitly requested by that section's definition (as per the "Tech Stack Definition Outline") **cannot be derived from the dependency file(s)** and is not already present (e.g. human-added).
+        -   **DO NOT** insert a TODO if the section has been adequately populated with information *derivable from the dependency file(s)* that addresses the core of the section's questions (e.g., listing libraries for frontend frameworks).
+        -   The purpose of the TODO is to flag *critically missing information not found in dependency files* or *information that inherently requires broader project context/human input* (e.g., rationale, project goals, specific deployment choices not inferable from tool dependencies).
+        -   **TODO Comment Format:** `<!-- TODO: [Question from the "Tech Stack Definition Outline" for the missing piece of information. Suggest where this info might be found if not in dependencies, e.g., Project Requirements Document, team decisions, architecture diagrams.] -->`
+            -   Example for section 1: `<!-- TODO: What are the primary goals influencing technology choices (e.g., scalability, speed of development)? (This information is typically found in a Project Requirements Document or through team discussion.) -->`
+            -   Example for section 2 (if rationale missing): `<!-- TODO: Why were these core languages/runtimes chosen? (Rationale from team decision or design document needed.) -->`
+            -   Example if no dependency file found: `<!-- TODO: Could not identify or parse a project dependency file. Please specify the technologies used for: [Relevant question from outline, e.g., Core Languages & Runtimes]. -->`
+
+4.  **Final Output:** Your *sole output* is the complete, updated content of `docs/TECH_STACK.md`.
+
+## Examples
+
+<example>
+  **User Request:** "Generate the tech stack document for my Node.js project."
+  **(Assumes a `package.json` exists)**
+
+  **AI Action (Simplified):**
+  1. Identifies and reads `package.json`.
+  2. Reads existing `docs/TECH_STACK.md` (if any).
+  3. For each of the 10 sections:
+     - Extracts relevant dependencies (e.g., `express` for backend, `react` for frontend, `jest` for testing, `eslint` for linting) and their versions from `package.json`.
+     - Populates `docs/TECH_STACK.md` sections with these findings.
+     - For non-derivable info (e.g., "Project Overview & Goals", "Rationale", specific hosting choices), adds `<!-- TODO: ... -->` comments, guiding the user on what\'s missing and where it might be documented.
+  4. The AI's entire response is the raw Markdown content of the new/updated `docs/TECH_STACK.md`.
+
+  **docs/TECH_STACK.md (partial example output from a `package.json`):**
+  ```markdown
+  ## 1. Project Overview & Goals
+  <!-- TODO: Briefly, what is the project this tech stack is for? (This information is typically found in a Project Requirements Document or project brief.) -->
+  <!-- TODO: What are the primary goals influencing technology choices (e.g., scalability, speed of development, specific integrations, team expertise, budget)? (This should be documented in a PRD or similar.) -->
+
+  ## 2. Core Languages & Runtimes
+  Primary language appears to be JavaScript/TypeScript (based on `package.json`).
+  - Backend Language: Likely Node.js (implied by `package.json`). Version: <!-- TODO: Specify Node.js version if critical (e.g., from `engines` field in `package.json` or project requirements). -->
+  - Frontend Language: TypeScript (from `devDependencies`: `typescript@^5.0.0`)
+  - Runtime Environments: Node.js (from `engines` in `package.json`: `>=18.0.0`)
+  <!-- TODO: Why were these core languages/runtimes chosen? (Rationale from team decision or design document needed.) -->
+
+  ## 3. Frameworks & Libraries (Backend)
+  - Backend Frameworks: Express.js (`express@^4.18.2`)
+  - Key Libraries:
+    - `jsonwebtoken@^9.0.0` (for authentication/authorization)
+    - `pg@^8.10.0` (PostgreSQL client)
+  <!-- TODO: Justify the choice of major backend frameworks/libraries. (Rationale from team or design document needed.) -->
+
+  ## 4. Frameworks & Libraries (Frontend)
+  - Frontend Frameworks/Libraries: React (`react@^18.2.0`), Next.js (`next@^13.4.0`)
+  - UI Component Libraries: <!-- TODO: List key UI component libraries (e.g., Material UI, Bootstrap, Tailwind CSS, Ant Design) if used and found in dependencies. -->
+  - State Management: Zustand (`zustand@^4.3.0`)
+  <!-- TODO: Justify the choice of major frontend frameworks/libraries. (Rationale from team or design document needed.) -->
+
+  ## 8. Development Tools & Standards
+  - Linters: ESLint (`eslint@^8.50.0`), `eslint-plugin-react@^7.33.0`
+  - Code Formatters: Prettier (`prettier@^3.0.0`)
+  - Build Tools: Next.js (handles build process), TypeScript compiler (`typescript@^5.0.0`)
+  - Testing Frameworks: Jest (`jest@^29.6.0`), React Testing Library (`@testing-library/react@^14.0.0`)
+  <!-- TODO: What version control system will be used (e.g., Git)? Where will repositories be hosted? (Standard project information) -->
+  ```
+</example>
+
+<example type="invalid">
+  **User Request:** "Update the tech stack doc."
+
+  **AI Action (Invalid - Conversational):**
+  "Okay, I looked at your `package.json`. You\'re using React and Express. For the database, I see the `pg` library, so you\'re likely using PostgreSQL. Is that right? What about deployment?"
+  *(This is invalid because the AI engaged in conversation and asked clarifying questions instead of strictly following the protocol of only outputting the file content and using TODOs for missing info.)*
+
+  **AI Action (Invalid - Missing TODO for non-derivable information):**
+  **docs/TECH_STACK.md (partial output):**
+  ```markdown
+  ## 1. Project Overview & Goals
+  This project aims to deliver a cutting-edge e-commerce platform.
+
+  ## 10. Rationale & Alternatives Considered
+  React was chosen for its component model. Express was chosen for its simplicity.
+  ```
+  *(This is invalid if "This project aims to..." and the rationales were not actually found in a dependency file (highly unlikely) or a pre-existing `TECH_STACK.md` and are instead hallucinated or assumed. If this information isn\'t from the dependency file or a prior `TECH_STACK.md` being updated, it should have been a TODO. The rule is to *primarily* derive from dependencies, and if info isn\'t there and isn\'t in an existing `docs/TECH_STACK.md` being updated, it must be a TODO.)*
+</example>
+
+

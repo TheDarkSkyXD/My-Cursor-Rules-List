@@ -1,0 +1,234 @@
+---
+description: shadcn/ui Component Best Practices
+globs: *.tsx,*.jsx,*.css
+alwaysApply: false
+---
+
+<rule>
+name: shadcn_ui_best_practices
+description: Guidelines for using shadcn/ui components effectively in the Q&A platform
+filters:
+  - type: file_extension
+    pattern: "\\.tsx$|\\.jsx$|\\.css$"
+
+actions:
+  - type: suggest
+    message: |
+      # shadcn/ui Component Best Practices
+      
+      ## Component Implementation
+      
+      - Use shadcn/ui components as the foundation for custom components
+      - Extend functionality without modifying core component code
+      - Maintain accessible attributes and keyboard navigation
+      - Follow the composable component pattern
+      
+      ```tsx
+      // Good: Custom question card component using shadcn/ui
+      import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+      import { Badge } from "@/components/ui/badge";
+      import { Button } from "@/components/ui/button";
+      
+      interface QuestionCardProps {
+        question: Question;
+        onAnswer?: () => void;
+        onFeature?: () => void;
+      }
+      
+      export function QuestionCard({ question, onAnswer, onFeature }: QuestionCardProps) {
+        return (
+          <Card className="mb-4">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-medium">{question.submitterName}</CardTitle>
+                <Badge variant={question.status === 'ANSWERED' ? 'success' : 'default'}>
+                  {question.status}
+                </Badge>
+              </div>
+              <CardDescription>
+                {new Date(question.createdAt).toLocaleDateString()}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>{question.content}</p>
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2">
+              {question.status !== 'ANSWERED' && onAnswer && (
+                <Button onClick={onAnswer} size="sm">Answer</Button>
+              )}
+              {!question.isFeatured && onFeature && (
+                <Button variant="outline" size="sm" onClick={onFeature}>Feature</Button>
+              )}
+            </CardFooter>
+          </Card>
+        );
+      }
+      ```
+      
+      ## Form Implementation
+      
+      - Use React Hook Form with shadcn/ui Form components
+      - Implement Zod validation schemas
+      - Provide clear error messages and feedback
+      
+      ```tsx
+      // Good: Form implementation with shadcn/ui
+      import { z } from "zod";
+      import { useForm } from "react-hook-form";
+      import { zodResolver } from "@hookform/resolvers/zod";
+      import { Button } from "@/components/ui/button";
+      import {
+        Form,
+        FormControl,
+        FormDescription,
+        FormField,
+        FormItem,
+        FormLabel,
+        FormMessage,
+      } from "@/components/ui/form";
+      import { Textarea } from "@/components/ui/textarea";
+      import { Input } from "@/components/ui/input";
+      
+      const questionSchema = z.object({
+        submitterName: z.string().min(2, {
+          message: "Name must be at least 2 characters.",
+        }),
+        content: z.string().min(10, {
+          message: "Question must be at least 10 characters.",
+        }).max(500, {
+          message: "Question cannot exceed 500 characters."
+        }),
+      });
+      
+      export function QuestionForm({ onSubmit }) {
+        const form = useForm<z.infer<typeof questionSchema>>({
+          resolver: zodResolver(questionSchema),
+          defaultValues: {
+            submitterName: "",
+            content: "",
+          },
+        });
+        
+        function handleSubmit(values: z.infer<typeof questionSchema>) {
+          onSubmit(values);
+          form.reset();
+        }
+        
+        return (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="submitterName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Your Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Jane Smith" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      This will be displayed with your question.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Your Question</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="What would you like to ask?"
+                        className="min-h-[100px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Be clear and specific with your question.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit">Submit Question</Button>
+            </form>
+          </Form>
+        );
+      }
+      ```
+      
+      ## Accessibility
+      
+      - Maintain ARIA attributes provided by shadcn/ui
+      - Ensure proper color contrast for all UI elements
+      - Support keyboard navigation
+      - Test with screen readers
+      
+      ## Theming
+      
+      - Use the shadcn/ui theming system consistently
+      - Create a theme.css file for global variables
+      - Implement both light and dark mode
+      - Maintain consistent spacing, fonts, and colors
+
+examples:
+  - input: |
+      // Bad: Not utilizing shadcn/ui component composition
+      function QuestionCard({ question }) {
+        return (
+          <div className="border rounded-lg p-4 mb-4">
+            <div className="flex justify-between">
+              <h3 className="text-lg">{question.submitterName}</h3>
+              <span className="px-2 py-1 rounded bg-blue-100 text-blue-800">
+                {question.status}
+              </span>
+            </div>
+            <p className="text-gray-500 text-sm">{question.createdAt}</p>
+            <div className="my-4">
+              <p>{question.content}</p>
+            </div>
+            <div className="flex justify-end">
+              <button className="px-4 py-2 bg-blue-500 text-white rounded">
+                Answer
+              </button>
+            </div>
+          </div>
+        );
+      }
+    output: |
+      // Good: Using shadcn/ui component composition
+      import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+      import { Badge } from "@/components/ui/badge";
+      import { Button } from "@/components/ui/button";
+      
+      function QuestionCard({ question, onAnswer }) {
+        return (
+          <Card className="mb-4">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">{question.submitterName}</CardTitle>
+                <Badge variant={question.status === 'ANSWERED' ? 'success' : 'default'}>
+                  {question.status}
+                </Badge>
+              </div>
+              <CardDescription>
+                {new Date(question.createdAt).toLocaleDateString()}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>{question.content}</p>
+            </CardContent>
+            <CardFooter className="flex justify-end">
+              <Button onClick={onAnswer}>Answer</Button>
+            </CardFooter>
+          </Card>
+        );
+      }
+
+metadata:
+  priority: high
+  version: 1.0
+</rule> 

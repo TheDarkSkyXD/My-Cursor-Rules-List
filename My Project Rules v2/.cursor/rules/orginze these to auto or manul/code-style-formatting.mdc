@@ -1,0 +1,60 @@
+---
+description: Code Style and Formatting Rule
+globs: 
+alwaysApply: false
+---
+ # Code Style and Formatting Rule
+
+## Overview
+Consistent code style and formatting improves readability, reduces cognitive load, and minimizes unnecessary code changes.
+
+## General Guidelines
+1. Use automated formatting tools to maintain consistency
+2. Follow language-specific style guides
+3. Maintain consistent naming conventions
+4. Use meaningful variable, function, and class names
+5. Format code according to established project conventions
+
+## Naming Conventions
+- **Variables/Properties**: Use descriptive names in camelCase (JavaScript/TypeScript) or snake_case (Python)
+- **Functions/Methods**: Use verb phrases that describe the action (e.g., `calculateTotal`, `fetch_data`)
+- **Classes**: Use noun phrases in PascalCase (e.g., `UserRepository`, `PaymentProcessor`)
+- **Constants**: Use UPPER_SNAKE_CASE for true constants
+- **Private Members**: Use leading underscore for private members in languages without access modifiers
+
+## Formatting Rules
+- Use consistent indentation (spaces preferred over tabs)
+- Limit line length to 80-120 characters
+- Use consistent brace style
+- Add appropriate spacing around operators
+- Use trailing commas in multi-line arrays and objects
+- Organize imports logically and consistently
+- Remove unused imports and variables
+
+## File Organization
+- Group related code together
+- Place imports at the top of the file
+- Organize class members logically (e.g., properties, constructor, methods)
+- Add appropriate section headers for long files
+- Keep files focused on a single responsibility
+
+## Example Style Configuration
+```json
+{
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "bracketSpacing": true,
+  "arrowParens": "always"
+}
+```
+
+## Enforcement
+- Use linters and formatters (ESLint, Prettier, Black, etc.)
+- Configure formatting tools in the project
+- Run style checks as part of CI/CD
+- Perform automatic formatting on commit or save
+- Include style checks in code reviews

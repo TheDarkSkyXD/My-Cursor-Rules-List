@@ -1,0 +1,11 @@
+---
+trigger: model_decision
+description: APPLY package installation rules WHEN installation new package
+globs:
+origin: .windsurf/rules/04-tools-and-configurations/4-package-installation.md
+---
+
+- Never install new package directly
+- Always ask user
+- Check existing packages before proposing new
+- Prefer stable versions

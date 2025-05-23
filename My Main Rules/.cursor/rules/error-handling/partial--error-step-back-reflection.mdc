@@ -1,0 +1,14 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+1. Take a step back, analyze the error step by step. Look through the codebase. What have you tried and what can be done differently?
+2. Use context7
+3. use chain of thought reasoning to find the core issue first and then plan step by step to fix the issue, Then implement the fix.
+4. use chain of thought reasoning and ask me questions until you are 95% confident on how to implement this fix then plan step by step 
+5. follow the best practices of code. Search the web and find the fix for this issue
+6. Dont do anything until the questions are answered and you are 95% confident.
+7. review my codebase to answer your own questions.
+8. Dont do anything until i give the go ahead to go with the plan.
+

@@ -1,0 +1,256 @@
+---
+description: Best practices for form handling with React Hook Form and Zod
+globs: *.tsx,*.ts
+alwaysApply: false
+---
+
+# React Hook Form with Zod Best Practices
+
+## 1. Schema Definition
+
+### Define Type-Safe Schemas
+Create strongly typed schemas with Zod:
+
+```tsx
+// ✅ Good
+const loginSchema = z.object({
+  email: z.string()
+    .min(1, 'Email is required')
+    .email('Invalid email format'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number'),
+  rememberMe: z.boolean().default(false)
+})
+
+// Infer types from schema
+type LoginFormData = z.infer<typeof loginSchema>
+```
+
+## 2. Form Setup
+
+### Initialize Form with Zod Resolver
+Set up form with proper types and validation:
+
+```tsx
+// ✅ Good
+const LoginForm = () => {
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      rememberMe: false
+    }
+  })
+
+  return <form onSubmit={form.handleSubmit(onSubmit)}>...</form>
+}
+```
+
+## 3. Complex Validation
+
+### Custom Validation Rules
+Implement complex validation scenarios:
+
+```tsx
+// ✅ Good
+const signupSchema = z.object({
+  password: z.string().min(8),
+  confirmPassword: z.string()
+}).refine(
+  (data) => data.password === data.confirmPassword,
+  {
+    message: "Passwords don't match",
+    path: ["confirmPassword"]
+  }
+)
+```
+
+### Conditional Validation
+Handle conditional validation requirements:
+
+```tsx
+// ✅ Good
+const userSchema = z.object({
+  employmentStatus: z.enum(['employed', 'unemployed', 'student']),
+  companyName: z.string().optional(),
+  salary: z.number().optional()
+}).refine(
+  (data) => {
+    if (data.employmentStatus === 'employed') {
+      return !!data.companyName && !!data.salary
+    }
+    return true
+  },
+  {
+    message: "Company and salary are required for employed status",
+    path: ["companyName"]
+  }
+)
+```
+
+## 4. Reusable Components
+
+### Create Type-Safe Form Fields
+Build reusable form components with proper typing:
+
+```tsx
+// ✅ Good
+interface FormFieldProps<T extends FieldValues> {
+  name: Path<T>;
+  label: string;
+  form: UseFormReturn<T>;
+}
+
+const FormField = <T extends FieldValues>({ 
+  name, 
+  label, 
+  form 
+}: FormFieldProps<T>) => {
+  const { register, formState: { errors } } = form
+  
+  return (
+    <div>
+      <label htmlFor={name}>{label}</label>
+      <input
+        id={name}
+        {...register(name)}
+        className={cn(
+          'base-input',
+          errors[name] && 'error-input'
+        )}
+      />
+      {errors[name] && (
+        <span className="text-red-500 text-sm">
+          {errors[name]?.message as string}
+        </span>
+      )}
+    </div>
+  )
+}
+```
+
+## 5. Form Arrays with Zod
+
+### Handle Dynamic Fields
+Manage arrays of form fields with proper validation:
+
+```tsx
+// ✅ Good
+const todoSchema = z.object({
+  tasks: z.array(
+    z.object({
+      title: z.string().min(1, 'Title is required'),
+      description: z.string().optional(),
+      priority: z.enum(['low', 'medium', 'high'])
+    })
+  ).min(1, 'At least one task is required')
+})
+
+const TodoForm = () => {
+  const { control, handleSubmit } = useForm<z.infer<typeof todoSchema>>({
+    resolver: zodResolver(todoSchema),
+    defaultValues: {
+      tasks: [{ title: '', description: '', priority: 'medium' }]
+    }
+  })
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'tasks'
+  })
+
+  return (
+    <form>
+      {fields.map((field, index) => (
+        <TaskField
+          key={field.id}
+          index={index}
+          control={control}
+          onRemove={() => remove(index)}
+        />
+      ))}
+    </form>
+  )
+}
+```
+
+## 6. Error Handling
+
+### Custom Error Messages
+Customize error messages with Zod:
+
+```tsx
+// ✅ Good
+const userSchema = z.object({
+  username: z.string()
+    .min(3, 'Username must be at least 3 characters')
+    .regex(/^[a-zA-Z0-9_]+$/, {
+      message: 'Username can only contain letters, numbers, and underscores'
+    }),
+  age: z.number()
+    .min(18, 'Must be at least 18 years old')
+    .max(100, 'Age seems invalid')
+})
+```
+
+## 7. Async Validation
+
+### Handle Async Validation
+Implement async validation with Zod:
+
+```tsx
+// ✅ Good
+const signupSchema = z.object({
+  email: z.string().email()
+}).refine(
+  async (data) => {
+    const isAvailable = await checkEmailAvailability(data.email)
+    return isAvailable
+  },
+  {
+    message: "Email already taken",
+    path: ["email"]
+  }
+)
+```
+
+## 8. Form Submission
+
+### Type-Safe Form Submission
+Handle form submission with proper typing:
+
+```tsx
+// ✅ Good
+const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  try {
+    await api.submit(data)
+    form.reset()
+    toast.success('Form submitted successfully')
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      // Handle validation errors
+      error.errors.forEach(err => {
+        form.setError(err.path[0] as any, {
+          type: 'manual',
+          message: err.message
+        })
+      })
+    } else {
+      toast.error('Submission failed')
+    }
+  }
+}
+```
+
+Remember:
+- Always define schemas at the top level for reusability
+- Use z.infer<typeof schema> for type inference
+- Implement proper error handling and messages
+- Create reusable form components
+- Handle async validation properly
+- Use proper TypeScript types throughout
+- Implement proper form state management
+- Handle complex validation scenarios effectively

@@ -1,0 +1,27 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Feature Planning & Implementation
+Do this when working on a feature or wanting to add something to the project.
+To ensure thoughtful and efficient development:
+1. Understand Scope Thoroughly
+- Read related code before planning.
+- Identify all downstream effects (e.g., database schema, API changes, UI updates, dependencies).
+
+2. Ask 4-6 Key Clarifying Questions
+- If a requirement is vague, ask the right questions before assuming anything.
+- Questions should uncover missing details, potential trade-offs, and edge cases.
+
+3. Draft a Concrete Plan
+- Break it down into phases or steps.
+- Mention dependencies and risks.
+- Highlight what needs review before execution.
+
+4. Iterate with Transparency
+- After each phase, provide a brief update:
+- ✅ What’s completed
+- 🔄 What’s next
+- ⏳ Remaining steps
+

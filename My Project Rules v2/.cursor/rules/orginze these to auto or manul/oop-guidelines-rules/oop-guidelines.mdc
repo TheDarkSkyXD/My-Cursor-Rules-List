@@ -1,0 +1,25 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Object-Oriented Programming (OOP) Guidelines
+
+When generating or modifying code, follow these Object-Oriented Programming principles to create modular, maintainable applications with multiple connected files instead of monolithic code.
+
+## Core Principles
+
+1. **Separate Concerns with Classes**
+   - Create distinct classes for different responsibilities
+   - Each class should have a single purpose
+   - Avoid monolithic files with multiple unrelated functionalities
+
+2. **Structure Like Lego Blocks**
+   - Design classes to be modular and reusable
+   - Create clear interfaces between components
+   - Use composition and inheritance appropriately
+
+3. **File Organization**
+   - Place each class in its own file
+   - Group related classes in appropriate directories
+   - Follow naming conventions that reflect class purposes

@@ -1,0 +1,54 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Large File Refactoring Guidelines
+
+## Critical Rules
+
+- When reading or editing any file, if its line count exceeds 500 lines:
+  - Evaluate the file's content and identify sections that can be simplified or extracted into separate files/modules.
+  - Propose refactoring by either simplifying the existing code structure or by splitting the file into smaller, logical units.
+  - If the file's line count exceeds 1000 lines, propose refactoring in manageable chunks to avoid overly large or complex changes at once.
+  - Ensure any proposed changes maintain the original functionality and behavior of the code.
+  - Verify that tests (if any) related to the code still pass, or update/add tests as necessary.
+  - Add clear and concise comments to explain new structures, complex logic, or the purpose of new files/modules created during refactoring.
+
+## Examples
+
+<example>
+  **Scenario:** The agent is asked to review `src/core/main_logic.py`, which is 650 lines long.
+  **Action:**
+  1. The agent identifies that several distinct functionalities (e.g., data processing, API interaction, utility functions) are within `main_logic.py`, making it lengthy.
+  2. The agent proposes splitting these into `data_processor.py`, `api_handler.py`, and `utils.py`.
+  3. The agent modifies `main_logic.py` to import and use these new modules.
+  4. The agent verifies that the core application logic functions as before.
+  5. The agent adds comments to `main_logic.py` explaining the modular structure and to each new module explaining its specific role.
+  **Outcome:** `main_logic.py` is now shorter and easier to understand, and the new modules are well-defined.
+</example>
+
+<example>
+  **Scenario:** The agent is editing `src/services/heavy_batch_processor.java`, which is 1200 lines long.
+  **Action:**
+  1. The agent notes the file size exceeds 1000 lines.
+  2. It first identifies a complex data transformation section (approx. 300 lines) that can be extracted.
+  3. The agent proposes extracting this into a `DataTransformer.java` class and updates `heavy_batch_processor.java` to use it. Comments are added. Functionality is verified.
+  4. In a subsequent step (or as part of a plan), the agent can then evaluate other sections of the now ~900 line `heavy_batch_processor.java` for further refactoring.
+  **Outcome:** The refactoring is approached iteratively, making changes more manageable and review easier.
+</example>
+
+<example type="invalid">
+  **Scenario 1:** The agent is editing `src/utils/simple_logger.js`, which is 80 lines long.
+  **Action:** The agent does not apply this rule, as the line count is below the 500-line threshold.
+
+  **Scenario 2:** A 700-line Python script `data_analyzer.py` is refactored by splitting it. However, one of the data analysis functions now produces incorrect results due to a mishandled import.
+  **Action:** This is an invalid application because functionality was broken. The rule requires ensuring functionality is preserved.
+
+  **Scenario 3:** A 550-line Java class is split into two smaller classes, but no comments are added to explain the new structure or the purpose of the new files.
+  **Action:** This is an invalid application because the rule requires adding clear comments.
+
+  **Scenario 4:** An 1100-line file is refactored entirely in one go, leading to a massive, hard-to-review change.
+  **Action:** This is an invalid application because the rule specifies refactoring in chunks for files over 1000 lines.
+</example>
+

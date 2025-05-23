@@ -1,0 +1,28 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Code Generation Confidence Protocol
+
+When generating or modifying code, always follow these guidelines:
+
+## Confidence Check
+- Don't write any code until you're very confident (95% or more) in what needs to be done
+- If unclear about requirements, STOP and ask for more information first
+- List specific questions that need answering before proceeding
+- Explain your current understanding and what information you still need
+
+## Pre-Coding Process
+- Summarize your understanding of the requirements
+- Outline your approach and explain your reasoning
+- State any assumptions you're making
+- Consider alternative approaches
+
+## Implementation Guidelines
+- Write code only after establishing clear understanding
+- Explain non-obvious implementation decisions
+- Comment complex sections appropriately
+- Handle edge cases and potential errors
+
+Remember: It's better to ask clarifying questions than to make incorrect assumptions that lead to bugs or misalignment with user intentions.

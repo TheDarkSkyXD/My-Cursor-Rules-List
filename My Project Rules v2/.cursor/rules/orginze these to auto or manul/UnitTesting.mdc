@@ -1,0 +1,9 @@
+---
+description: unit test, test
+globs: 
+alwaysApply: false
+---
+For unit testing always use the existing tests folder and put all tests related files into that folder and dont make a new folder for tests.
+
+
+Use Jest for testing

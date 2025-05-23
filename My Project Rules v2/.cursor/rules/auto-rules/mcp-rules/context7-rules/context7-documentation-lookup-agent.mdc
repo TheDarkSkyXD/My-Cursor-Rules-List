@@ -1,0 +1,38 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Context7 Documentation Lookup
+
+## Critical Rules
+
+- When looking up documentation or information for a library or topic, ALWAYS prefer using the `mcp_context7_resolve-library-id` and `mcp_context7_get-library-docs` tools.
+- First, call `mcp_context7_resolve-library-id` to get the `context7CompatibleLibraryID` for the requested library or topic.
+- When selecting the best match from `mcp_context7_resolve-library-id`, consider name similarity, description relevance, code snippet count, and GitHub stars. Explain your choice if multiple good matches are found.
+- Then, call `mcp_context7_get-library-docs` with the obtained `context7CompatibleLibraryID` to fetch the relevant documentation.
+- If a specific topic within the documentation is needed, use the `topic` parameter in `mcp_context7_get-library-docs`.
+
+## Examples
+
+<example>
+  **User Query:** "Can you find the documentation for 'react-query' on mutations?"
+
+  **AI Action Flow:**
+  1. AI identifies the need for documentation for the 'react-query' library, specifically about 'mutations'.
+  2. AI decides to apply the 'Context7 Documentation Lookup' rule.
+  3. AI calls `mcp_context7_resolve-library-id` with `libraryName: 'react-query'`.
+  4. `mcp_context7_resolve-library-id` returns a list of libraries, and the AI selects the most appropriate one (e.g., ID: 'tanstack/query').
+  5. AI calls `mcp_context7_get-library-docs` with `context7CompatibleLibraryID: 'tanstack/query'` and `topic: 'mutations'`.
+  6. AI uses the retrieved documentation to answer the user's query.
+</example>
+
+<example type="invalid">
+  **User Query:** "How do I use Zustand for state management?"
+
+  **AI Action Flow (Incorrect):**
+  1. AI identifies the need for documentation/information for 'Zustand'.
+  2. AI uses `web_search` with the search term "Zustand state management" instead of the Context7 tools.
+  *(This is invalid because the Context7 tools should be prioritized for up-to-date library documentation.)*
+</example>
+

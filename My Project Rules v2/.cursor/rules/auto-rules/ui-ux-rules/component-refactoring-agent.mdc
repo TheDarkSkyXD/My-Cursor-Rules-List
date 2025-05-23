@@ -1,0 +1,44 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Component Refactoring for Large Files
+
+## Critical Rules
+
+- When a component file (e.g., files matching patterns like `*.tsx`, `*.jsx`, `*.vue`, `*.component.ts`, `*.component.js`) is being read, opened for editing, or created, and its line count exceeds 100 lines:
+  - Evaluate the component's complexity and identify sections that can be simplified or extracted.
+  - Propose refactoring by either simplifying the existing code structure or by splitting the component into smaller, logical sub-components.
+  - Ensure any proposed changes maintain the component's current functionality and behavior.
+  - Verify that tests (if any) related to the component still pass, or update/add tests as necessary.
+  - Add clear and concise comments to explain new structures, complex logic, or the purpose of new sub-components.
+  - If splitting the component, ensure the new sub-components are well-defined and promote reusability if applicable.
+
+## Examples
+
+<example>
+  **Scenario:** The agent is asked to review `src/components/UserProfilePage.tsx`, which is 150 lines long.
+  **Action:**
+  1. The agent identifies that the user avatar, user details, and user activity sections within `UserProfilePage.tsx` make it lengthy and complex.
+  2. The agent proposes splitting these into `UserAvatar.tsx`, `UserDetails.tsx`, and `UserActivityFeed.tsx`.
+  3. The agent modifies `UserProfilePage.tsx` to import and use these new sub-components.
+  4. The agent verifies that the user profile page renders correctly and all interactive elements function as before.
+  5. The agent adds comments to `UserProfilePage.tsx` explaining the composition and to each new sub-component explaining its specific role.
+  **Outcome:** The `UserProfilePage.tsx` is now shorter and easier to understand, and the new sub-components are potentially reusable.
+</example>
+
+<example type="invalid">
+  **Scenario 1:** The agent is reviewing `src/utils/date-formatter.ts` (a utility file, not a UI component) which is 200 lines long.
+  **Action:** The agent does not apply this rule, as it's not a component file.
+
+  **Scenario 2:** The agent is editing `src/components/SimpleButton.tsx`, which is 30 lines long.
+  **Action:** The agent does not apply this rule, as the line count is below the threshold.
+
+  **Scenario 3:** A component `src/components/ComplexForm.tsx` (120 lines) is refactored by splitting it. However, one of the input fields stops updating its state after the change.
+  **Action:** This is an invalid application because functionality was broken. The rule requires ensuring functionality is preserved.
+
+  **Scenario 4:** A 110-line component is split into two smaller components, but no comments are added to explain the new structure or the purpose of the new files.
+  **Action:** This is an invalid application because the rule requires adding clear comments.
+</example>
+

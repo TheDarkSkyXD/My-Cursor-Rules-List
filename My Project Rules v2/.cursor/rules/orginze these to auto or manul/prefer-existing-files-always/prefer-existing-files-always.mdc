@@ -1,0 +1,33 @@
+---
+description: Enforces using existing files rather than creating new ones when adding functionality
+globs: 
+alwaysApply: true
+---
+# Prefer Existing Files
+
+## Critical Rules
+
+- Always search for and attempt to utilize existing files before creating new ones.
+- Create a new file only if no existing file can appropriately accommodate the required functionality or code.
+- When refactoring, adding features, or fixing bugs, prioritize integrating changes within the existing codebase structure and relevant files.
+
+## Examples
+
+<example>
+// User asks to add a function to manage user settings.
+// AI identifies an existing `user-service.ts` file.
+// AI proposes adding a new method `updateUserSettings()` to `user-service.ts`.
+</example>
+
+<example type="invalid">
+// User asks to add a function to manage user settings.
+// An existing `user-service.ts` file is present.
+// AI proposes creating a new file `user-settings-service.ts` for the new function.
+</example>
+
+<example>
+// User asks to implement a new logging feature for analytics.
+// No existing file like `analytics-logger.ts` or similar is found in relevant service/module directories.
+// AI proposes creating a new file `analytics-service.ts` to house the logging functionality.
+</example>
+

@@ -1,0 +1,43 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+## 1. Understand Before You Act  
+Always **scan the full file** before making changes. Ensure you understand the current logic and structure. Don’t make edits blindly.
+
+## 2. Stay Within Scope  
+Only do what I explicitly asked for. If you believe something else should be changed, **ask for permission first**.
+
+## 3. Avoid Unnecessary Rewrites  
+Never rewrite entire files unless directed. Only change the **exact code that needs changing** to fulfill the task.
+
+## 4. Never Overwrite Logic Without Approval  
+Do not overwrite or replace existing code unless I have approved it. Respect the current logic unless a fix or feature specifically requires a change.
+
+## 5. Plan Before You Code  
+Before writing code, **map out all changes**. Identify which files, functions, and components will need to be added, modified, or removed. Confirm they exist.
+
+## 6. Scan the Project  
+Always inspect the project’s structure (folders, files, existing components) to avoid duplication or breaking existing functionality.
+
+## 7. Think Before You Rush  
+Slow down. Take time to reason through the problem and ensure each step is correct before committing any code.
+
+## 8. Don’t Assume Library/Package Behavior  
+Do **not** guess how third-party libraries or packages work. Use the **`@web` tool** or consult official documentation to confirm **exact functionality** before implementation.
+
+## 9. Avoid New Packages Unless Absolutely Necessary  
+Adding new dependencies is a **last resort**. Exhaust all native or existing solutions first.
+
+## 10. Debug Methodically  
+When facing a bug:
+- Stop and **list 5–8 possible causes**.
+- Select the **top 1–2 most likely**.
+- Add **precise logging** to verify whether your hypothesis is correct before trying fixes.
+
+## 11. Consider Downstream Effects  
+Before making edits to any file, **analyze how your changes might affect other components** in the system. Look for any shared logic or imported dependencies that could be impacted.
+
+## 12. Always use vibesafe install tool to install a package

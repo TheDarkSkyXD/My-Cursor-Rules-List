@@ -1,0 +1,34 @@
+---
+description: Rules for conducting self-audits of code, documentation, and environment
+globs: ["**/*"]
+alwaysApply: true
+---
+# Self-Audit Rules
+
+## Code Audit
+- Review code quality
+- Check for vulnerabilities
+- Verify test coverage
+- Validate documentation
+- Update security status
+
+## Documentation Audit
+- Check file completeness
+- Verify cross-references
+- Validate formats
+- Update timestamps
+- Review security docs
+
+## State Audit
+- Verify task status
+- Check progress tracking
+- Validate decisions
+- Review questions
+- Confirm security status
+
+## Environment Audit
+- Verify tool versions
+- Check dependencies
+- Validate configurations
+- Test security tools
+- Confirm compatibility 

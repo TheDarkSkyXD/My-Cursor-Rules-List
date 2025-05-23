@@ -1,0 +1,37 @@
+---
+description: Dependency Management
+globs: 
+alwaysApply: false
+---
+# Dependency Management Rule
+
+## Overview
+Maintain consistent, secure, and well-managed dependencies to prevent version conflicts, security vulnerabilities, and technical debt.
+
+## Guidelines
+1. Use specific version numbers for all dependencies
+2. Regularly audit and update dependencies for security vulnerabilities
+3. Minimize the number of dependencies to reduce complexity
+4. Document the purpose of each dependency
+5. Use the installed dependencies' version during code edits unless there is a need to change the version
+
+## Dependency Selection Criteria
+- Choose well-maintained libraries with active communities
+- Prefer libraries with minimal sub-dependencies
+- Consider license compatibility with the project
+- Evaluate performance impact before adding new dependencies
+
+## Version Management
+- Lock dependency versions in package files
+- Document why specific versions are required if not using latest
+- Schedule regular dependency reviews and updates
+
+## Security Practices
+- Configure automated security scanning for dependencies
+- Establish a process for addressing vulnerable dependencies
+- Create a policy for emergency security updates
+
+## Examples
+- Use npm-audit/pip-audit to check for vulnerabilities
+- Document dependency purpose and scope in README or dedicated docs
+- Have a clear process for introducing new dependencies

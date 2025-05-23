@@ -1,0 +1,105 @@
+---
+description: Self-Correction After Mistakes
+globs: *
+alwaysApply: true
+---
+
+# Self-Correction After Mistakes
+
+Rule for creating a learning feedback loop when mistakes require user intervention.
+
+<rule>
+name: self_correction
+description: Standards for analyzing and creating rules when mistakes require user intervention
+filters:
+  - type: event
+    pattern: "user_correction"
+  - type: content
+    pattern: "(?i)(?:mistake|error|wrong|incorrect|not right|fix|correction)"
+  - type: event
+    pattern: "error_recovery"
+
+actions:
+
+- type: suggest
+  message: |
+  When a mistake requires user intervention:
+
+  1. Immediate Stop and Acknowledge:
+
+     ```
+     - Stop current approach immediately
+     - Acknowledge the mistake explicitly
+     - Thank the user for correction
+     - Do not attempt to continue with incorrect approach
+     ```
+
+  2. Root Cause Analysis:
+
+     ```
+     - Identify the specific misconception or error
+     - Determine why the approach was incorrect
+     - Identify what assumptions were wrong
+     - Note what information was missing or misunderstood
+     ```
+
+  3. Create a Cursor Rule:
+
+     ```
+     - Create a new rule to prevent similar mistakes
+     - Determine if rule belongs in global/ or project/
+       • global/: Generally applicable across projects
+       • project/: Specific to this project's requirements
+     - Follow cursor-rule-creation workflow (create in root, then move)
+     - Include specific examples of both correct and incorrect approaches
+     ```
+
+  4. Commit Rule and Reference:
+
+     ```
+     - Commit the rule to the appropriate location
+     - Reference the rule in your response
+     - Explain how the rule will prevent similar mistakes
+     ```
+
+  5. Apply New Knowledge:
+     ```
+     - Immediately apply the insights from the correction
+     - Start with a clean approach based on correct understanding
+     - Reference user guidance in your new approach
+     ```
+
+examples:
+
+- input: |
+
+  # Bad: Continuing incorrect approach
+
+  "I'll just modify my approach slightly and continue..."
+
+  # Good: Stop, analyze, create rule
+
+  "I see I've misunderstood X. I'll create a rule to prevent this mistake in the future.
+
+  Here's what went wrong:
+
+  1. I assumed X when I should have understood Y
+  2. I missed the constraint that Z must always be done
+
+  Creating a new rule for this pattern now."
+  output: "Proper mistake acknowledgment and correction"
+
+- input: |
+  # Bad: Vague rule
+  "I'll remember to do it correctly next time"
+  # Good: Specific rule
+  "Created rule self-correction.mdc to handle cases where:
+  - The build command requires specific environment variables
+  - The command needs to run from the project root
+  - The file structure differs from standard layout"
+    output: "Specific, actionable rule creation"
+
+metadata:
+priority: high
+version: 1.0
+</rule>

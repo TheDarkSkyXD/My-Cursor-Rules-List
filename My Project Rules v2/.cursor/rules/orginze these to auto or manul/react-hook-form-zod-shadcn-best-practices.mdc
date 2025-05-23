@@ -1,0 +1,142 @@
+---
+description: Best practices for form handling with React Hook Form, Zod and Shadcn UI
+globs: *.tsx,*.ts
+alwaysApply: false
+---
+# React Hook Form with Zod and Shadcn UI Best Practices
+
+## 1. Form Schema and Types
+
+### Define Type-Safe Schemas
+Create strongly typed schemas with Zod:
+
+```tsx
+const loginSchema = z.object({
+  email: z.string()
+    .min(1, 'Email is required')
+    .email('Invalid email format'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number'),
+  rememberMe: z.boolean().default(false)
+})
+
+type LoginFormData = z.infer<typeof loginSchema>
+```
+
+## 2. Form Component Structure
+
+### Organize Form Components
+Structure your form components properly:
+
+```tsx
+export function LoginForm() {
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      rememberMe: false
+    }
+  })
+
+  async function onSubmit(data: LoginFormData) {
+    // Handle form submission
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input placeholder="email@example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        {/* Other form fields */}
+      </form>
+    </Form>
+  )
+}
+```
+
+## 3. Form Arrays with Shadcn
+
+### Dynamic Form Fields
+Handle dynamic form fields:
+
+```tsx
+const taskSchema = z.object({
+  tasks: z.array(
+    z.object({
+      title: z.string().min(1, 'Title is required'),
+      priority: z.enum(['low', 'medium', 'high'])
+    })
+  ).min(1, 'At least one task is required')
+})
+
+export function TaskListForm() {
+  const form = useForm<z.infer<typeof taskSchema>>({
+    resolver: zodResolver(taskSchema),
+    defaultValues: {
+      tasks: [{ title: '', priority: 'medium' }]
+    }
+  })
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "tasks"
+  })
+
+  return (
+    <Form {...form}>
+      <form>
+        {fields.map((field, index) => (
+          <div key={field.id} className="flex gap-4">
+            <FormField
+              control={form.control}
+              name={`tasks.${index}.title`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              onClick={() => remove(index)}
+            >
+              <TrashIcon className="h-4 w-4" />
+            </Button>
+          </div>
+        ))}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => append({ title: '', priority: 'medium' })}
+        >
+          Add Task
+        </Button>
+      </form>
+    </Form>
+  )
+}
+```
+
+Remember:
+- Use Shadcn's Form components consistently
+- Implement proper form validation with Zod
+- Use proper TypeScript types throughout

@@ -1,0 +1,40 @@
+---
+description: Code Modularity
+globs: 
+alwaysApply: false
+---
+# Code Modularity Rule
+
+## Overview
+Code should be organized into cohesive, loosely coupled modules to improve maintainability, reusability, and testability.
+
+## Core Principles
+1. Single Responsibility Principle: Each module should have only one reason to change
+2. Open/Closed Principle: Modules should be open for extension but closed for modification
+3. Interface Segregation: Clients should not depend on interfaces they don't use
+4. Dependency Inversion: High-level modules should not depend on low-level modules
+
+## Specific Guidelines
+- Functions should be limited to 30-50 lines of code
+- Classes should be limited to 300-500 lines of code
+- Files should be limited to 500-1000 lines of code
+- Cyclomatic complexity should not exceed 15 per function
+- Methods should have no more than 3-4 parameters
+
+## Refactoring Patterns
+- Extract Method: Break down large functions into smaller ones
+- Extract Class: Split large classes into smaller, focused ones
+- Parameter Object: Replace long parameter lists with objects
+- Strategy Pattern: Extract variable algorithms into separate classes
+- Composition: Prefer composition over inheritance
+
+## Examples
+- A 200+ line function should be split into multiple functions
+- A class with mixed responsibilities should be refactored into multiple classes
+- A file with 1000+ lines should be split into multiple files
+
+## Enforcement
+- Use static analysis tools to measure code complexity
+- Implement pre-commit hooks to flag violations
+- Include modularity checks in code reviews
+- Document complex modules with clear explanations of responsibility boundaries

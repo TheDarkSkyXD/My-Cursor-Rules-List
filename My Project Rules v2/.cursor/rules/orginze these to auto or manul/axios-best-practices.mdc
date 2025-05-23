@@ -1,0 +1,226 @@
+---
+description: Best practices for using Axios in Next.js
+globs: *.tsx,*.ts
+alwaysApply: false
+---
+## Core Concepts
+
+- Type-safe HTTP requests
+- Centralized instance configuration
+- Proper error handling
+- Request/response interceptors
+- Request cancellation
+- Caching strategies
+- Testing patterns
+
+## Basic Setup
+
+Create a base axios instance with proper configuration:
+
+```ts
+// lib/axios.ts
+import axios from 'axios';
+
+export const axiosInstance = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+```
+
+## Type Safety
+
+### Define Response Types
+
+```ts
+// types/api.ts
+export interface ApiResponse<T> {
+  data: T;
+  status: number;
+  message: string;
+}
+
+// Example usage
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+const getUser = async (id: string): Promise<ApiResponse<User>> => {
+  const response = await axiosInstance.get<ApiResponse<User>>(`/users/${id}`);
+  return response.data;
+};
+```
+
+## Best Practices
+
+### 1. Use Service Pattern
+
+✅ DO create service modules for API calls
+
+```ts
+// services/api.service.ts
+export class ApiService<T> {
+  constructor(
+    private readonly baseUrl: string,
+  ) {}
+
+  async getAll(): Promise<T[]> {
+    const { data } = await axiosInstance.get<T[]>(this.baseUrl);
+    return data;
+  }
+
+  async getById(id: string): Promise<T> {
+    const { data } = await axiosInstance.get<T>(`${this.baseUrl}/${id}`);
+    return data;
+  }
+}
+```
+
+// Usage
+const userService = new ApiService<User>('/api/users');
+const users = await userService.getAll();
+
+❌ DON'T make API calls directly in components
+
+// Don't do this
+const Component = () => {
+  const fetchData = async () => {
+    const response = await axios.get('https://api.example.com/data');
+    // ...
+  };
+};
+
+### 2. Error Handling
+
+✅ DO create custom error handlers
+
+```ts
+// lib/error-handler.ts
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public message: string,
+    public data?: unknown
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+export const handleAxiosError = (error: AxiosError): ApiError => {
+  if (error.response) {
+    return new ApiError(
+      error.response.status,
+      error.response.data?.message || 'An error occurred',
+      error.response.data
+    );
+  }
+  return new ApiError(500, error.message);
+};
+```
+
+### 3. Request Interceptors
+
+✅ DO use interceptors for common operations
+
+```ts
+// lib/axios.ts
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      await refreshToken();
+      return axiosInstance(error.config);
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+## Testing
+
+### Mock Axios in Tests
+
+```ts
+// __tests__/api.test.ts
+import { axiosInstance } from '@/lib/axios';
+import { getUserProfile } from '@/services/user';
+
+jest.mock('@/lib/axios');
+
+describe('API Services', () => {
+  it('should fetch user profile', async () => {
+    const mockUser = { id: '1', name: 'John Doe' };
+    (axiosInstance.get as jest.Mock).mockResolvedValueOnce({ data: mockUser });
+
+    const result = await getUserProfile('1');
+    expect(result).toEqual(mockUser);
+  });
+
+  it('should handle errors', async () => {
+    const mockError = new Error('Network Error');
+    (axiosInstance.get as jest.Mock).mockRejectedValueOnce(mockError);
+
+    await expect(getUserProfile('1')).rejects.toThrow('Network Error');
+  });
+});
+```
+
+## Common Patterns
+
+### Factory Pattern
+
+```ts
+// services/api-factory.ts
+export const createApiService = <T>(baseUrl: string) => ({
+  getAll: async () => {
+    const { data } = await axiosInstance.get<T[]>(baseUrl);
+    return data;
+  },
+  getById: async (id: string) => {
+    const { data } = await axiosInstance.get<T>(`${baseUrl}/${id}`);
+    return data;
+  },
+  create: async (payload: Omit<T, 'id'>) => {
+    const { data } = await axiosInstance.post<T>(baseUrl, payload);
+    return data;
+  },
+  update: async (id: string, payload: Partial<T>) => {
+    const { data } = await axiosInstance.put<T>(`${baseUrl}/${id}`, payload);
+    return data;
+  },
+  delete: async (id: string) => {
+    await axiosInstance.delete(`${baseUrl}/${id}`);
+  },
+});
+
+// Usage
+const userApi = createApiService<User>('/api/users');
+const users = await userApi.getAll();
+```
+
+## Tips and Gotchas
+
+1. Always specify return types for API calls
+2. Use AbortController for cancellable requests
+3. Implement proper error boundaries in React components
+4. Consider using React Query or SWR for advanced caching
+5. Keep authentication logic in interceptors
+6. Use environment variables for API URLs
+7. Implement retry logic for failed requests
+8. Add request/response logging in development

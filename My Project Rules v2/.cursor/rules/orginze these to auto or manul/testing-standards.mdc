@@ -1,0 +1,60 @@
+---
+description: Testing Standards Rule
+globs: 
+alwaysApply: false
+---
+ # Testing Standards Rule
+
+## Overview
+Comprehensive testing is essential for maintaining code quality, preventing regressions, and supporting refactoring.
+
+## Testing Requirements
+1. All new code must include appropriate tests
+2. Test coverage should be maintained at a minimum of 80%
+3. Tests should be independent and deterministic
+4. Follow the Arrange-Act-Assert (AAA) pattern
+5. Use test doubles (mocks, stubs, fakes) appropriately
+
+## Test Types
+- **Unit Tests**: Test individual functions/methods in isolation
+- **Integration Tests**: Test interactions between components
+- **End-to-End Tests**: Test complete user workflows
+- **Performance Tests**: Test system performance under load
+- **Security Tests**: Test for security vulnerabilities
+
+## Testing Best Practices
+- Write tests before or alongside the implementation (TDD/BDD)
+- Test both happy paths and edge cases
+- Keep tests fast and reliable
+- Use descriptive test names that explain the expected behavior
+- Avoid test interdependencies
+- Mock external dependencies
+- Don't test internal implementation details
+
+## Test Structure
+```
+describe('Module/Component', () => {
+  describe('Function/Method', () => {
+    it('should behave as expected when condition', () => {
+      // Arrange: Set up preconditions
+      
+      // Act: Execute the code under test
+      
+      // Assert: Verify the results
+    });
+  });
+});
+```
+
+## Testing Tools
+- Use appropriate testing frameworks for your language/platform
+- Incorporate property-based testing where appropriate
+- Run tests on CI/CD pipeline before deployment
+- Use code coverage tools to identify untested code
+- Implement test quality metrics
+
+## Enforcement
+- Run tests automatically on pull requests
+- Block merges that decrease test coverage
+- Review test quality in code reviews
+- Track and report test metrics over time

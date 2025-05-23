@@ -1,0 +1,287 @@
+---
+description: Best practices for form handling with React Hook Form
+globs: *.tsx,*.ts
+alwaysApply: false
+---
+
+# React Hook Form Best Practices
+
+## 1. Type Safety
+
+### Define Strong Types for Form Data
+Use TypeScript interfaces/types for form data:
+
+```tsx
+// ✅ Good
+interface LoginFormData {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
+
+const { register, handleSubmit } = useForm<LoginFormData>({
+  defaultValues: {
+    email: '',
+    password: '',
+    rememberMe: false
+  }
+})
+```
+
+## 2. Form Validation
+
+### Use Zod for Schema Validation
+Implement strong validation with Zod:
+
+```tsx
+// ✅ Good
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+
+const loginSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  rememberMe: z.boolean()
+})
+
+const {
+  register,
+  handleSubmit,
+  formState: { errors }
+} = useForm<LoginFormData>({
+  resolver: zodResolver(loginSchema)
+})
+```
+
+### Custom Validation Rules
+Implement complex validation rules:
+
+```tsx
+// ✅ Good
+const passwordSchema = z.object({
+  password: z.string().min(8),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"]
+})
+```
+
+## 3. Form Organization
+
+### Use Form Context for Complex Forms
+Organize large forms with FormProvider:
+
+```tsx
+// ✅ Good
+const FormWrapper = ({ children }: { children: React.ReactNode }) => {
+  const methods = useForm<FormData>()
+  
+  return (
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onSubmit)}>
+        {children}
+      </form>
+    </FormProvider>
+  )
+}
+
+const NestedComponent = () => {
+  const { register } = useFormContext()
+  return <input {...register('fieldName')} />
+}
+```
+
+### Separate Form Components
+Break down complex forms into smaller components:
+
+```tsx
+// ✅ Good
+const AddressFields = () => {
+  const { register } = useFormContext()
+  
+  return (
+    <div>
+      <input {...register('street')} />
+      <input {...register('city')} />
+      <input {...register('zipCode')} />
+    </div>
+  )
+}
+```
+
+## 4. Error Handling
+
+### Implement Consistent Error Display
+Create reusable error components:
+
+```tsx
+// ✅ Good
+const FormField = ({ name, label, type = 'text' }: FormFieldProps) => {
+  const { register, formState: { errors } } = useFormContext()
+  
+  return (
+    <div>
+      <label htmlFor={name}>{label}</label>
+      <input
+        id={name}
+        type={type}
+        {...register(name)}
+        className={cn(
+          'base-input',
+          errors[name] && 'error-input'
+        )}
+      />
+      {errors[name] && (
+        <span className="text-red-500 text-sm">
+          {errors[name]?.message as string}
+        </span>
+      )}
+    </div>
+  )
+}
+```
+
+## 5. Form Submission
+
+### Handle Async Submission
+Properly handle async form submission:
+
+```tsx
+// ✅ Good
+const onSubmit = async (data: FormData) => {
+  try {
+    setSubmitting(true)
+    await submitForm(data)
+    toast.success('Form submitted successfully')
+    reset()
+  } catch (error) {
+    toast.error('Failed to submit form')
+    console.error(error)
+  } finally {
+    setSubmitting(false)
+  }
+}
+```
+
+## 6. Performance Optimization
+
+### Use Mode Configuration
+Configure validation mode appropriately:
+
+```tsx
+// ✅ Good
+const { register } = useForm({
+  mode: 'onBlur',  // Validate on blur
+  reValidateMode: 'onChange',  // Re-validate on change after blur
+})
+```
+
+### Controlled Components
+Use controlled components when necessary:
+
+```tsx
+// ✅ Good
+const { control } = useForm()
+
+return (
+  <Controller
+    name="select"
+    control={control}
+    render={({ field }) => (
+      <Select
+        {...field}
+        options={options}
+      />
+    )}
+  />
+)
+```
+
+## 7. Default Values
+
+### Handle Default Values Properly
+Set default values correctly:
+
+```tsx
+// ✅ Good
+const { register, reset } = useForm({
+  defaultValues: async () => {
+    const user = await fetchUser(userId)
+    return {
+      name: user.name,
+      email: user.email
+    }
+  }
+})
+
+// Reset form with new values
+useEffect(() => {
+  reset(userData)
+}, [userData, reset])
+```
+
+## 8. Field Arrays
+
+### Manage Dynamic Form Fields
+Handle dynamic form fields efficiently:
+
+```tsx
+// ✅ Good
+const { fields, append, remove } = useFieldArray({
+  control,
+  name: "items"
+})
+
+return (
+  <>
+    {fields.map((field, index) => (
+      <div key={field.id}>
+        <input {...register(`items.${index}.name`)} />
+        <button type="button" onClick={() => remove(index)}>
+          Remove
+        </button>
+      </div>
+    ))}
+    <button type="button" onClick={() => append({ name: '' })}>
+      Add Item
+    </button>
+  </>
+)
+```
+
+## 9. Form State Management
+
+### Track Form State
+Monitor form state effectively:
+
+```tsx
+// ✅ Good
+const {
+  formState: {
+    isDirty,
+    isSubmitting,
+    isSubmitted,
+    isValid
+  }
+} = useForm()
+
+return (
+  <button
+    type="submit"
+    disabled={!isDirty || !isValid || isSubmitting}
+  >
+    {isSubmitting ? 'Submitting...' : 'Submit'}
+  </button>
+)
+```
+
+Remember:
+- Always use TypeScript for type safety
+- Implement proper validation with Zod
+- Break down complex forms into smaller components
+- Handle errors consistently
+- Manage form state effectively
+- Optimize performance with appropriate mode settings
+- Use FormProvider for complex forms
+- Handle async operations properly

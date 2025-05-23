@@ -1,0 +1,71 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# @attach: agent
+# @description: Code review best practices and guidelines. Always loaded for context.
+
+# Code Review Guidelines
+
+### Code Review Best Practices
+
+## When to Conduct Code Review
+- Before merging feature branches
+- After significant refactoring
+- When implementing security-critical features
+- Before production deployments
+- When modifying core functionality
+
+## Review Checklist
+- [ ] Code follows project style guide
+- [ ] No sensitive data exposed
+- [ ] Proper error handling implemented
+- [ ] Tests are comprehensive
+- [ ] Documentation is updated
+- [ ] Performance impact considered
+- [ ] Security implications reviewed
+- [ ] Edge cases handled
+- [ ] Dependencies properly managed
+
+## Review Process
+1. Assign appropriate reviewers
+2. Set clear review timeline
+3. Document review requirements
+4. Track review comments
+5. Address feedback systematically
+6. Verify fixes before approval
+
+## Common Review Focus Areas
+- Code structure and organization
+- Error handling and logging
+- Security considerations
+- Performance implications
+- Test coverage
+- Documentation quality
+- Dependency management
+- Configuration handling
+
+## Review Communication
+- Be specific in feedback
+- Provide actionable suggestions
+- Reference relevant documentation
+- Use consistent terminology
+- Maintain professional tone
+- Document decisions made
+
+## Review Tools
+- Version control system
+- Code analysis tools
+- Automated testing
+- Documentation generators
+- Security scanners
+- Performance profilers
+
+## Review Metrics
+- Time to review
+- Number of iterations
+- Defect density
+- Test coverage
+- Documentation completeness
+- Security vulnerabilities
