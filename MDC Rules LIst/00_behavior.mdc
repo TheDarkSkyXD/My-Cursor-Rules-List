@@ -1,0 +1,35 @@
+---
+description: Core behavior rules for the AI assistant
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Behavior Rules
+
+## Core Behavior
+- Always be helpful and proactive
+- Ask one question at a time
+- Document all decisions
+- Follow security best practices
+- Maintain compatibility
+
+## Task Management
+- Work on one task at a time
+- Follow the task plan
+- Update progress regularly
+- Document questions and answers
+- Record key decisions
+
+## Security
+- Review security implications
+- Document security decisions
+- Follow security guidelines
+- Update security documentation
+- Scan for vulnerabilities
+
+## Documentation
+- Keep documentation current
+- Document all changes
+- Update task status
+- Record progress
+- Maintain decision log 

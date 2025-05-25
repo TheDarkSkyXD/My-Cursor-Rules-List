@@ -1,0 +1,156 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ # Best Practices
+
+## Development Workflow
+
+### Version Control
+- Use feature branches for development
+- Create meaningful commit messages
+- Keep commits focused and atomic
+- Use conventional commits format
+- Create pull requests for code reviews
+
+### Code Review
+- Review code for clarity and maintainability
+- Check for adherence to project standards
+- Verify proper testing
+- Look for security issues
+- Provide constructive feedback
+
+### Testing
+- Write tests before implementing features (TDD when appropriate)
+- Maintain high test coverage for critical code
+- Use proper test isolation
+- Test edge cases and error scenarios
+- Run tests before committing code
+
+## UI/UX Patterns
+
+### Responsive Design
+- Design for mobile-first
+- Test on multiple device sizes
+- Use relative units (rem, em) for sizing
+- Create adaptive layouts with Tailwind's responsive prefixes
+- Handle touch interactions properly
+
+### Accessibility
+- Implement proper keyboard navigation
+- Use semantic HTML elements
+- Add appropriate ARIA attributes
+- Test with screen readers
+- Ensure sufficient color contrast
+- Support reduced motion preferences
+
+### Loading States
+- Implement skeleton loaders for content
+- Display loading indicators for actions
+- Avoid layout shifts during loading
+- Implement proper error handling
+- Use optimistic updates when appropriate
+
+## Server/Client Patterns
+
+### Server Components
+- Use Server Components for static/non-interactive UI
+- Fetch data directly in Server Components
+- Keep database/API logic in Server Components
+- Handle authentication in Server Components
+- Implement proper error handling
+
+### Client Components
+- Use Client Components only when needed for interactivity
+- Keep Client Components focused on UI interactions
+- Implement proper state management
+- Optimize for performance
+- Handle client-side navigation properly
+
+## Data Management
+
+### API Integration
+- Create consistent API client
+- Handle authentication properly
+- Implement proper error handling
+- Use TypeScript for type safety
+- Validate API responses with Zod
+
+### State Management
+- Keep state as close to usage as possible
+- Use Zustand for global UI state
+- Implement TanStack Query for server state
+- Create custom hooks for data access
+- Avoid unnecessary state
+
+## Security
+
+### Authentication
+- Implement proper authentication flows
+- Use secure password storage
+- Implement proper session management
+- Add multi-factor authentication when appropriate
+- Handle authentication errors gracefully
+
+### Authorization
+- Implement proper access control
+- Use Row Level Security with Supabase
+- Validate permissions on both client and server
+- Implement proper role-based access
+- Handle unauthorized access gracefully
+
+### Data Protection
+- Sanitize user inputs
+- Implement proper data validation
+- Use HTTPS for all communications
+- Protect sensitive data
+- Follow security best practices for APIs
+
+## Performance
+
+### Build Optimization
+- Implement proper code splitting
+- Optimize bundle size
+- Use proper image optimization
+- Implement font optimization
+- Configure proper caching
+
+### Runtime Performance
+- Avoid unnecessary re-renders
+- Implement proper memoization
+- Use virtualization for long lists
+- Optimize expensive operations
+- Monitor and improve Core Web Vitals
+
+## Deployment
+
+### CI/CD
+- Implement automated testing in CI
+- Set up proper deployment pipelines
+- Use environment-specific configurations
+- Implement staging environments
+- Create deployment checklists
+
+### Monitoring
+- Set up proper error tracking
+- Implement performance monitoring
+- Create alert systems for critical issues
+- Monitor security vulnerabilities
+- Track user engagement metrics
+
+## Code Organization
+
+### Modularity
+- Create focused, single-responsibility components
+- Implement proper separation of concerns
+- Extract reusable logic to custom hooks
+- Create utility functions for common operations
+- Follow DRY principles
+
+### Documentation
+- Document complex logic
+- Create component documentation
+- Document API endpoints
+- Maintain up-to-date README
+- Document configuration options

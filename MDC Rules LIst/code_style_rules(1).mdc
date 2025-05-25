@@ -1,0 +1,96 @@
+---
+description: Coding style and approach to writing software
+globs: 
+---
+# Code Style Rules
+
+## Development Approach
+
+1. Plan First
+   - Define what you want to achieve
+   - Break down into small, buildable pieces
+   - Plan how to verify each piece works
+   - Choose verification method (script/test/manual)
+
+2. Build Incrementally
+   - Write code in small, focused chunks
+   - Verify each piece works before moving on
+   - Use npm scripts for common operations
+   - Keep changes atomic and verifiable
+
+3. Verify Changes
+   - Test each change before proceeding
+   - Use simplest verification method
+   - Remove debug code after verification
+   - Document any key findings
+
+## File Organization
+
+- Break code into small, focused files
+- Each file should have a single clear responsibility
+- Break problems into modules/objects/scripts with clear interfaces
+- Keep files small to take advantage of AI capabilities
+
+## File Naming
+
+- Use snake_case for all file and folder names
+- Names should clearly indicate primary function
+- Include domain/type in name (e.g., `auth_`, `user_`)
+- Add role suffix (`_service`, `_controller`, `_component`)
+- Test files should match their source files (e.g., `auth_service.spec.ts`)
+
+## Function Design
+
+- Break code into small, testable functions
+- Each function should have clear inputs and outputs
+- Keep dependencies minimal and explicit
+- Make failure points obvious and testable
+- Separate methods with `// --------------` comment line
+- Add a blank line after each separator
+
+## TypeScript Style
+
+- NO semicolons at end of lines
+- Documentation lines wrap at 75 characters
+- Comments should be brief and straightforward
+- Focus on what the code does, using plain language
+- Avoid detailed explanations or redundant information
+
+## File Documentation
+
+Every source file must start with a documentation block:
+```typescript
+/**
+ * [File Name/Component Name]
+ *
+ * [Brief description of purpose]
+ *
+ * Primary responsibilities:
+ * - [Key responsibility 1]
+ * - [Key responsibility 2]
+ *
+ * Dependencies:
+ * - [Key dependency 1]
+ */
+```
+
+## Making Changes
+
+- NEVER replace or rewrite entire files
+- Make ONLY THE SPECIFIC, REQUESTED changes
+- Always preserve existing content and structure
+- Ask before making broader changes
+- If uncertain about scope, ask before proceeding
+
+## Example Comments
+
+Instead of:
+```typescript
+// This method initializes the playlist video subject with the provided data
+// to ensure that the correct video is being played
+```
+
+Write:
+```typescript
+// Initialize the playlist video subject
+```

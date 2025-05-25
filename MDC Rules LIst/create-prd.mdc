@@ -1,0 +1,43 @@
+---
+description: How to write PRD documents.
+globs: 
+alwaysApply: false
+---
+# How to write a Product Requirements Document (PRD)
+
+## 1. Format
+
+### 1.1 File location
+
+These documents should be stored in `docs/PRDs`.
+
+### 1.2. Title
+
+Each file name should start `PRD_XXX_` where XXX is an arbitraty number starting at 1 with the first PRD and incrementing with each next PRD. To determine the number to use, search the PRD folder for files with this prefix and determine what the last number used was.
+
+### 1.3. Body
+
+- Include a Table of Contents at the top
+- Use numbered sectioning
+- Include code examples
+- Be as clear as possible and style this to be read by a Large Language Model (LLM)
+- Include a motivation section at the beginning, followed by a more detailed overview
+- If you use icons, include an icon legend
+- Divide the project into milestones, each with very specific and focused tasks.
+
+## 2. Project Process
+
+### 2.1. Requirements Review Steps
+1. Systematically review each PRD document
+2. Summarize key requirements
+3. Identify dependencies
+4. Note potential challenges
+5. Ask clarifying questions
+6. Validate understanding before proceeding
+7. Document everything in a progress report
+
+### 2.2. Work Organization Principles
+- Follow project phases strictly
+- Treat preliminary work as drafts for review
+- Get approval before moving to next tasks
+- Document everything in a progress report

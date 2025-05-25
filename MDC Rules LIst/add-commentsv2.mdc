@@ -1,0 +1,31 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+please add very clear documentation to these new or updated files. the top-level description at the top of the file should be very clear about not only what the file does, but also how it fits into the broader ecosystem of the codebase. 
+
+if there are specific ways that the code was written, add comments that indicate why the code is that way, and ensure the reader understands they either should not change the code or if they do, what they need to think about before changing it.
+
+The documentation has been extensively enhanced for all three files with:
+Comprehensive module-level documentation that explains:
+How each file fits into the broader codebase
+Design patterns and architecture decisions
+Key workflows and data flows
+Important considerations for maintenance
+Detailed class and method documentation including:
+Purpose and responsibility of each component
+Parameter explanations with specific implementation details
+Return values and exception information
+Usage examples for key functions
+Critical implementation notes highlighting:
+Why certain approaches were taken
+Important security considerations (especially for SSO)
+Backward compatibility mechanisms
+Error handling strategies
+Version compatibility (e.g., Pydantic v1/v2 support)
+Warnings about code that shouldn't be changed without careful consideration:
+Security-critical SSO browser hooks
+Fallback mechanisms for authentication
+Parameter merging precedence rules
+These improvements will make the code much more approachable for developers who need to maintain or extend it in the future, clearly explaining both how the code works and why it's designed the way it is.

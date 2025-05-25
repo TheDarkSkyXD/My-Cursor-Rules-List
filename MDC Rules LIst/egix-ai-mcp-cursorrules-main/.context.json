@@ -1,0 +1,17 @@
+[
+  {
+    "provider": "github",
+    "repo": "nemesis1978/egix-ai-mcp-cursorrules",
+    "ref": "main",
+    "files": [
+      "rules/mcp.md",
+      "rules/000-intro.md",
+      "rules/001-prd.md",
+      "rules/002-todo.md",
+      "rules/003-prompts.md",
+      "rules/004-diff.md",
+      "rules/005-pr.md",
+      "rules/006-rules.md"
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: Operation Mode (read always).
+globs: 
+alwaysApply: true
+---
+current_mode: "PLAN MODE"

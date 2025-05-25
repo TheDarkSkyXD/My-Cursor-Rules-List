@@ -1,0 +1,58 @@
+---
+description: Coding style and approach to writing software
+globs: 
+---
+
+# Code style rules
+
+## Development approach
+
+1. Plan first
+   - Define what you want to achieve
+   - Break down into small, buildable pieces
+   - Plan how to verify each piece works
+   - Choose verification method (script/test/manual)
+
+2. Build incrementally
+   - Write code in small, focused chunks
+   - Verify each piece works before moving on
+   - Use scripts for common operations
+   - Keep changes atomic and verifiable
+
+3. Test driven development
+   - Practice outside-in test driven development
+   - Do not test implementation detail, but rather the behaviour
+   - Write a test first before moving on to implementation
+   - Start with basic functional tests to drive the implementation
+   - After functional tests, propose tests to handle the following:
+       - Edge cases
+       - Error handling
+
+## File organization
+
+- Break code into small, focused files. This also applies to tests
+- Each file should have a single clear responsibility
+- Break problems into modules/objects/scripts with clear interfaces
+- Keep files small to take advantage of AI capabilities
+
+## File naming
+
+- Use snake_case for all file and folder names for python projects
+- Use CamelCase for all file and folder names for javascript and typescript projects
+- Names should clearly indicate primary function
+- Test files should match their source files (e.g., `AuthService.spec.tsx`)
+
+## Function design
+
+- Break code into small, testable functions
+- Each function should have clear inputs and outputs
+- Keep dependencies minimal and explicit
+- Make failure points obvious and testable
+
+## Making changes
+
+- NEVER replace or rewrite entire files
+- Make ONLY THE SPECIFIC, REQUESTED changes
+- Always preserve existing content and structure
+- Ask before making broader changes
+- If uncertain about scope, ask before proceeding

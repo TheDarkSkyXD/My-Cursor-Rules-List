@@ -1,0 +1,35 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Clean Architecture Guidelines
+
+## Critical Rules
+
+- Strictly separate code into layers: entities, use cases, interfaces, and frameworks.
+- Ensure dependencies point inward, with inner layers having no knowledge of outer layers.
+- Implement domain entities that encapsulate {{business_rules}} without framework dependencies.
+- Use interfaces (ports) and implementations (adapters) to isolate external dependencies.
+- Create use cases that orchestrate entity interactions for specific business operations.
+- Implement mappers to transform data between layers to maintain separation of concerns.
+
+## Examples
+
+<example>
+  // Applying Clean Architecture to a user authentication feature:
+  // Entities: User (with password hashing logic, validation rules)
+  // Use Cases: RegisterUser, LoginUser, LogoutUser
+  // Interfaces (Ports): UserRepository (defines how to save/retrieve users), TokenService (defines how to generate/validate tokens)
+  // Frameworks (Adapters): DatabaseUserRepository (implements UserRepository with a specific DB), JWTTokenService (implements TokenService using JWT)
+  // Dependencies: Use Cases depend on Entity interfaces and Port interfaces. Adapters implement Port interfaces. Frameworks are at the outermost layer.
+</example>
+
+<example type="invalid">
+  // Violating Clean Architecture:
+  // An Entity directly using a database framework (e.g., `User` class imports `SQLAlchemy`).
+  // A Use Case directly instantiating a concrete framework class instead of using an interface.
+  // An Interface layer depending on a specific Framework implementation.
+  // Business logic spread across UI components and database access code.
+</example>
+

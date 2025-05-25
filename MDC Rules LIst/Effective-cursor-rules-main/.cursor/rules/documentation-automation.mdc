@@ -1,0 +1,66 @@
+---
+description:  Documentation Automation
+globs: 
+alwaysApply: false
+---
+# Documentation Automation Rule
+
+## Overview
+Documentation should be comprehensive, current, and automatically maintained to ensure it accurately reflects the codebase.
+
+## Documentation Requirements
+1. All public APIs must be documented with parameters, return values, and examples
+2. Code comments should explain "why", not "what" (the code itself shows what)
+3. Architecture and design decisions should be documented
+4. Maintain up-to-date project READMEs with setup instructions
+5. Document progress and project status regularly
+
+## Documentation Types
+- **API Documentation**: Function/method signatures, parameters, return values
+- **Code Comments**: Implementation details, algorithms, complex logic
+- **Architecture Documentation**: System design, component interactions
+- **Project Documentation**: Setup guides, contribution guidelines
+- **Progress Documentation**: Development status, milestones, roadmaps
+
+## Automation Guidelines
+- Update function/method documentation when signatures change
+- Generate API documentation from code comments automatically
+- Keep README in sync with project changes
+- Document new features as they are implemented
+- Update progress.md after significant changes
+
+## Documentation Format
+- Use consistent Markdown formatting
+- Include examples for complex functionality
+- Structure documentation hierarchically
+- Use diagrams for complex concepts
+- Link related documentation sections
+
+## Example Docstring Format (Python)
+```python
+def calculate_price(quantity, discount=0):
+    """
+    Calculate the total price after applying discounts.
+    
+    Args:
+        quantity (int): Number of items to purchase
+        discount (float, optional): Discount percentage (0-100). Defaults to 0.
+        
+    Returns:
+        float: Final price after discount
+        
+    Raises:
+        ValueError: If quantity is negative or discount is outside valid range
+        
+    Example:
+        >>> calculate_price(5, 10)
+        45.0  # 5 items with 10% discount
+    """
+    # Implementation
+```
+
+## Enforcement
+- Validate docstring completeness in code reviews
+- Run documentation linters as part of CI/CD
+- Update progress.md after each significant milestone or feature implementation
+- Generate and review documentation changes alongside code changes
