@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 APPLY package installation rules WHEN installation new package
 
 - Never install new package directly

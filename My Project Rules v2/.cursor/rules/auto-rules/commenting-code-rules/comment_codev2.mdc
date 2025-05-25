@@ -1,7 +1,7 @@
 ---
-description: apply when make comment inside code
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # Expert Code Commenting
 

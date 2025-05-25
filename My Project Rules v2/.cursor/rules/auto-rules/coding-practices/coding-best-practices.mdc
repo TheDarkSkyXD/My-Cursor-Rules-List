@@ -3,11 +3,8 @@ description:
 globs: 
 alwaysApply: true
 ---
----
-description: Global behavior rules to enforce best practices, maintain code quality, and encourage thoughtful decision-making by the AI.
-globs: 
-alwaysApply: true
----
+# Global behavior rules to enforce best practices, maintain code quality, and encourage thoughtful decision-making by the AI.
+
 ## Coding Best Practices
 - **Do not modify code or UI elements that already work**, unless explicitly instructed.
 - Avoid duplicating existing functionality; reuse working components whenever possible.

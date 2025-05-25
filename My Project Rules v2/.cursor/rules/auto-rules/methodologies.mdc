@@ -1,6 +1,7 @@
 ---
-description: Methodologies - common best practices across all projects
-globs:
+description: 
+globs: 
+alwaysApply: true
 ---
 
 ## Quick reference

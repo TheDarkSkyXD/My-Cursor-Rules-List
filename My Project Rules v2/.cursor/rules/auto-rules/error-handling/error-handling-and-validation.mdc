@@ -1,6 +1,7 @@
 ---
-description: Focuses on error handling and validation practices, including early error handling, proper logging, and Zod usage.
-globs: **/*
+description: 
+globs: 
+alwaysApply: true
 ---
 - Prioritize error handling: handle errors and edge cases early.
 - Use early returns and guard clauses.

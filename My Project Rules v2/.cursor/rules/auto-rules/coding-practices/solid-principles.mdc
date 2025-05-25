@@ -1,6 +1,6 @@
 ---
 description: 
-globs: *js,*ts
+globs: *.ts
 alwaysApply: false
 ---
 # SOLID Principles

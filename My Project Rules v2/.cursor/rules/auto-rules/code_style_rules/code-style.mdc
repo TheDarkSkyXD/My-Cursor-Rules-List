@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # Code Style and Formatting Guidelines
 
 This rule defines the coding standards and style guidelines for the MCP-Prompts project to ensure consistency, readability, and maintainability across the codebase.

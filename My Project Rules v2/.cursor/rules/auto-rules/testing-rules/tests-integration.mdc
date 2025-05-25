@@ -1,5 +1,8 @@
-
-
+---
+description: 
+globs: 
+alwaysApply: true
+---
 APPLY integration testing standards to verify interactions between components/services WHEN writing integration tests.
 
 

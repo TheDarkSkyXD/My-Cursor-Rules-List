@@ -1,6 +1,7 @@
 ---
 description: Rules for communicating with the external backend from the Tauri frontend.
-globs: src/lib/api/**/*.{ts,tsx}
+globs: src/lib/api/**/*.{ts,*.tsx
+alwaysApply: false
 ---
 
 - Implement proper error handling for network requests and responses.

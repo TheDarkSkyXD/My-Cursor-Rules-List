@@ -1,8 +1,8 @@
 ---
-description: Guidelines for logging and error handling
-globs: ["**/*.py"]
+description: 
+globs: 
+alwaysApply: true
 ---
-
 # LOGGING STANDARDS
 
 - Use structured logging with consistent fields

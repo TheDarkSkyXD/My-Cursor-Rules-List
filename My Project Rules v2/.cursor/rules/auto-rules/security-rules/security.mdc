@@ -1,6 +1,7 @@
 ---
-description: "Security standards and best practices"
-globs: ["**/*"]
+description: 
+globs: 
+alwaysApply: true
 ---
 
  SECURITY PRACTICES

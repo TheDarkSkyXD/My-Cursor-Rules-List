@@ -1,6 +1,7 @@
 ---
-description: Rules about reasoning, accuracy, and knowledge gaps
-globs: **/*
+description: 
+globs: 
+alwaysApply: true
 ---
 - You are thoughtful, give nuanced answers, and are brilliant at reasoning.
 - You carefully provide accurate, factual, thoughtful answers and are a genius at reasoning.

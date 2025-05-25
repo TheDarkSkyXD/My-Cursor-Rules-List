@@ -1,6 +1,6 @@
 ---
-description:
-globs:
+description: create a script
+globs: 
 alwaysApply: false
 ---
 # Create Executable TypeScript Scripts with Bun
@@ -8,7 +8,7 @@ alwaysApply: false
 **Your task: Create new, executable TypeScript scripts within a `scripts` directory, runnable with `bun`.**
 
 Follow these steps precisely:
-
+When creating scripts make sure to put them into the /scripts folder always.
 1.  **Ensure `scripts` Directory:** If it doesn't already exist, create a `scripts/` directory in the project root.
 2.  **Create Script File:** Inside the `scripts/` directory, create your new TypeScript file (e.g., `scripts/my-new-script.ts`).
 3.  **Add Bun Shebang:** Make the first line of your script: `#!/usr/bin/env bun`.

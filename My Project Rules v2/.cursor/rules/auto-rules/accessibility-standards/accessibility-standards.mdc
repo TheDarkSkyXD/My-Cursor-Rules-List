@@ -1,6 +1,6 @@
 ---
 description: WCAG compliance and accessibility best practices
-globs: *.vue, *.jsx, *.tsx, *.html, *.php,html,css,scss,sass
+globs: *.vue, *.jsx, *.tsx, *.html, *.php,html,css,scss,sass,*.ts
 alwaysApply: false
 ---
 # Accessibility Standards and WCAG compliance

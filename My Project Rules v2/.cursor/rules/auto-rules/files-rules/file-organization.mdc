@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # File Organization
 Guidelines for organizing code into files following single responsibility principle.
 

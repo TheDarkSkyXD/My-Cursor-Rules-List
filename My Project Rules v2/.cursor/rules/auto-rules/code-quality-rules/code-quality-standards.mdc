@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # Code Quality Standards
 
 ## Style & Documentation
@@ -34,7 +39,7 @@ For all new features or significant changes:
 
 ## Tool-Specific Standards
 
-- **Always use pnpm** to install or uninstall npm packages
+- **Always use npm** to install or uninstall npm packages
 - **Always use zsh** to execute any kind of shell commands including pnpm commands
 - Respect quality gates in CI pipeline
 - Maintain passing lints, types, and builds

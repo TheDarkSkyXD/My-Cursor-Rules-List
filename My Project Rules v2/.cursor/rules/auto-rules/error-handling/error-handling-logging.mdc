@@ -1,7 +1,7 @@
 ---
-description: Error Handling and Logging Standards
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # Error Handling and Logging Standards Rule
 

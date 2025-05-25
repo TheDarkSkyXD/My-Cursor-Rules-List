@@ -1,10 +1,15 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # 🧪 Testing & Reliability
 
 ## Test Implementation Requirements
 
 - **Always create vitest unit tests for new features** (components, functions, etc).
 - **After updating any logic**, check whether existing unit tests need to be updated. If so, do it.
-- **Tests should live in a `/test` folder** mirroring the src structure.
+- **Tests should live in a `/tests` folder** mirroring the src structure.
 - **Follow naming convention**: `[filename].[test-type].test.ts`
 
 ## Test Coverage Checklist

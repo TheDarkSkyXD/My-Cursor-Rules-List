@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # Security Best Practices
 
 ## 1. Validate Inputs

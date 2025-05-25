@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # General Guidelines
 - Strive for simplicity and clarity. Over-engineering is a liability at this stage.
 - When a file becomes too long (over 1,500 lines), split it into smaller files. When a function becomes too long, split it into smaller functions. Make sure to inspect how the files are currently being used to ensure the new split does not affect the functionality of the code.

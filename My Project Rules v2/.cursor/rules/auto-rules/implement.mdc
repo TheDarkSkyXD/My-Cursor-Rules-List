@@ -1,18 +1,16 @@
 ---
-description: Always attach when Implementing Code (Act/Code MODE)
-globs: 
-alwaysApply: false
----
----
-description: Include these rules while IMPLEMENTATION/Coding.
+description: 
 globs: 
 alwaysApply: true
+---
+# Include these rules while IMPLEMENTATION/Coding.
+
 ---
 Before every code implementation/change ALWAYS do 2 things:
 a. Read and understand the documentation in `docs/` and `tasks/`
 a. Get required code context from `src` and other codes at other places.
 ---
-# IMPLEMENTATION (ACT MODE/Code MODE):
+# IMPLEMENTATION:
 <PROGRAMMING PRINCIPLES>
 - algorithm_efficiency: use the most efficient algorithms and data structures
 - modularity: write modular code, break complex logic into smaller atomic parts. Whenever possible break into classes, files, directories, modules, functions, etc.

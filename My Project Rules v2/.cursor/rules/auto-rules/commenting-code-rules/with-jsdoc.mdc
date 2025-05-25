@@ -1,10 +1,7 @@
 ---
-description: Creating and Editing JSDoc comments
+description: 
 globs: 
-alwaysApply: false
-category: documentation
-tags: documentation standards,code commenting,api documentation,code explanation,documentation generation,comment conventions,code clarity,developer guidance
-attachmentMethod: message
+alwaysApply: true
 ---
 ## Comprehensive JSDoc Comment Style Guide for AI Agents
 

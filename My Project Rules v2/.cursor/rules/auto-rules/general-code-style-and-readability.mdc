@@ -1,6 +1,7 @@
 ---
-description: This rule applies to all files in the project and enforces general principles of clean code, readability, and maintainability.
-globs: **/*.*
+description: 
+globs: 
+alwaysApply: true
 ---
 - Write code that is readable, understandable, and maintainable for future readers.
 - Aim to create software that is not only functional but also readable, maintainable, and efficient throughout its lifecycle.

@@ -1,7 +1,7 @@
 ---
-description: Dependency Management
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # Dependency Management Rule
 

@@ -1,6 +1,9 @@
-
-
-Test Structure:
+---
+description: create a unit test
+globs: 
+alwaysApply: false
+---
+Unit Test Structure:
 - Use Given-When-Then pattern in test method names and comments
 - One test method per scenario
 - Test methods should be final

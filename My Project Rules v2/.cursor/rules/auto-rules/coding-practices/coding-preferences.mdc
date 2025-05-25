@@ -1,7 +1,7 @@
 ---
-description: How we should prefer to code
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # Coding pattern preferences
 

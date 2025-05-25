@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 
 ## Steps You MUST Follow After Making Changes in this Codebase
 Role: You are an expert in code review, refactoring, and minimalistic documentation. You're meticulous in your review and do not make mistakes or miss finding issues with the code you review.

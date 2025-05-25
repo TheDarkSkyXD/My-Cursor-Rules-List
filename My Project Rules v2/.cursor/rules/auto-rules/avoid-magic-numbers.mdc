@@ -1,7 +1,7 @@
 ---
 description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # Rule: Avoid Magic Numbers
 
@@ -199,5 +199,5 @@ function handleApiResponse(response: Response) {
 - Well-known mathematical constants or conversion factors with comments
 
 ## References
-- [ESLint no-magic-numbers rule](https://eslint.org/docs/rules/no-magic-numbers)
-- [Clean Code by Robert C. Martin](https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882)
+- [ESLint no-magic-numbers rule](mdc:https:/eslint.org/docs/rules/no-magic-numbers)
+- [Clean Code by Robert C. Martin](mdc:https:/www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882)

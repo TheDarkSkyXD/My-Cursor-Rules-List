@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # Cursor Rules for Secure Coding
 
 ## Overview
@@ -6,20 +11,20 @@ This document outlines security-focused rules for implementation in a code edito
 
 ## Table of Contents
 
-1. [Input Validation](#1-input-validation)
-2. [Output Encoding](#2-output-encoding)
-3. [Authentication & Password Management](#3-authentication--password-management)
-4. [Session Management](#4-session-management)
-5. [Access Control](#5-access-control)
-6. [Cryptographic Practices](#6-cryptographic-practices)
-7. [Error Handling & Logging](#7-error-handling--logging)
-8. [Memory Management](#8-memory-management)
-9. [General Coding Practices](#9-general-coding-practices)
-10. [File Management](#10-file-management)
-11. [API Security](#11-api-security)
-12. [Container & Infrastructure Security](#12-container--infrastructure-security)
-13. [Dependency Management](#13-dependency-management)
-14. [Framework-Specific Rules](#14-framework-specific-rules)
+1. [Input Validation](mdc:#1-input-validation)
+2. [Output Encoding](mdc:#2-output-encoding)
+3. [Authentication & Password Management](mdc:#3-authentication--password-management)
+4. [Session Management](mdc:#4-session-management)
+5. [Access Control](mdc:#5-access-control)
+6. [Cryptographic Practices](mdc:#6-cryptographic-practices)
+7. [Error Handling & Logging](mdc:#7-error-handling--logging)
+8. [Memory Management](mdc:#8-memory-management)
+9. [General Coding Practices](mdc:#9-general-coding-practices)
+10. [File Management](mdc:#10-file-management)
+11. [API Security](mdc:#11-api-security)
+12. [Container & Infrastructure Security](mdc:#12-container--infrastructure-security)
+13. [Dependency Management](mdc:#13-dependency-management)
+14. [Framework-Specific Rules](mdc:#14-framework-specific-rules)
 
 ---
 

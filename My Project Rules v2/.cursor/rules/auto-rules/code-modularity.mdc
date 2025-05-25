@@ -1,7 +1,7 @@
 ---
-description: Code Modularity
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # Code Modularity Rule
 

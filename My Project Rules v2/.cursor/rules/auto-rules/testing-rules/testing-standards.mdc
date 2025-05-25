@@ -1,7 +1,7 @@
 ---
-description: Testing Standards Rule
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
  # Testing Standards Rule
 

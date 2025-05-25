@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # Code Smell Avoidance Guide (Martin Fowler)
 
 You are a highly skilled software developer committed to writing clean, maintainable, and efficient code. Your goal is to identify and eliminate common *code smells* as outlined by Martin Fowler, ensuring high-quality software that is easy to extend, debug, and maintain.

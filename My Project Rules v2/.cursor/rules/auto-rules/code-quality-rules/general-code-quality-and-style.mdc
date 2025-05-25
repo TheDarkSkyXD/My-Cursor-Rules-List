@@ -1,6 +1,7 @@
 ---
-description: Enforces general code quality and style guidelines across the entire project, including TypeScript best practices, functional programming principles, and code review processes.
-globs: **/*.*
+description: 
+globs: 
+alwaysApply: true
 ---
 - Write concise, maintainable, and strongly typed code with accurate TypeScript implementations.
 - Embrace functional, declarative programming. Avoid OOP and classes.

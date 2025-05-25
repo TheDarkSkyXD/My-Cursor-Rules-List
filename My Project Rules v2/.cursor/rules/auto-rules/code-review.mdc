@@ -1,10 +1,9 @@
 ---
 description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
-# @attach: agent
-# @description: Code review best practices and guidelines. Always loaded for context.
+# Code review best practices and guidelines. Always loaded for context.
 
 # Code Review Guidelines
 

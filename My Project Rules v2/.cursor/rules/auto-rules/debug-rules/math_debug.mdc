@@ -1,7 +1,7 @@
 ---
-description: Rules for debugging technical code that has math
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 Your task is to make **very minor** modifications to fix the user-specified problem, **only after** describing your reasoning in detail and receiving explicit approval from the user to proceed. Assume that most of the code is working properly and we need to make few changes VERY CAREFULLY AND METICULOUSLY. Do not modify the code until you have:
 

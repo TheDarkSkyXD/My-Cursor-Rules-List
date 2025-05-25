@@ -1,12 +1,9 @@
 ---
 description: 
-globs: 
-alwaysApply: true
+globs: **/README.md
+alwaysApply: false
 ---
----
-Description: Best practices for README and project documentation
-Globs: **/README.md, **/docs/**/*.md
----
+# Best practices for README and project documentation
 
 # README Documentation Standards
 

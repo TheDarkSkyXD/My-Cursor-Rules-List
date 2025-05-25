@@ -7,14 +7,6 @@ alwaysApply: true
 
 Rule for preventing hardcoded API keys and other sensitive data in source code.
 
----
-
-description: Prevents hardcoding API keys and sensitive data in source code
-globs: "\*"
-alwaysApply: true
-
----
-
 <rule>
 name: sensitive_data_protection
 description: Standards for handling sensitive data like API keys, passwords, and tokens
