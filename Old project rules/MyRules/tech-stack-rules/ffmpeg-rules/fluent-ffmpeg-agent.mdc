@@ -1,0 +1,208 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# fluent-ffmpeg Best Practices
+
+## Critical Rules
+
+### 1. Prerequisites & Setup
+- **FFmpeg/FFprobe Installation**: Ensure `ffmpeg` and `ffprobe` (usually bundled with ffmpeg) are installed on the system where the Node.js application runs.
+- **Binary Paths**: 
+    - Rely on `ffmpeg` and `ffprobe` being in the system's `PATH`.
+    - OR set `FFMPEG_PATH` and `FFPROBE_PATH` environment variables.
+    - OR set paths programmatically using `ffmpeg.setFfmpegPath('path/to/ffmpeg')` and `ffmpeg.setFfprobePath('path/to/ffprobe')`. Do this early in your application setup. Store these paths securely (e.g., config file, env vars), do not hardcode.
+- **FLV Tools (Optional)**: If encoding FLV videos, ensure `flvtool2` or `flvmeta` is installed and accessible (via `PATH` or `FLVTOOL2_PATH`/`FLVMETA_PATH` env vars, or `ffmpeg.setFlvtoolPath()`).
+
+### 2. Command Creation & Options
+- **Fluent API**: Leverage the chainable API for setting options. Group related options together for readability (e.g., all input options, then audio, then video, then output).
+- **Input/Output**: 
+    - Use `input()` for file paths or readable streams. Only one input stream is allowed per command.
+    - Use `output()` for file paths or writable streams. Only one output stream is allowed per command.
+    - Use `save()` as shorthand for `output(filePath).run()`.
+    - Use `pipe()` or `stream()` as shorthand for `output(writableStream).run()` or to get a PassThrough stream.
+    - Use `run()` explicitly when dealing with multiple outputs.
+- **Custom Options**: Use `inputOptions()` and `outputOptions()` carefully for passing raw ffmpeg flags. Understand the implications of each flag.
+- **Filters**: Use `audioFilters()`, `videoFilters()`, or `complexFilter()` for applying filters. Prefer specific methods like `size()`, `aspect()`, `fps()` over manual filter strings when available.
+- **Presets**: Use `preset()` for reusable configurations, either referencing built-in presets or custom functions/modules.
+- **Metadata**: Use `ffprobe()` to get metadata. Be aware that calling `ffprobe()` on an input stream consumes it, making it unusable for subsequent transcoding unless it's a live stream.
+
+### 3. Performance Optimization
+- **Streaming**: For transcoding large files or real-time processing, use `pipe()` or `stream()` to pipe output directly to a writable stream (e.g., `fs.createWriteStream`, HTTP response) instead of saving to a file first. This avoids buffering large amounts of data in memory.
+- **Codec Choice**: Select appropriate codecs (`videoCodec()`, `audioCodec()`) and settings (bitrate, quality) for the target use case. Hardware-accelerated codecs (e.g., `h264_nvenc`, `h264_videotoolbox`) can significantly speed up encoding if supported by the hardware and ffmpeg build, passed via `outputOptions()`.
+- **Copy Codecs**: If only changing the container format without re-encoding, use `.videoCodec('copy')` and/or `.audioCodec('copy')` for maximum speed.
+- **Niceness**: Use `renice()` on \*nix systems to lower the priority (`niceness > 0`) of CPU-intensive ffmpeg processes if they might impact other critical application functions.
+- **Avoid Unnecessary Probing**: Cache results from `ffprobe()` if metadata is needed multiple times for the same file.
+- **Concurrency**: Manage concurrency at the application level if running multiple `ffmpeg` commands simultaneously (e.g., using a queue like `p-queue`). Each `ffmpeg()` command spawns a separate process.
+
+### 4. Security Considerations
+- **Input Validation**: CRITICAL: File paths, URLs, and any parameters used in `input()`, `output()`, `save()`, filter options, or custom options (`inputOptions`, `outputOptions`) that originate from user input MUST be strictly validated and sanitized. Prevent path traversal (e.g., ensure paths resolve within allowed directories) and command injection.
+- **Binary Trust**: Ensure the `ffmpeg` and `ffprobe` binaries used are from trusted sources and haven't been tampered with. Avoid setting paths to binaries in user-writable locations.
+- **File System Access**: Ensure the Node.js process has appropriate permissions to read input files and write to output directories, but restrict access as much as possible. Avoid running as root.
+- **Resource Exhaustion**: FFmpeg can be resource-intensive. Implement application-level controls (e.g., queueing, concurrency limits, timeouts via constructor options) to prevent DoS if handling untrusted inputs or user-submitted jobs. Consider using `kill()` to terminate long-running or potentially stuck processes.
+- **Error Message Sanitization**: Do not expose raw `ffmpeg` stderr/stdout output directly to end-users in error messages, as it can leak system information (paths, versions).
+
+### 5. Error Handling & Monitoring
+- **Mandatory Error Handler**: ALWAYS attach an `.on('error', (err, stdout, stderr) => { ... })` listener to every command instance. Unhandled `error` events will crash the Node.js process.
+- **Event Listeners**: Utilize other events for robust monitoring:
+    - `.on('start', (commandLine) => { ... })`: Log the exact command being run.
+    - `.on('progress', (progress) => { ... })`: Provide user feedback. Note that `progress.percent` can be inaccurate, especially with streams or multiple inputs.
+    - `.on('stderr', (stderrLine) => { ... })`: For detailed debugging, but be careful logging potentially large amounts of data.
+    - `.on('end', (stdout, stderr) => { ... })`: Confirm successful completion.
+- **Stream Errors**: When using input/output streams, handle errors on those streams as well. `fluent-ffmpeg` attempts to forward stream errors to the main `error` event, but explicit handling is safer.
+- **Check Capabilities**: Use `ffmpeg.getAvailableFormats()`, `ffmpeg.getAvailableCodecs()`, etc., to check if the required features are supported by the installed `ffmpeg` version before attempting to use them.
+
+## Examples
+
+<example>
+  // Good: Setting binary paths, handling events, using streams
+  import ffmpeg from 'fluent-ffmpeg';
+  import fs from 'fs';
+  import path from 'path';
+
+  // --- Setup (Do this once at app start) ---
+  const ffmpegPath = process.env.FFMPEG_PATH || '/usr/bin/ffmpeg'; // Get from config/env
+  const ffprobePath = process.env.FFPROBE_PATH || '/usr/bin/ffprobe';
+  
+  try {
+      if (fs.existsSync(ffmpegPath)) {
+          ffmpeg.setFfmpegPath(ffmpegPath);
+      } else {
+          throw new Error('FFmpeg binary not found at: ' + ffmpegPath);
+      }
+      if (fs.existsSync(ffprobePath)) {
+          ffmpeg.setFfprobePath(ffprobePath);
+      } else {
+          throw new Error('FFprobe binary not found at: ' + ffprobePath);
+      }
+      console.log('FFmpeg and FFprobe paths configured.');
+  } catch (error) {
+      console.error("FATAL: FFmpeg/FFprobe setup failed:", error.message);
+      process.exit(1);
+  }
+  // ---------
+
+  async function convertToMp4(inputPath: string, outputPath: string): Promise<string> {
+    // Basic path validation (more robust validation needed for user input)
+    if (!inputPath || !outputPath) {
+        throw new Error('Input and output paths are required.');
+    }
+    const safeOutputDir = path.resolve('./processed_videos');
+    const resolvedOutputPath = path.resolve(outputPath);
+    if (!resolvedOutputPath.startsWith(safeOutputDir)) {
+         throw new Error('Invalid output directory specified.');
+    }
+    await fs.promises.mkdir(path.dirname(resolvedOutputPath), { recursive: true });
+
+    return new Promise((resolve, reject) => {
+        ffmpeg(inputPath)
+            .videoCodec('libx264')
+            .audioCodec('aac') 
+            .outputOptions(['-pix_fmt yuv420p']) // For compatibility
+            .format('mp4')
+            .on('start', (commandLine) => {
+                console.log('Spawned FFmpeg with command: ' + commandLine);
+            })
+            .on('progress', (progress) => {
+                if (progress.percent) {
+                    process.stdout.write(`\rProcessing: ${progress.percent.toFixed(2)}% done`);
+                } else {
+                     process.stdout.write(`\rProcessing: ${progress.timemark}`);
+                }
+            })
+            .on('stderr', (stderrLine) => {
+                // console.log('Stderr output: ' + stderrLine); // Avoid excessive logging
+            })
+            .on('error', (err, stdout, stderr) => {
+                process.stdout.write('\n'); // New line after progress
+                console.error('Cannot process video: ' + err.message);
+                // Consider logging stdout/stderr from err object here for debugging
+                reject(err);
+            })
+            .on('end', (stdout, stderr) => {
+                process.stdout.write('\n'); // New line after progress
+                console.log('Transcoding succeeded !');
+                resolve(resolvedOutputPath);
+            })
+            .save(resolvedOutputPath);
+    });
+  }
+
+  async function extractThumbnail(inputPath: string, outputPath: string, timeMark: string = '50%') {
+      // Basic path validation...
+      const safeOutputDir = path.resolve('./thumbnails');
+      const resolvedOutputPath = path.resolve(path.dirname(outputPath)); // Ensure folder exists
+       if (!resolvedOutputPath.startsWith(safeOutputDir)) {
+           throw new Error('Invalid output directory specified.');
+       }
+      await fs.promises.mkdir(resolvedOutputPath, { recursive: true });
+
+      return new Promise((resolve, reject) => {
+          ffmpeg(inputPath)
+            .on('error', (err) => reject(err))
+            .on('end', (filenames) => resolve(filenames[0])) // screenshots 'end' returns filenames
+            .screenshots({
+                timestamps: [timeMark],
+                filename: path.basename(outputPath), // Use exact filename
+                folder: path.dirname(outputPath),
+                size: '320x?' // Use size option here, not .size()
+            });
+      });
+  }
+
+  // Example Usage (assuming you have an input.avi)
+  // (async () => {
+  //   try {
+  //     await convertToMp4('./input.avi', './processed_videos/output.mp4');
+  //     await extractThumbnail('./processed_videos/output.mp4', './thumbnails/output_thumb.png');
+  //   } catch (error) {
+  //     console.error('Processing failed:', error);
+  //   }
+  // })();
+
+</example>
+
+<example type="invalid">
+  // Bad: No error handling
+  function convertUnsafe(inputPath, outputPath) {
+      ffmpeg(inputPath)
+          .videoCodec('libx264')
+          .save(outputPath); // Missing .on('error', ...) will crash on error
+  }
+
+  // Bad: Using user input directly in options without validation/sanitization
+  function unsafeFilter(inputPath, outputPath, userInputFilter) {
+      // DANGEROUS: userInputFilter could contain malicious commands if not sanitized
+      ffmpeg(inputPath)
+          .videoFilters(userInputFilter)
+          .on('error', console.error)
+          .save(outputPath);
+  }
+
+  // Bad: Hardcoding binary paths
+  // ffmpeg.setFfmpegPath('/opt/custom/ffmpeg'); // Hardcoded, better in config/env
+
+  // Bad: Calling ffprobe on a non-live input stream before transcoding
+  function probeAndTranscodeStream(inputStream, outputPath) {
+      // This will likely fail because ffprobe consumes the stream
+      ffmpeg(inputStream).ffprobe((err, metadata) => {
+          if (err) return console.error(err);
+          console.log(metadata.format.duration);
+          
+          ffmpeg(inputStream) // Stream already consumed!
+              .videoCodec('copy')
+              .on('error', console.error)
+              .save(outputPath);
+      });
+  }
+
+  // Bad: Using .size() method for screenshots (use size option in screenshots() instead)
+  function badScreenshots(inputPath, folder) {
+      ffmpeg(inputPath)
+          .size('100x100') // Incorrect way to size screenshots
+          .on('error', console.error)
+          .screenshots({ count: 1, folder: folder });
+  }
+</example>
+

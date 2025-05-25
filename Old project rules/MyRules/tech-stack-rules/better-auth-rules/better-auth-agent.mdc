@@ -1,0 +1,133 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# better-auth Best Practices
+
+## Critical Rules
+
+### 1. Code Organization
+- **Separate Auth Logic**: Isolate `better-auth` configurations and core logic into dedicated modules (e.g., `src/auth/better-auth.config.ts`, `src/auth/auth-service.ts`).
+- **Client Instance**: Create and export a single `authClient` instance for your frontend framework (e.g., `lib/auth-client.ts`) as recommended in the official documentation.
+- **Plugin Management**: Organize `better-auth` plugins in a dedicated file or section within your auth configuration for clarity, especially when using multiple plugins.
+- **Custom Adapters**: If using custom database adapters, keep them well-structured and clearly separated from core business logic.
+- **Environment Variables**: Store all sensitive configuration details (database connection strings, OAuth client secrets, etc.) in environment variables and load them securely.
+
+### 2. Performance Optimization
+- **Client-Side Session Management**: Utilize `better-auth` client-side hooks like `useSession()` for efficient access to session data and reactive updates in UI components.
+- **Optimized Queries**: If using a database adapter (e.g., Drizzle, Prisma), ensure your database queries related to users and sessions are optimized. `better-auth` often auto-generates schemas, but review them.
+- **Selective Data Fetching**: When fetching user or session data, request only the necessary fields to minimize data transfer.
+- **Caching**: Leverage built-in caching mechanisms if provided by `better-auth` or its plugins for frequently accessed, non-sensitive auth data. Be cautious with caching sensitive session information.
+- **Rate Limiting**: Configure and utilize `better-auth`'s built-in rate limiting features to protect authentication endpoints from abuse. Customize rules based on your application's needs.
+
+### 3. Security Considerations
+- **HTTPS Everywhere**: Ensure all communication with the `better-auth` server and between your application components is over HTTPS.
+- **Secure Token Storage**: Rely on `better-auth`'s recommended practices for token storage. If customizing, ensure tokens (access, refresh) are stored securely (e.g., using HttpOnly, Secure cookies for web; Keychain/Keystore for mobile).
+- **Input Validation**: Validate all inputs to `better-auth` functions (e.g., email, password, OAuth codes) on both client and server-side.
+- **CSRF Protection**: Implement CSRF protection if `better-auth` is used in a web context, especially for state-changing operations, if not handled by the library or framework integration.
+- **XSS Prevention**: Ensure user-supplied data that might be rendered in authentication pages or messages is properly sanitized to prevent XSS attacks.
+- **Password Policies**: Enforce strong password policies (length, complexity) during user registration and password changes. Consider using plugins like `haveibeenpwned` if available.
+- **Two-Factor Authentication (2FA)**: Enable and encourage the use of 2FA for enhanced security. Configure `better-auth`'s 2FA plugin appropriately.
+- **OAuth Scopes**: Request only the necessary OAuth scopes for social sign-on providers.
+- **Dependency Updates**: Regularly update `better-auth` and its dependencies to the latest secure versions. Monitor changelogs for security fixes.
+- **Error Handling**: Implement robust error handling for authentication flows. Avoid exposing sensitive error details to the client. Use `better-auth` error codes for specific error handling.
+- **Session Management**: Configure secure session settings (e.g., timeouts, cookie flags like `HttpOnly`, `Secure`, `SameSite`). `better-auth` provides session management features; ensure they are configured securely.
+- **Regular Audits**: Periodically review your `better-auth` implementation against security best practices and OWASP guidelines.
+
+### 4. Common Pitfalls
+- **Misconfigured Redirect URIs**: Ensure redirect URIs for OAuth providers are correctly and strictly configured to prevent open redirect vulnerabilities.
+- **Leaking Sensitive Data in Logs**: Avoid logging sensitive information like passwords, tokens, or PII. Configure logging levels appropriately.
+- **Ignoring Plugin Documentation**: Each `better-auth` plugin has its own configuration and best practices. Read their documentation carefully.
+- **Improper Error Handling**: Not handling all possible error states from `better-auth` API calls can lead to poor user experience or security issues. Check for `error` objects in responses.
+- **Client-Side Only Validation**: Relying solely on client-side validation for authentication data is insecure. Always validate on the server.
+- **Outdated Dependencies**: Using outdated versions of `better-auth` or its underlying dependencies can expose your application to known vulnerabilities.
+- **Over-Permissive Scopes**: Requesting more OAuth scopes than necessary increases the attack surface if an access token is compromised.
+- **Ignoring Rate Limiting**: Failing to configure or test rate limiting can leave auth endpoints vulnerable to brute-force or denial-of-service attacks.
+- **Weak Session Invalidation**: Ensure sessions are properly invalidated on logout, password change, or suspicious activity.
+
+## Examples
+
+<example>
+  // Good: Securely initializing better-auth with environment variables
+  // auth.config.ts
+  import { betterAuth } from 'better-auth';
+  import { Pool } from 'pg'; // Example for PostgreSQL
+  import { twoFactor } from 'better-auth/plugins/two-factor'; // Fictional plugin path
+
+  export const auth = betterAuth({
+    database: new Pool({
+      connectionString: process.env.DATABASE_URL, // Loaded from .env
+    }),
+    emailAndPassword: {
+      enabled: true,
+    },
+    plugins: [
+      twoFactor({
+        // Plugin specific secure configurations
+      }),
+    ],
+    session: {
+      cookie: {
+        secure: process.env.NODE_ENV === 'production', // True in production
+        httpOnly: true,
+        sameSite: 'lax',
+      }
+    }
+  });
+
+  // Good: Creating a client instance
+  // lib/auth-client.ts (React example)
+  import { createAuthClient } from "better-auth/react";
+  export const authClient = createAuthClient({
+      baseURL: process.env.NEXT_PUBLIC_AUTH_BASE_URL // Loaded from .env
+  });
+
+  // Good: Handling errors from client call
+  async function handleSignIn(email, password) {
+    const { data, error } = await authClient.signIn.email({ email, password });
+    if (error) {
+      // Use error.code for specific messages if available
+      console.error("Sign-in failed:", error.message);
+      // Display user-friendly error message
+      return;
+    }
+    // Proceed with data
+  }
+</example>
+
+<example type="invalid">
+  // Bad: Hardcoding sensitive credentials
+  // auth.config.ts
+  import { betterAuth } from 'better-auth';
+  import { Pool } from 'pg';
+
+  export const auth = betterAuth({
+    database: new Pool({
+      connectionString: 'postgresql://user:THIS_IS_A_BAD_PASSWORD@localhost:5432/mydb', // Hardcoded!
+    }),
+    // ...
+  });
+
+  // Bad: Ignoring error handling
+  // component.tsx
+  async function handlePasswordReset(email) {
+    // No error checking!
+    await authClient.sendPasswordResetEmail({ email });
+    // Assumes success, might mislead user if it fails
+  }
+
+  // Bad: Overly permissive cookie settings
+  // auth.config.ts
+  export const auth = betterAuth({
+    // ...
+    session: {
+      cookie: {
+        secure: false, // Always false, even in production!
+        httpOnly: false, // Token accessible via JavaScript!
+        sameSite: 'none', // Allows CSRF if not properly handled
+      }
+    }
+  });
+</example>
+

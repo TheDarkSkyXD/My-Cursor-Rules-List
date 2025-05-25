@@ -1,0 +1,156 @@
+---
+description: Implement accessibility features when building interfaces to ensure usability for all users including those with disabilities
+globs: *.ts, *.tsx
+alwaysApply: false
+---
+# Accessibility (a11y) and Inclusion
+
+## Context
+
+- Ensures all user-facing screens and components in Expo applications meet basic accessibility standards.
+- Applies to interactions, visual elements, and markup structure within React Native components.
+
+## Requirements
+
+### Core Accessibility Principles
+
+- Follow WCAG 2.1 guidelines at minimum AA compliance level
+- Design with accessibility in mind from the start
+- Use native semantics when possible, add ARIA when necessary
+  - Using standard React Native accessibility props first
+  - Only adding complex accessibility patterns when standard props are insufficient
+  - Never assuming any accessibility feature is automatically provided
+- Test with real assistive technologies:
+  - Screen readers (VoiceOver, TalkBack)
+  - Switch controls
+  - Voice commands
+
+<required>
+
+1. Semantic Roles: React Native components do NOT automatically provide semantic roles equivalent to web HTML elements. Always explicitly set appropriate `accessibilityRole` properties.
+2. Accessibility Labels:
+   - Let text speak for itself: If a component contains Text elements, React Native automatically uses that text as the accessibility label
+   - Only add explicit accessibilityLabel when:
+     a) The element contains NO text (e.g., an icon-only button)
+     b) An image conveys meaning that isn't already communicated by text
+   - Avoid redundant labels: Never add `accessibilityLabel` to elements that already contain descriptive text
+
+</required>
+
+### Semantic Structure
+
+- Use semantic components:
+  - Proper heading hierarchy
+  - Semantic sectioning (View, Text, etc.)
+  - Meaningful component naming
+- Implement proper focus management:
+  - Focus indicators
+  - Logical focus order
+  - Focus trapping for modals
+- Use consistent skip links or nav landmarks for clear page structure
+
+### Interactive Elements
+
+- Interactive component requirements:
+  - `accessibilityRole` appropriate to their function
+  - `accessibilityState` when representing states like checked, disabled, selected
+  - `accessibilityHint` when additional context about the result of an action is
+    helpful
+- Ensure proper touch targets:
+  - Minimum size of 44×44 points
+  - Adequate spacing between elements
+  - Proper hit slop configuration
+- Implement keyboard navigation:
+  - Tab navigation
+  - Keyboard shortcuts
+  - Proper keyboard focus indicators
+
+### Content Accessibility
+
+- Provide text alternatives:
+  - Informative images need appropriate `accessibilityLabel` to convey their meaning
+  - Captions for videos
+  - Transcripts for audio
+- Decorative images should be ignored by screen readers
+- Ensure proper text contrast:
+  - Minimum 4.5:1 for normal text
+  - Minimum 3:1 for large text
+  - Color not used as the only visual means of conveying information
+- Ensure text scaling and font adjustments for accessibility
+
+### Assistive Technology
+
+- Implement proper `accessibilityLabel` and `accessibilityHint`
+- Use `AccessibilityInfo` to announce changes in dynamic content to assistive technologies
+
+### Testing Accessibility
+
+- Implement automated accessibility testing:
+  - Use accessibility linting rules
+  - Integrate with Jest for component testing
+  - Apply accessibility checkers in CI/CD
+- Conduct manual accessibility reviews:
+  - Screen reader testing
+  - Keyboard navigation testing
+  - Color contrast verification
+
+## Examples
+
+<example>
+
+```tsx
+
+import { Button, Text, View, AccessibilityInfo } from 'react-native';
+
+// Icon-only button
+<TouchableOpacity
+  accessibilityRole="button"
+  accessibilityLabel="Add to cart"
+  accessibilityHint="Adds this item to your shopping cart"
+  onPress={handleAddToCart}
+>
+  <Icon name="cart" />
+</TouchableOpacity>
+
+//  Status icon
+<Icon name="check-circle" accessibilityRole=“image" accessibilityLabel="Completed" />
+
+// Button with text: NO label needed
+<TouchableOpacity accessibilityRole="button">
+  <Text>Submit</Text>
+</TouchableOpacity>
+
+// Providing alt text
+<Image source={require('./logo.png')} accessibilityLabel="Company Logo" />
+
+// Managing focus
+useEffect(() => {
+  if (isOpen) {
+    AccessibilityInfo.announceForAccessibility('Modal opened');
+  }
+}, [isOpen]);
+```
+
+</example>
+
+<example type="invalid">
+
+```tsx
+// ❌ Using non-semantic elements
+<TouchableOpacity onPress={handleSubmit}>Submit</TouchableOpacity>
+
+// ❌ Redundant label
+<TouchableOpacity accessibilityRole="button" accessibilityLabel="Submit form">
+  <Text>Submit</Text>
+</TouchableOpacity>
+
+// ❌ Missing accessibility labels
+<Image source={require('./logo.png')} />
+
+// ❌ Not managing focus
+useEffect(() => {
+    // No focus management
+}, [isOpen]);
+```
+
+</example>

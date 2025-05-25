@@ -1,0 +1,69 @@
+---
+description: Project guidance - initial rule to read to understand all others
+globs: 
+---
+
+## Quick Reference
+
+CRITICAL: Before making any changes:
+- Work incrementally - one small change at a time
+- Verify each change before proceeding
+- Keep changes focused and minimal
+- When in doubt, check the detailed rules
+
+## Engineering Approach
+
+Our development process emphasizes:
+- Clean separation of concerns
+- Proper testing and verification
+- Reliable CI/CD practices
+- Incremental, verified changes
+
+### Development Technique
+
+We work piece by piece. ALWAYS:
+1. Make one focused change at a time
+2. Verify it works before proceeding
+3. Document what you've done
+4. Clean up any temporary changes
+
+It is imperative to avoid trying to accomplish several things in one go. Change one thing, verify it works, test if need be and then change the next thing.
+
+## Core Principles
+
+1. **Clean Code Organization**
+   - Small, focused files
+   - Clear naming conventions
+   - Minimal, careful modifications
+
+2. **Living Documentation**
+   - Document plans and progress
+   - Keep documentation updated
+
+## Project Planning
+
+Active development plans and progress tracking are maintained in the `/plans` directory. This is a working area that evolves with the project, containing:
+- Current development plans
+- Debugging sessions
+- Progress tracking
+- Investigation notes
+
+## Sub-projects (inside monorepo)
+- Apply these same rules to all sub-projects
+- Look for a root planning directory in each sub-project e.g.
+  - /nestjs/plans
+  - /angular-frontend/plans
+
+# Core Instructions For AI
+
+IMPORTANT:
+1. ALWAYS check relevant rule files before making changes
+2. Work incrementally - one small change at a time
+3. Verify each change before proceeding
+4. Keep documentation and plans updated
+5. When in doubt, ask for clarification
+6. Make sure you understand the full context before proceeding
+
+Remember: From a clean restart, these rules and the plans should tell you everything you need to know about where to pick up.
+
+

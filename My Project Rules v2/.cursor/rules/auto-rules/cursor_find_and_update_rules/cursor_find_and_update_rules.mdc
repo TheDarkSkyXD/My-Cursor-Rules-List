@@ -1,0 +1,34 @@
+---
+description: Cursor Rules Location
+globs: *.mdc,*.md
+alwaysApply: false
+---
+# Find and Update .mdc Rule Files
+
+## Critical Rules
+
+- When this rule is invoked, first use the `list_dir` tool to recursively list all files and directories within the `.cursor/rules/` path to help identify available `.mdc` rule files.
+- If the user provides a specific name, part of a name, or describes the purpose of a rule, use the `file_search` tool with the query targeting the `.cursor/rules/` directory and `*.mdc` files.
+- If the user wants to search for specific content within the rule files, use the `grep_search` tool, targeting `*.mdc` files within the `.cursor/rules/` directory.
+- Once a target `.mdc` file is identified by the user, offer to read its content using `read_file` or help apply updates using `edit_file`.
+- Confirm with the user the exact file path of the rule to be modified before applying any changes.
+
+## Examples
+
+<example>
+  **User Query:** "I need to update my commit message rule. Can you help me find it and then I'll tell you the changes?"
+  **AI Action Flow:**
+  1. AI recognizes the user wants to find and update an existing `.mdc` rule.
+  2. AI applies the `find-update-mdc-rules-agent` rule.
+  3. AI calls `list_dir` on `.cursor/rules/` or `file_search` with query "commit message rule" in `.cursor/rules/` for `*.mdc`.
+  4. AI presents the list of potential matching rule files (e.g., `.cursor/rules/git-commit-rules/create-commit-message/create-commit-message-agent.mdc`).
+  5. User confirms the correct file.
+  6. AI offers to read the file or waits for user's instructions to edit it.
+</example>
+
+<example type="invalid">
+  **User Query:** "Create a new rule for Python class structure."
+  **AI Action Flow (Incorrect application of THIS rule):**
+  1. AI should *not* primarily apply this `find-update-mdc-rules-agent` rule for creating a *new* rule. It should use the `core-rules/rule-generating-agent.mdc` rule instead.
+  *(This `find-update-mdc-rules-agent` rule is for finding and modifying EXISTING rules, not for the creation of new ones from scratch, though it might be used to check if a similar rule already exists before creation.)*
+</example>

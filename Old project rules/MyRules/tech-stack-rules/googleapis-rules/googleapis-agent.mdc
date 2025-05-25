@@ -1,0 +1,158 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# googleapis Node.js Client Best Practices
+
+## Critical Rules
+
+### 1. Authentication & Authorization
+- **Choose the Right Method**:
+    - **OAuth2 (`google.auth.OAuth2`)**: For user-delegated access. Always request `access_type: 'offline'` to get a refresh token for long-lived access. Securely store and manage refresh tokens.
+        ```javascript
+        const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
+        // ... generate authUrl, get code, then:
+        // const {tokens} = await oauth2Client.getToken(code);
+        // oauth2Client.setCredentials(tokens);
+        // oauth2Client.on('tokens', (newTokens) => { /* Store newTokens if they include a refresh_token */ });
+        ```
+    - **Service Account (`google.auth.GoogleAuth`)**: For server-to-server authentication. Use `keyFile` option or `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
+        ```javascript
+        const auth = new google.auth.GoogleAuth({
+          keyFile: '/path/to/your-secret-key.json',
+          scopes: ['https://www.googleapis.com/auth/your-scope'],
+        });
+        const authClient = await auth.getClient();
+        ```
+    - **API Keys**: For public, unauthenticated data. Pass as `auth: 'YOUR_API_KEY'` during service client instantiation or globally. Use sparingly due to security implications.
+    - **Application Default Credentials (ADC)**: Recommended for Google Cloud environments (GCE, Cloud Run, GKE, etc.). Automatically finds credentials.
+        ```javascript
+        const auth = new google.auth.GoogleAuth({
+          scopes: ['https://www.googleapis.com/auth/your-scope'],
+        });
+        const authClient = await auth.getClient();
+        ```
+- **Secure Credentials**:
+    - **NEVER** commit client secrets, API keys, or service account JSON files to source control.
+    - Use environment variables, a secure secret management system, or secure file storage with restricted access.
+- **Principle of Least Privilege**: Request only the OAuth scopes absolutely necessary for your application's functionality.
+- **Token Management**:
+    - For OAuth2, securely store refresh tokens. Access tokens are short-lived.
+    - Listen to the `tokens` event on the `OAuth2Client` to capture and store new (potentially refreshed) tokens.
+    - Handle token revocation or expiration gracefully (e.g., by prompting re-authentication).
+
+### 2. Client Initialization & Usage
+- **Import**: `const {google} = require('googleapis');`
+- **Instantiate API Clients**: Create specific service clients (e.g., `google.youtube`, `google.drive`).
+    ```javascript
+    const youtube = google.youtube({ version: 'v3', auth: authClient });
+    const drive = google.drive({ version: 'v2', auth: oauth2Client });
+    ```
+- **Reuse Client Objects**: Instantiate API clients (e.g., `youtube`, `drive`) once and reuse them for multiple requests. This shares authentication state and improves performance by avoiding repeated auth handshakes.
+- **Promises & Async/Await**: Utilize promises or async/await for cleaner asynchronous code.
+    ```javascript
+    async function listYouTubeVideos() {
+      try {
+        const response = await youtube.search.list({ part: 'snippet', q: 'Google APIs' });
+        console.log(response.data.items);
+      } catch (error) {
+        console.error('Error fetching YouTube videos:', error);
+      }
+    }
+    ```
+- **Per-API Submodules (Optional)**: For applications using only a few Google APIs, consider installing specific submodules (e.g., `npm install @googleapis/youtube`) to potentially reduce startup time and bundle size.
+    ```javascript
+    // If using @googleapis/youtube
+    // const {youtube} = require('@googleapis/youtube');
+    // const youtubeClient = youtube({version: 'v3', auth});
+    ```
+
+### 3. API Requests & Data Handling
+- **Request Body**: Pass parameters in the `requestBody` object for POST/PUT requests.
+    ```javascript
+    // Example: Creating a new Google Calendar event
+    // const event = { summary: 'API Call', start: {...}, end: {...} };
+    // await calendar.events.insert({ calendarId: 'primary', requestBody: event });
+    ```
+- **Media Uploads**: Use the `media` parameter for file uploads, supporting streams for large files.
+    ```javascript
+    // const fs = require('fs');
+    // await drive.files.create({
+    //   requestBody: { name: 'photo.jpg', mimeType: 'image/jpeg' },
+    //   media: { mimeType: 'image/jpeg', body: fs.createReadStream('path/to/photo.jpg') }
+    // });
+    ```
+- **Pagination**: Properly handle paginated results using `nextPageToken` and `pageToken` as documented by the specific API endpoint.
+- **Specify Fields**: For GET requests, use the `fields` parameter (if supported by the API) to request only the data you need, reducing response size and processing time.
+
+### 4. Performance
+- **Reuse Clients**: (Reiterated for importance) Do not create a new `google.auth.*` client or service client (e.g., `google.youtube()`) for each request.
+- **Enable HTTP/2**: For potentially better performance through multiplexing, enable HTTP/2 globally:
+    ```javascript
+    // google.options({ http2: true });
+    ```
+- **Prefer `@google-cloud/*` Libraries for GCP Services**: For Google Cloud Platform services (e.g., Storage, BigQuery, Pub/Sub), use the dedicated `@google-cloud/[service-name]` libraries. They are more optimized and actively maintained for GCP services compared to the general `googleapis` library.
+- **Batch Requests**: If the API supports batching (e.g., Gmail API), use it to combine multiple operations into a single HTTP request.
+
+### 5. Error Handling & Retries
+- **Handle API Errors**: Wrap API calls in `try...catch` blocks to handle errors returned by Google APIs (e.g., 4xx, 5xx status codes). Inspect the error object for details.
+- **Retry Transient Errors**: Implement retry mechanisms with exponential backoff for transient errors (e.g., network issues, rate limits - 500, 503, 403 for rate limits). The library may handle some retries internally, but custom handling might be needed.
+- **Handle Auth Errors**: Specifically handle authentication/authorization errors (e.g., invalid credentials, expired tokens, insufficient permissions). Prompt users to re-authenticate if necessary.
+
+### 6. Security
+- **Credential Security**: (Reiterated) Protect API keys, client secrets, and service account keys. Do not embed them directly in client-side code.
+- **Input Validation**: Validate and sanitize any user-provided input used in API requests to prevent injection or misuse.
+- **Server-Side Operations**: Perform operations involving sensitive data or requiring privileged access on the server-side, not directly from the client browser.
+
+### 7. Common Pitfalls
+- **Not Storing/Refreshing OAuth2 Tokens**: Failing to store `refresh_token` or handle the `tokens` event can lead to users needing to re-authenticate frequently.
+- **Creating Clients Per Request**: Drastically impacts performance and can lead to rate limiting on authentication.
+- **Ignoring Pagination**: Leading to incomplete data sets.
+- **Hardcoding Credentials**: Major security risk.
+- **Not Requesting `access_type: 'offline'`**: Results in not receiving a `refresh_token`.
+- **Checking in `node_modules` or credentials**: Ensure `.gitignore` is configured correctly.
+- **Using `googleapis` for GCP services where `@google-cloud/*` is preferred**: Leads to using a less optimized, maintenance-mode library for those specific services.
+
+## Examples
+
+<example>
+  // Good: Reusing OAuth2 client and YouTube service client
+  const {google} = require('googleapis');
+  const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
+  // ... (obtain and set tokens on oauth2Client) ...
+  const youtube = google.youtube({version: 'v3', auth: oauth2Client});
+
+  async function getMyPlaylists() {
+    try {
+      const response = await youtube.playlists.list({mine: true, part: 'snippet,contentDetails', maxResults: 25});
+      console.log('Playlists:', response.data.items);
+      // Handle pagination if response.data.nextPageToken exists
+    } catch (error) {
+      console.error('Error fetching playlists:', error.message);
+      if (error.response && error.response.status === 401) {
+        // Handle re-authentication
+      }
+    }
+  }
+  // Call getMyPlaylists() multiple times without re-creating clients
+</example>
+
+<example type="invalid">
+  // Bad: Creating new clients for every request and hardcoding API key
+  const {google} = require('googleapis');
+
+  async function searchVideo(query) {
+    // PROBLEM: New client on every call, hardcoded API key
+    const youtube = google.youtube({version: 'v3', auth: 'AIzaSyC...HARDCODED_KEY'});
+    try {
+      const response = await youtube.search.list({part: 'snippet', q: query});
+      console.log(response.data.items);
+    } catch (error) {
+      console.error('Search failed:', error);
+    }
+  }
+  // searchVideo('cats');
+  // searchVideo('dogs'); // Each call re-creates client and uses hardcoded key
+</example>
+

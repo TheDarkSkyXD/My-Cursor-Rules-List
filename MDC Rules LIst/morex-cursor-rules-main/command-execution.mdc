@@ -1,0 +1,72 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Command Execution
+
+Rule for automatically executing commands instead of suggesting them to the user.
+
+<rule>
+name: command_execution
+description: Standards for handling command execution in conversations
+filters:
+  - type: event
+    pattern: "command_suggestion"
+  - type: content
+    pattern: ".*(?:run|execute|install|setup).*"
+
+actions:
+  - type: suggest
+    message: |
+      When handling commands:
+
+      1. Direct Execution:
+         ```
+         - Always execute commands directly instead of suggesting them
+         - Use run_terminal_cmd tool immediately
+         - Don't ask for permission unless the command is destructive
+         ```
+
+      2. Environment Awareness:
+         ```
+         - Check for devbox/environment requirements first
+         - Switch to correct shell if needed
+         - Verify environment before running commands
+         ```
+
+      3. Error Handling:
+         ```
+         - Handle common errors (missing tools, wrong shell)
+         - Suggest fixes for environment issues
+         - Chain commands if dependencies are needed
+         ```
+
+      4. Command Context:
+         ```
+         - Include explanation of what command does
+         - Log relevant output
+         - Handle command output appropriately
+         ```
+
+examples:
+  - input: |
+      # Instead of:
+      "You'll need to run: npm install"
+
+      # Do:
+      <run_terminal_cmd>npm install</run_terminal_cmd>
+    output: "Direct command execution"
+
+  - input: |
+      # Instead of:
+      "First install node with: brew install node"
+
+      # Do:
+      <run_terminal_cmd>brew install node</run_terminal_cmd>
+    output: "Direct dependency installation"
+
+metadata:
+  priority: high
+  version: 1.0
+</rule> 

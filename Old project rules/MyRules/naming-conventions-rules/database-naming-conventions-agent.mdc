@@ -1,0 +1,103 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Database Naming Conventions
+
+## Critical Rules
+
+### General Conventions
+- Use `snake_case` for all database object names (tables, columns, indexes, etc.). Example: `user_profiles`, `order_items`.
+- Avoid using SQL reserved keywords (e.g., `ORDER`, `SELECT`, `TABLE`) as names for tables or columns. If unavoidable, consider a slightly different name or consult team conventions.
+- Ensure names are descriptive and clearly indicate the purpose or content of the object.
+- Maintain consistency in naming across the entire database schema.
+
+### Table Naming
+- Use **singular nouns** for table names. Example: `user`, `product`, `order_item`.
+- If a table stores a many-to-many relationship (join table), combine the names of the two related tables in singular form, separated by an underscore, preferably in alphabetical order. Example: `post_tag` (joins `post` and `tag` tables).
+
+### Column Naming
+- Use `snake_case` for column names. Example: `first_name`, `email_address`, `created_at`.
+- **Primary Keys**:
+    - Name the primary key column `id` by convention.
+- **Foreign Keys**:
+    - Name foreign key columns by combining the referenced table's singular name and the `_id` suffix. Example: `user_id` in the `order` table (referencing the `id` column in the `user` table).
+- **Boolean Columns**:
+    - Prefix boolean column names with `is_` or `has_`. Example: `is_active`, `has_subscription`.
+- **Timestamp Columns**:
+    - Use the `_at` suffix for timestamp columns indicating when an event occurred. Example: `created_at`, `updated_at`, `deleted_at`.
+- **Date Columns**:
+    - Use the `_on` suffix for date columns indicating the date of an event if time is not relevant or stored separately. Example: `published_on`.
+
+### Index Naming
+- Use a consistent prefix, like `idx_` or `ix_`.
+- Include the table name and the column(s) being indexed.
+- Example: `idx_user_email` (for an index on the `email` column of the `user` table), `idx_order_item_order_id_product_id` (for a composite index).
+
+### Other Database Objects (Views, Stored Procedures, Triggers)
+- **Views**: Prefix with `vw_`. Example: `vw_active_users`.
+- **Stored Procedures**: Prefix with `sp_`. Example: `sp_calculate_totals`.
+- **Triggers**: Prefix with `trg_`. Example: `trg_update_user_timestamp`.
+
+## Examples
+
+<example>
+  **Table: `user`**
+  Columns:
+  - `id` (Primary Key, BIGINT)
+  - `username` (VARCHAR)
+  - `email_address` (VARCHAR)
+  - `is_verified` (BOOLEAN)
+  - `created_at` (TIMESTAMP)
+  - `updated_at` (TIMESTAMP)
+
+  **Table: `product`**
+  Columns:
+  - `id` (Primary Key, BIGINT)
+  - `name` (VARCHAR)
+  - `description` (TEXT)
+  - `price` (DECIMAL)
+  - `created_at` (TIMESTAMP)
+
+  **Table: `order`**
+  Columns:
+  - `id` (Primary Key, BIGINT)
+  - `user_id` (Foreign Key referencing `user.id`)
+  - `order_date` (DATE)
+  - `total_amount` (DECIMAL)
+  - `shipped_at` (TIMESTAMP, nullable)
+
+  **Join Table: `order_item`** (Many-to-many between `order` and `product`)
+  Columns:
+  - `id` (Primary Key, BIGINT)
+  - `order_id` (Foreign Key referencing `order.id`)
+  - `product_id` (Foreign Key referencing `product.id`)
+  - `quantity` (INTEGER)
+  - `unit_price` (DECIMAL)
+
+  **Indexes:**
+  - `idx_user_email_address` on `user(email_address)`
+  - `idx_order_item_order_id` on `order_item(order_id)`
+  - `idx_order_item_product_id` on `order_item(product_id)`
+</example>
+
+<example type="invalid">
+  **Table: `UsersTable` (Plural, PascalCase)**
+  Columns:
+  - `UserID` (PascalCase, not `id`)
+  - `firstName` (camelCase)
+  - `EMail` (Mixed case)
+  - `IsActive` (PascalCase for boolean)
+  - `DateCreated` (PascalCase, no `_at` suffix)
+
+  **Table: `productOrders` (camelCase, no clear relation)**
+  Columns:
+  - `order` (SQL reserved keyword)
+  - `PRODUCT` (UPPERCASE)
+  - `FK_user` (Inconsistent FK naming)
+
+  **Index:**
+  - `email_index` (Lacks table context, inconsistent prefix)
+</example>
+

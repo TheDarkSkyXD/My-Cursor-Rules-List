@@ -1,0 +1,161 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# p-queue Best Practices
+
+## Critical Rules
+
+### 1. Code Organization & Initialization
+- **Queue Instances**: Create `PQueue` instances where they make sense for managing a specific type of resource or task group (e.g., one queue for API calls, another for file processing).
+- **Singleton Pattern**: For application-wide limits (like global API rate limits), consider creating a singleton instance of `PQueue` and exporting/injecting it where needed.
+- **Configuration**: Pass options like `concurrency`, `intervalCap`, `interval`, `timeout`, etc., during instantiation. Store these configuration values appropriately (config files, environment variables).
+    - `import PQueue from 'p-queue';`
+    - `const apiQueue = new PQueue({ concurrency: 5, intervalCap: 10, interval: 1000 }); // Example`
+
+### 2. Task Management
+- **Adding Tasks**: 
+    - Use `queue.add(asyncFunction, options)` to add tasks. The function should return a Promise or be an `async function`.
+    - Use `queue.addAll(arrayOfFunctions, options)` for adding multiple tasks at once.
+- **Task Function Signature**: The task function (`fn`) passed to `add` receives an object `{signal}` as its first argument, which can be used for cancellation.
+- **Priority**: Use the `priority` option in `add()` if certain tasks need to run before others (higher number means higher priority). Concurrency must be less than Infinity for priority to have a guaranteed effect.
+    - `queue.add(highPriorityTask, { priority: 10 });`
+    - `queue.add(lowPriorityTask, { priority: 1 });`
+- **Updating Priority**: Use `queue.setPriority(id, newPriority)` to change a task's priority before it starts executing. Requires providing a unique `id` when adding the task.
+
+### 3. Concurrency & Rate Limiting
+- **Concurrency**: Set the `concurrency` option based on the nature of the tasks and the limitations of the resource being accessed.
+    - For I/O-bound tasks (network requests, disk I/O), concurrency can often be higher (e.g., 5-50).
+    - For CPU-bound tasks, concurrency should generally not exceed the number of CPU cores.
+    - Start with a conservative number and tune based on performance monitoring.
+- **Rate Limiting**: Use `intervalCap` (max tasks) and `interval` (time window in ms) for time-based rate limiting.
+    - `const rateLimitedQueue = new PQueue({ intervalCap: 5, interval: 1000 }); // Max 5 tasks per second`
+- **Timeouts**: Use the `timeout` option (per-task timeout) and `throwOnTimeout` (whether timeout is an error) to prevent tasks from hanging indefinitely.
+
+### 4. Error Handling & Completion
+- **Task Rejections**: CRITICAL: The promise returned by `queue.add()` or `queue.addAll()` MUST be handled (e.g., using `await...catch` or `.catch()`). Unhandled rejections from tasks within the queue will likely crash your application.
+    - `queue.add(mightFailTask).catch(error => console.error('Task failed:', error));`
+    - OR `try { await queue.add(mightFailTask); } catch (error) { ... }`
+- **Queue Errors**: Attach a listener to the queue instance itself using `.on('error', error => { ... })` to catch errors specifically emitted by the queue (though task errors are usually handled via the returned promise).
+- **Waiting for Completion**: 
+    - Use `await queue.onIdle()` to wait until the queue is empty *and* all running tasks have finished.
+    - Use `await queue.onEmpty()` to wait only until the queue has no *waiting* items (tasks might still be running).
+    - `await Promise.all(addResults)` where `addResults` is an array of promises returned by `.add()` can also be used, but `onIdle` is often cleaner for ensuring the *queue* state is settled.
+
+### 5. Performance & Resource Management
+- **Queue Size**: Monitor `queue.size` (waiting) and `queue.pending` (running). Avoid letting the queue grow indefinitely if tasks are added much faster than they are processed.
+    - Use `await queue.onSizeLessThan(limit)` to pause adding new items if the queue grows too large.
+- **Cancellation**: For long-running tasks, implement cancellation logic within the task function by listening to the `signal.aborted` event or checking `signal.aborted` periodically. Pass an `AbortController` signal to `queue.add()`.
+- **Memory**: Be mindful of memory usage if tasks themselves hold large objects or closures, especially if the queue size (`.size`) becomes very large.
+- **Auto Start**: Use `autoStart: false` in options if you need to add multiple tasks first and then trigger execution manually with `queue.start()`.
+
+### 6. Common Pitfalls
+- **Unhandled Rejections**: Forgetting to `.catch()` the promise returned by `queue.add()`.
+- **Concurrency Too High**: Setting `concurrency` too high can lead to resource exhaustion (CPU, memory, network sockets) or hitting external rate limits faster than intended.
+- **Concurrency Too Low**: Setting `concurrency` too low can underutilize resources and slow down processing.
+- **Misunderstanding `onIdle` vs `onEmpty`**: Using `onEmpty` when you need to guarantee all running tasks are finished (use `onIdle` for that).
+- **Not Handling Timeouts**: If using the `timeout` option without `throwOnTimeout: true`, ensure the task function handles the timeout condition gracefully (e.g., returns a specific value) as the promise will simply resolve.
+- **Ignoring `await queue.onIdle()`**: In scripts or processes that need to exit cleanly after all tasks are done, forgetting `await queue.onIdle()` can lead to premature termination.
+- **Modifying Task Function After Adding**: Adding a function reference and then modifying that function externally before the queue executes it.
+
+## Examples
+
+<example>
+  // Good: Basic setup with concurrency and error handling for added tasks
+  import PQueue from 'p-queue';
+  import fetch from 'node-fetch'; // Assuming node-fetch or similar
+
+  const queue = new PQueue({ concurrency: 2 });
+
+  const urls = [
+    'https://example.com/1',
+    'https://example.com/2',
+    'https://example.com/invalid',
+    'https://example.com/4'
+  ];
+
+  const fetchUrl = async (url) => {
+    console.log(`Fetching ${url}...`);
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status} for ${url}`);
+    }
+    console.log(`Finished ${url}`);
+    return response.status;
+  };
+
+  // Handle results and errors for each task
+  const promises = urls.map(url => 
+    queue.add(() => fetchUrl(url))
+      .then(status => ({ url, status }))
+      .catch(error => ({ url, error: error.message }))
+  );
+
+  (async () => {
+    // Optional: Listen to queue events
+    queue.on('active', () => {
+        console.log(`Queue active. Size: ${queue.size}, Pending: ${queue.pending}`);
+    });
+    queue.on('idle', () => {
+        console.log('Queue is idle.');
+    });
+
+    console.log('Waiting for all tasks to complete...');
+    const results = await Promise.all(promises);
+    console.log('All tasks settled:', results);
+
+    // Alternatively, wait for the queue to be idle
+    // await queue.onIdle();
+    // console.log('Queue finished processing all tasks.');
+  })();
+
+  // Good: Using priority and waiting for idle
+  const priorityQueue = new PQueue({ concurrency: 1 });
+  (async () => {
+      priorityQueue.add(() => Promise.resolve('Low 1'), { priority: 1 });
+      priorityQueue.add(() => Promise.resolve('High 1'), { priority: 10 });
+      priorityQueue.add(() => Promise.resolve('Low 2'), { priority: 1 });
+      priorityQueue.add(() => Promise.resolve('High 2'), { priority: 10 });
+      
+      await priorityQueue.onIdle(); // Wait for all tasks to finish
+      console.log('Priority queue finished.');
+  })();
+
+</example>
+
+<example type="invalid">
+  // Bad: Not handling promise rejection from add()
+  const unsafeQueue = new PQueue({ concurrency: 1 });
+  unsafeQueue.add(() => {
+    return Promise.reject(new Error('Task failed!'));
+  });
+  // This will likely cause an UnhandledPromiseRejectionWarning and potentially crash
+
+  // Bad: Using onEmpty when needing to wait for completion
+  const badWaitQueue = new PQueue({ concurrency: 2 });
+  badWaitQueue.add(async () => { 
+      await new Promise(resolve => setTimeout(resolve, 500)); 
+      console.log('Task 1 done'); 
+  });
+  badWaitQueue.add(async () => { 
+      await new Promise(resolve => setTimeout(resolve, 100)); 
+      console.log('Task 2 done'); 
+  });
+
+  // This might log before Task 1 is done, because the queue is empty 
+  // once Task 2 starts running (if concurrency > 1).
+  badWaitQueue.onEmpty().then(() => {
+      console.log('Queue empty (but tasks might still be running!)'); 
+  });
+  // Correct way: await badWaitQueue.onIdle();
+
+  // Bad: Setting concurrency too high for CPU-bound tasks
+  const cpuIntensiveTask = () => { /* complex calculation */ return 1; };
+  const cpuQueue = new PQueue({ concurrency: 100 }); // Too high for CPU tasks on most machines
+  // for (let i = 0; i < 1000; i++) {
+  //   cpuQueue.add(cpuIntensiveTask).catch(console.error);
+  // }
+
+</example>
+

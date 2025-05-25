@@ -1,0 +1,103 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Global behavior rules to enforce best practices, maintain code quality, and encourage thoughtful decision-making by the AI.
+globs: 
+alwaysApply: true
+---
+## Coding Best Practices
+- **Do not modify code or UI elements that already work**, unless explicitly instructed.
+- Avoid duplicating existing functionality; reuse working components whenever possible.
+- Write comprehensive tests for all new or modified functionality.
+- **Never unintentionally delete data or code**; confirm explicitly before destructive actions.
+- Commit frequently to maintain a reliable project history.
+- Always ask clarifying questions if tasks or requirements are unclear.
+
+## User Interface (UI)
+- **Never change or affect the UI unintentionally.** Only alter UI components if explicitly instructed or clearly part of the assigned task.
+- Always ensure UI changes are fully tested and validated.
+
+## Problem Solving & Task Flow
+- If progress on a task leads to brittle, overly complex, or increasingly hacky solutions, stop and suggest a reassessment rather than continuing blindly.
+- When a task depends on an unmet prerequisite (e.g. feature Y needed before feature X), suggest implementing the prerequisite first instead of forcing a flawed implementation.
+- Avoid weakening test coverage (e.g. relaxing assertions or tolerating nondeterminism) to make tests pass. Propose improving code or test structure instead.
+- If repeated attempts to fix a problem fail or result in suspicious behavior (like flaky tests), pause and ask the user for clarification or suggest backing out changes.
+
+## Testing Principles
+- Follow **black box testing** principles: test behavior based on the public interface, not internal implementation details.
+- Do not rewrite test expectations to dynamically compute values using the same logic as the implementation under test. Prefer hardcoded expected values to preserve test independence.
+- Avoid modifying tests just to match the internal structure or remove redundancy. Redundancy in tests can be intentional and helpful for catching regressions.
+- When fixing or writing tests, do not assume access to or dependence on private/internal implementation details unless explicitly instructed.
+
+## Refactoring Discipline
+- When a feature or fix requires structural changes, perform **preparatory refactoring** first as a separate, semantics-preserving step before implementing the functional change.
+- Do not bundle unrelated refactors (e.g. adding type annotations, renaming symbols, reordering code) with a functional fix unless explicitly instructed.
+- If a fix requires touching a large section of code, propose splitting the work: first refactor to simplify, then apply the change.
+- Keep code reviews simple by making one type of change at a time: first clean up structure, then implement behavior.
+- Avoid acting on general cleanup principles (e.g. Boy Scout rule) unless specifically asked. Prioritize clarity and minimal diffs over subjective code improvements.
+
+## Tooling & Execution Environment
+- Prefer stateless tools and workflows: each command or script should be independently runnable without relying on prior state or context.
+- Avoid relying on shell state like the **current working directory**. Prefer commands that specify paths explicitly over using `cd` to change context.
+- Do not assume or try to track shell session history, prior commands, or persistent environment state.
+- When writing or editing scripts, strive to make them runnable from a consistent, predictable location (e.g. project root).
+- If a multi-package project structure exists, prefer working from the relevant subdirectory directly rather than changing directories via commands.
+
+## Bulldozer Method & High-Scale Automation
+- Use brute force approaches for large, tedious, or repetitive tasks when appropriate. Look for opportunities where AI can accelerate work previously considered too time-consuming.
+- When doing large-scale refactors or fixes, it's okay to proceed incrementally and mechanically if the AI can handle it — but supervise closely to ensure accuracy and consistency.
+- Don’t mindlessly repeat changes. If the same fix is being applied over and over, look for patterns or ways to batch or script the work.
+- Favor workflows where the LLM automates the mechanical parts (e.g. re-running tests and updating expected values), while the human monitors progress and guides direction.
+- When working in strongly typed or compiler-guided environments, consider using the “compile-fix-repeat” loop as a productive automation strategy with AI assistance.
+
+## Requirements Before Solutions
+- Always seek to clarify **requirements, constraints, and goals** before proposing or implementing a solution.
+- Avoid making assumptions about unspecified requirements. Ask the user for clarification when key constraints are missing or ambiguous.
+- When interpreting a vague prompt, prefer asking questions over guessing. Do not "fill in the blanks" unless the context strongly supports it.
+- Encourage users to be specific. If the intent is unclear, prompt them to describe desired behavior, constraints, environment, or examples.
+- If user intent changes mid-conversation or is revised, **discard earlier assumptions** to avoid carrying incorrect interpretations forward.
+
+## Code Formatting & Linting
+- Do not manually fix formatting issues like indentation, trailing whitespace, or line wrapping. Use automatic code formatters like `gofmt`, `rustfmt`, `black`, or project-specific tooling.
+- Avoid spending LLM effort on mechanical or stylistic changes that tools can handle more reliably and consistently.
+- When a lint rule can be automatically fixed (e.g. via `eslint --fix` or `ruff --fix`), prefer using the tool over manually applying fixes.
+- Only intervene manually or via the LLM for formatting or linting when the issue is semantic, non-obvious, or tool-incompatible.
+
+## File Size & Maintainability
+- Avoid creating or expanding files to excessive sizes. Prefer keeping files small, focused, and modular to prevent issues with context loading, patching, and readability.
+- When adding new classes, tests, or features, consider whether they belong in a separate file based on cohesion and size.
+- Large files degrade LLM performance: Sonnet 3.7 and Cursor may fail to apply edits reliably on files over ~64KB, and may entirely skip or corrupt changes in files larger than 128KB.
+- Do not hesitate to split files — the LLM can manage import wiring, and this improves modularity and editing performance.
+- Prioritize file clarity, editability, and maintainability over “single file convenience.”
+
+## Documentation Awareness
+- Do not rely solely on pretraining knowledge when working with uncommon, new, or custom tools, frameworks, or configurations. Prefer checking or asking for the official documentation.
+- If unsure how a tool or framework works, ask the user to provide a relevant documentation link or snippet for accurate context.
+- Prefer grounded, doc-driven answers over speculative completions. Do not fabricate unsupported configuration options, APIs, or behaviors.
+- When provided with documentation in the chat (e.g. via a URL in Cursor), use it to correct or refine prior assumptions and update the response accordingly.
+- Treat documentation as source of truth when available. If conflicts arise between pretrained knowledge and provided docs, defer to the docs.
+
+## Walking Skeleton Development
+- Prioritize building a minimal end-to-end implementation first — even if the components are incomplete, fragile, or poorly abstracted.
+- Focus on connecting all major parts of the system before improving individual components. Get to a working system quickly to enable iteration.
+- Avoid spending excessive time on early polish or optimization if the end-to-end path is not yet functional.
+- Use the LLM to rapidly scaffold out rough implementations — the goal is to create something runnable and testable, not perfect.
+- The LLM cannot "dogfood" its own code — prioritize real-world testing as early as possible to validate the direction.
+
+## Code Duplication & Abstraction
+- Follow the **Rule of Three**: tolerate duplication once, but on the third instance, refactor to eliminate repetition.
+- Avoid introducing unnecessary abstractions too early. Wait until duplication patterns are clear before extracting helpers or shared logic.
+- LLMs should not assume copy-pasted patterns are correct — always evaluate whether code duplication can be reduced through reuse or refactoring.
+- When writing multiple related functions or tests, look for common setup, repeated logic, or shared utilities that can be extracted to reduce clutter.
+- Prefer readable, maintainable abstractions over pure DRY enforcement. Avoid forcing abstractions where the duplication is minor or unrelated.
+
+## Security & Abuse Prevention
+- Never expose public APIs, secrets, or tokens without proper authentication, rate limiting, and monitoring in place.
+- When building with AI, always review generated code for security flaws — especially around authentication, authorization, data validation, and payment/subscription logic.
+- Do not assume the AI-generated code has covered all attack vectors. Verify that access controls and permission boundaries are enforced.
+- Implement protections for API abuse: rate limits, usage caps, logging, and monitoring should be in place before deployment.
+- Do not bypass or remove subscription/payment checks unless explicitly instructed. Assume revenue-related logic is critical.
+- Avoid shipping AI-generated backends without human review if you are unfamiliar with best practices around auth, database safety, or secure API design.

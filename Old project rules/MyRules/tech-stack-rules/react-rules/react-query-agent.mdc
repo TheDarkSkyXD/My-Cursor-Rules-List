@@ -1,0 +1,280 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# TanStack Query (React Query) Best Practices
+
+## Critical Rules
+
+### 1. Query Keys: The Foundation
+- **Unique & Descriptive**: Query keys **must** uniquely identify the data they fetch. Use arrays, starting with a general entity type, followed by specific identifiers or filters.
+    ```javascript
+    // Good
+    useQuery({ queryKey: ['todos'], ... })
+    useQuery({ queryKey: ['todos', todoId], ... })
+    useQuery({ queryKey: ['todos', { status: 'done', page: 5 }], ... })
+    ```
+- **Include All Dependencies**: The query key **must** include all variables the `queryFn` depends on. Changing a variable in the key automatically triggers a refetch.
+    ```javascript
+    // Good
+    function Todo({ todoId }) {
+      const { data } = useQuery({
+        queryKey: ['todos', todoId], // todoId is a dependency
+        queryFn: () => fetchTodoById(todoId),
+      })
+    }
+    ```
+- **Deterministic Hashing**: Query keys are hashed deterministically. Object key order doesn't matter, but array order *does*. Ensure consistency (e.g., always use numbers or always strings for IDs if applicable).
+    ```javascript
+    // These are the same key:
+    // ['todos', { page: 1, filter: 'active' }]
+    // ['todos', { filter: 'active', page: 1 }]
+
+    // These are different keys:
+    // ['todos', 1, 'active']
+    // ['todos', 'active', 1]
+    ```
+- **Use Query Key Factories**: For larger applications, use Query Key Factories to manage keys centrally, improve organization, and ensure type safety.
+    ```typescript
+    // Example Factory
+    const todoKeys = {
+      all: ['todos'] as const,
+      lists: () => [...todoKeys.all, 'list'] as const,
+      list: (filters: string) => [...todoKeys.lists(), { filters }] as const,
+      details: () => [...todoKeys.all, 'detail'] as const,
+      detail: (id: number) => [...todoKeys.details(), id] as const,
+    }
+    // Usage
+    useQuery({ queryKey: todoKeys.detail(5), ... })
+    queryClient.invalidateQueries({ queryKey: todoKeys.lists() })
+    ```
+
+### 2. Data Fetching (`queryFn`)
+- **Must Return a Promise**: The `queryFn` must return a promise.
+- **Must Throw on Error**: For React Query to detect an error state, the `queryFn` **must throw an error** or return a **rejected promise**. Axios and GraphQL clients often do this automatically, but the native `fetch` API does not for HTTP errors (4xx, 5xx). Check `response.ok` and throw manually when using `fetch`.
+    ```javascript
+    // Good (with fetch)
+    const queryFn = async () => {
+      const response = await fetch('/api/data');
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.statusText}`);
+      }
+      return response.json();
+    }
+    ```
+- **Keep it Focused**: The `queryFn` should ideally only handle the data fetching itself. Data transformation should preferably be done using the `select` option.
+
+### 3. Caching (`staleTime` and `gcTime`)
+- **Understand Defaults**: Default `staleTime` is `0` (data is stale immediately). Default `gcTime` (garbage collection / cache time) is `5 * 60 * 1000` (5 minutes). Data is garbage collected only when it has no active observers and has been inactive for `gcTime`.
+- **Configure `staleTime`**: Set `staleTime` based on how frequently data changes. A higher `staleTime` reduces unnecessary background refetches for data that doesn't change often.
+    ```javascript
+    // Data considered fresh for 1 minute
+    useQuery({ queryKey: ['user', userId], queryFn: fetchUser, staleTime: 60 * 1000 })
+    ```
+- **Configure `gcTime`**: Adjust `gcTime` (must be >= `staleTime`) if you need cached data to persist longer even after components unmount.
+
+### 4. Mutations (`useMutation`)
+- **Use for Side Effects**: Use mutations for creating, updating, or deleting data (operations with side effects).
+- **Invalidate Queries**: After a successful mutation, invalidate affected queries using `queryClient.invalidateQueries({ queryKey: [...] })` within the `onSuccess` or `onSettled` callbacks. This triggers refetches to keep UI consistent.
+    ```javascript
+    const queryClient = useQueryClient();
+    const mutation = useMutation({
+      mutationFn: addTodo,
+      onSuccess: () => {
+        // Invalidate and refetch the todos list
+        queryClient.invalidateQueries({ queryKey: todoKeys.lists() });
+      },
+    });
+    ```
+- **Manual Cache Updates**: For a smoother UX (avoiding refetch loading states), update the query cache directly using `queryClient.setQueryData` in `onSuccess`.
+    ```javascript
+    onSuccess: (newTodo) => {
+      queryClient.setQueryData(todoKeys.lists(), (oldData) => oldData ? [...oldData, newTodo] : [newTodo]);
+    }
+    ```
+- **Optimistic Updates**: For the best UX, implement optimistic updates using `onMutate`, `onError` (for rollback), and `onSettled` (for invalidation/refetch). This is more complex but updates the UI instantly.
+
+### 5. Performance Optimization
+- **`enabled` Option**: Use the `enabled` option (e.g., `enabled: !!userId`) to prevent a query from running automatically, often used for dependent queries.
+- **Prefetching**: Use `queryClient.prefetchQuery` (e.g., on button hover) to load data before it's needed.
+- **`initialData` / `placeholderData`**: Use `initialData` to provide synchronous data (avoiding loading states) if you have it available (e.g., from SSR or previous data). Be cautious, as `initialData` is treated as fresh based on `staleTime`. Use `placeholderData` to show data structure while fetching; it's not cached.
+- **Selectors (`select`)**: Use the `select` option in `useQuery` to transform data or subscribe only to parts of the data. This prevents re-renders if only unused parts of the data change.
+    ```javascript
+    // Only re-renders if the todo count changes
+    const todoCount = useQuery({
+      queryKey: todoKeys.all,
+      queryFn: fetchTodos,
+      select: (data) => data.length,
+    })
+    ```
+- **Structural Sharing**: Enabled by default. React Query detects if data content has actually changed before triggering a re-render.
+
+### 6. Error Handling
+- **Check `isError` / `error`**: Use the `isError` boolean and `error` object returned by `useQuery`/`useMutation` to render error states in the UI.
+- **Error Boundaries**: Wrap components using queries with React Error Boundaries, potentially using `QueryErrorResetBoundary` or `useQueryErrorResetBoundary` to allow resetting errors.
+- **`retry` Option**: Configure the `retry` option (default is 3 for queries) and `retryDelay` to control automatic retries on failure.
+- **Global Callbacks**: Configure global `onError` handlers on the `QueryCache` or `MutationCache` via `QueryClient` for centralized error logging/reporting.
+
+### 7. Code Organization & Client Management
+- **Custom Hooks**: Abstract `useQuery` and `useMutation` calls into custom hooks for features (e.g., `useTodos`, `useAddTodo`). This improves reusability and encapsulates query logic.
+- **`queryOptions` / `mutationOptions`**: (Especially v5+) Use the `queryOptions` helper or define reusable option objects to pass to hooks for better organization and type safety.
+- **Single `QueryClient`**: Create the `QueryClient` instance **once** (typically outside your `App` component or using `useState`/`useRef` inside if needed) and provide it via `QueryClientProvider`.
+- **Access Client via Hook**: Always use the `useQueryClient()` hook to access the client instance for invalidation, cache updates, etc. Avoid importing the client instance directly.
+
+### 8. Security Considerations
+- **Avoid Sensitive Data in Keys**: Do not put sensitive information (tokens, passwords) directly into query keys, as they might be logged or exposed.
+- **Data Handling**: Be mindful of sensitive data returned from your `queryFn`. Filter or transform it if necessary before it reaches the UI or cache, possibly using the `select` option.
+
+## Examples
+
+<example>
+  ```typescript
+  // Good: Using custom hook, query key factory, and cache update on mutation
+  // src/features/todos/queries.ts
+  import { useQuery, useMutation, useQueryClient, queryOptions } from '@tanstack/react-query';
+  import { fetchTodos, fetchTodoById, addTodo } from './api'; // Assume API functions exist
+
+  // Query Key Factory
+  export const todoKeys = {
+    all: ['todos'] as const,
+    lists: () => [...todoKeys.all, 'list'] as const,
+    list: (filters: string) => [...todoKeys.lists(), { filters }] as const,
+    details: () => [...todoKeys.all, 'detail'] as const,
+    detail: (id: number) => [...todoKeys.details(), id] as const,
+  }
+
+  // Reusable Query Options
+  export const todosListOptions = (filters: string) => queryOptions({
+    queryKey: todoKeys.list(filters),
+    queryFn: () => fetchTodos(filters),
+  })
+
+  export const todoDetailOptions = (id: number) => queryOptions({
+    queryKey: todoKeys.detail(id),
+    queryFn: () => fetchTodoById(id),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+
+  // Custom Hook for fetching todos
+  export function useTodos(filters: string) {
+    return useQuery(todosListOptions(filters));
+  }
+
+  // Custom Hook for adding a todo
+  export function useAddTodo() {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: addTodo,
+      onSuccess: (newTodo) => {
+        // Option 1: Invalidate (triggers refetch)
+        // queryClient.invalidateQueries({ queryKey: todoKeys.lists() });
+
+        // Option 2: Update cache directly (smoother UX)
+        queryClient.setQueryData(todoKeys.lists(), (oldData: Todo[] | undefined) => 
+          oldData ? [...oldData, newTodo] : [newTodo]
+        );
+
+        // Can also update specific filtered lists if needed
+        // queryClient.setQueryData(todoKeys.list('active'), ...)
+      },
+    });
+  }
+  ```
+  ```typescript
+  // src/features/todos/TodoList.tsx
+  import React from 'react';
+  import { useTodos, useAddTodo, todoKeys } from './queries';
+  import { useQueryClient } from '@tanstack/react-query';
+
+  function TodoList() {
+    const [filters, setFilters] = React.useState('all');
+    const { data: todos, isLoading, isError } = useTodos(filters);
+    const addTodoMutation = useAddTodo();
+    const queryClient = useQueryClient();
+
+    const handleAdd = () => {
+      addTodoMutation.mutate({ title: 'New Todo', completed: false });
+    };
+
+    // Example prefetching detail on hover
+    const handlePrefetch = (id: number) => {
+      queryClient.prefetchQuery(todoDetailOptions(id));
+    }
+
+    if (isLoading) return <div>Loading...</div>;
+    if (isError) return <div>Error fetching todos</div>;
+
+    return (
+      <div>
+        {/* ... Filter controls ... */}
+        <button onClick={handleAdd} disabled={addTodoMutation.isPending}>
+          {addTodoMutation.isPending ? 'Adding...' : 'Add Todo'}
+        </button>
+        <ul>
+          {todos?.map(todo => (
+            <li key={todo.id} onMouseEnter={() => handlePrefetch(todo.id)}>
+              {todo.title}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+  ```
+</example>
+
+<example type="invalid">
+  ```typescript
+  // Bad: Query key doesn't include dependency
+  function UserProfile({ userId }) {
+    // This query will only fetch data for the *first* userId passed.
+    // It won't refetch if userId changes because userId isn't in the key.
+    const { data } = useQuery({
+      queryKey: ['user'], // 🚨 Missing userId dependency
+      queryFn: () => fetchUser(userId),
+    });
+    // ...
+  }
+
+  // Bad: queryFn doesn't throw error
+  const queryFn = async () => {
+    try {
+      const response = await fetch('/api/data');
+      if (!response.ok) {
+        // 🚨 Doesn't throw, React Query won't see an error
+        console.error('Fetch failed');
+        return null; // Or undefined
+      }
+      return response.json();
+    } catch (err) {
+      console.error(err);
+       // 🚨 Doesn't re-throw, React Query won't see an error
+      return null;
+    }
+  }
+
+  // Bad: Importing QueryClient instance directly
+  import { queryClient } from '../queryClient'; // Assuming queryClient is exported
+  function Component() {
+    const handleClick = () => {
+      // Hard to test, potential issues with multiple clients (SSR, microfrontends)
+      queryClient.invalidateQueries({ queryKey: ['someKey'] });
+    }
+    // ... Use useQueryClient() hook instead
+  }
+
+  // Bad: Creating QueryClient inside component without memoization
+  function App() {
+    // 🚨 New client (and cache) created on every render!
+    const queryClient = new QueryClient(); 
+    return (
+      <QueryClientProvider client={queryClient}>
+        {/* ... */}
+      </QueryClientProvider>
+    );
+    // Should use useState(() => new QueryClient())
+  }
+  ```
+</example>
+

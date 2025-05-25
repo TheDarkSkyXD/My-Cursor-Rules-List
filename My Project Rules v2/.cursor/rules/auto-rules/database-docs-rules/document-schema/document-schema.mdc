@@ -1,0 +1,152 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 📝 Schema Documentation Guide 
+*Your Task: Documenting a Schema*  
+
+### **Goal**  
+Create a **clear, concise, and readable** Markdown file that explains the schema's structure, relationships, and rules. Think of it as a cheat sheet for developers!
+
+---
+
+## **Step 1: Understand the Schema**  
+🔍 **Ask these questions first:**  
+- What's the schema's **purpose**? (e.g., "Stores user accounts and blog posts")  
+- What **tables/entities** does it include? (e.g., `users`, `posts`)  
+- What are the **key rules**? (e.g., "Usernames must be unique")  
+
+---
+
+## **Step 2: Structure Your Markdown File**  
+Use this template (customize as needed):
+
+### **1. Overview**  
+- Write **1–2 sentences** explaining the schema's goal.  
+- Example:  
+  > *"This schema manages user profiles and their blog posts. It enforces unique usernames and tracks post authorship."*
+
+### **2. Abbreviations**  
+- Define shortcodes to save space (e.g., `PK = Primary Key`).  
+- Common abbreviations:  
+  ```markdown
+  - **PK**: Primary Key  
+  - **FK**: Foreign Key (links to another table)  
+  - **NN**: Not Null (required field)  
+  - **UQ**: Unique (no duplicates allowed)  
+  ```
+
+### **3. Tables**  
+- **For each table**, create a section like this:  
+  ```markdown
+  ### `table_name`  
+  - **Description**: What this table does (e.g., "Stores user login details").  
+  - **Columns**:  
+    | Column   | Type       | Constraints | Description          |  
+    |----------|------------|-------------|----------------------|  
+    | id       | INT        | PK, NN      | Unique identifier    |  
+    | username | VARCHAR(50)| UQ, NN      | User's login name    |  
+
+  - **Relationships**:  
+    - "Referenced by `posts.user_id`" (if another table links to this one).  
+    - "References `users.id`" (if this table links outward).  
+  ```
+### **4. Example Data**  
+- Add a **simple JSON snippet** to show sample data:  
+  ````markdown
+  ```json
+  {
+    "users": [{ "id": 1, "username": "alice" }],
+    "posts": [{ "id": 101, "user_id": 1, "content": "Hello!" }]
+  }
+  ```
+  ````
+
+### **5. Key Constraints**  
+- List **critical rules** in bullet points:  
+  ```markdown
+  - `users.username` must be unique.  
+  - `posts.user_id` must match a valid `users.id`.  
+  ```
+
+---
+
+## **Step 3: Pro Tips for Success**  
+✅ **Do**:  
+- Use **tables** for columns—they're easier to scan than paragraphs.  
+- Keep descriptions **short but meaningful** (e.g., "User's login name" vs. "Username field").  
+- Cross-link relationships (e.g., `posts.user_id` references `users.id`).  
+
+🚫 **Avoid**:  
+- Writing essays—**brevity is key**!  
+- Assuming readers know jargon—explain abbreviations.  
+- Leaving out constraints (e.g., NN, UQ)—they're critical for developers.  
+
+🔧 **Tools**:  
+- Use a Markdown editor like VS Code or Typora for live previews.  
+- Validate JSON examples with [JSONLint](mdc:https:/jsonlint.com).  
+
+---
+
+## **Step 4: Review Your Work**  
+**Quick Checklist**:  
+- [ ] Abbreviations defined?  
+- [ ] All tables documented?  
+- [ ] Relationships clearly stated?  
+- [ ] Example data included?  
+- [ ] Key constraints highlighted?  
+
+---
+
+## **You've Got This!** 🌟  
+If you're stuck:  
+1. **Ask questions**—better to clarify now than guess!  
+2. Share a draft early for feedback.  
+
+*Example output inside triple quotes*  
+
+"""# Schema Documentation
+
+## Overview
+A brief description of the schema's purpose and scope.
+
+## Abbreviations
+- **PK**: Primary Key  
+- **FK**: Foreign Key  
+- **NN**: Not Null  
+- **UQ**: Unique  
+
+## Tables
+
+### `users`
+- **Description**: Stores user data.
+- **Columns**:
+  | Column    | Type         | Constraints | Description          |
+  |-----------|--------------|-------------|----------------------|
+  | id        | INT          | PK, NN      | Unique user ID       |
+  | username  | VARCHAR(50)  | UQ, NN      | Unique username      |
+  | email     | VARCHAR(100) | NN          | User email address   |
+
+- **Relationships**:
+  - Referenced by `posts.user_id`.
+
+### `posts`
+- **Description**: User-generated blog posts.
+- **Columns**:
+  | Column    | Type         | Constraints | Description          |
+  |-----------|--------------|-------------|----------------------|
+  | id        | INT          | PK, NN      | Unique post ID       |
+  | user_id   | INT          | FK, NN      | References `users.id`|
+  | content   | TEXT         | NN          | Post body text       |
+
+## Example Data
+```json
+{
+  "users": [
+    { "id": 1, "username": "alice", "email": "alice@example.com" }
+  ],
+  "posts": [
+    { "id": 101, "user_id": 1, "content": "Hello World!" }
+  ]
+} """

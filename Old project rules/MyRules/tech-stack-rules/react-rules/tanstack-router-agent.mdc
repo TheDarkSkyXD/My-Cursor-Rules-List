@@ -1,0 +1,164 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# TanStack Router (React) Best Practices
+
+## Critical Rules
+
+### 1. Code Organization & Structure
+- **Prefer File-Based Routing**: Use TanStack Router's file-based routing (via Vite plugin or CLI) whenever possible, especially for larger applications. It improves code organization, discoverability, and significantly enhances TypeScript performance by auto-generating route trees and type mappings.
+    - Follow the standard file naming conventions (`$param`, `_layout`, `index`, `splat.$`).
+- **Colocation**: Place route-specific components, hooks, and utility functions within their respective route files or folders (e.g., `src/routes/posts/$postId/components/CommentSection.tsx`).
+- **Layout Routes**: Utilize layout routes (`_layout.tsx` or `_layout/route.tsx` in file-based routing) for shared UI structures (navbars, sidebars) and inherited context.
+- **Code-Based Routing**: If using code-based routing, structure your `createRoute` calls logically and build the `routeTree` clearly. Keep route definitions concise and delegate complex logic to imported functions or components.
+
+### 2. Type Safety
+- **Leverage Full Type Safety**: Take advantage of TanStack Router's strong type inference for paths, path params, search params, loaders, actions, and context.
+- **Use `from` Prop**: When using hooks like `useSearch`, `useParams`, `useRouteContext`, `useLoaderData`, `useMatch`, **always** provide the `from` prop (e.g., `useSearch({ from: myRoute.id })`) to ensure strict type safety and improve TypeScript performance. Avoid `strict: false` unless absolutely necessary.
+- **Typed Navigation**: Use the `<Link to="/typed/path" params={{...}} search={{...}} />` component and `router.navigate()` with typed parameters and search parameters. Provide the `from` prop on `<Link>` when using relative paths (`to="."` or `to=".."`) or search param updater functions (`search={prev => ...}`) to maintain type safety and performance.
+- **Validate Search Params**: Use `validateSearch` with libraries like Zod to define schemas for your search parameters. This provides runtime validation and enhances type safety.
+- **Route Context**: Use `context` in route definitions for type-safe dependency injection (e.g., auth clients, API utilities) accessible via `useRouteContext`.
+
+### 3. State Management (Search Params)
+- **URL as State**: Embrace using search parameters (`?key=value`) for managing UI state that should be shareable, bookmarkable, or survive refreshes (e.g., filters, pagination, tabs, modal states).
+- **Built-in Serialization**: Rely on TanStack Router's default JSON serialization for search params. Use `parseSearch` / `stringifySearch` for custom serialization logic if needed.
+- **Performance with Frequent Updates**: For state updated very frequently (e.g., live input in a form synced to URL), be mindful of `navigate` performance. Consider:
+    - Debouncing `navigate` calls.
+    - Using local component state for the input value and only syncing to the URL on blur or via an explicit save action.
+- **Fine-Grained Selectors**: When a component only needs a subset of search params, use the `select` option in `useSearch` to prevent unnecessary re-renders (e.g., `useSearch({ from: route.id, select: (s) => s.page })`).
+
+### 4. Data Loading & Performance
+- **Route Loaders**: Use the `loader` function in route definitions for fetching data critical for rendering the route. Loaders run in parallel for matching routes.
+- **Code Splitting**: Implement code splitting by using dynamic imports for route components: `component: () => import('./MyComponent')`. File-based routing often handles this automatically.
+- **Lazy Loading Routes**: For file-based routing, use the `.` prefix convention (e.g., `.posts.tsx`) for lazy-loaded routes that are not automatically code-split but still benefit from separate bundling.
+- **Prefetching**: Leverage built-in prefetching on `<Link>` hover/touch or programmatically via `router.loadRoute()` to load route code and data ahead of time. Configure preloading behavior (`preload: 'intent'`).
+- **Deferred Data Loading**: Use `defer` within loaders for non-critical data that can load after the main component renders, improving initial page load time. Handle deferred promises in your component.
+- **Caching**: Understand the built-in SWR caching for loaders. Use `loaderDeps` to declaratively invalidate loader cache based on changing dependencies (e.g., search params). Integrate tightly with external caches like TanStack Query for more control.
+- **Render Optimizations**: Use fine-grained selectors (`useSearch`, `useParams`, etc.) and memoization (`React.memo`) where appropriate, especially if components re-render due to router context changes they don't directly use.
+
+### 5. Security
+- **Route Guarding**: Implement authentication and authorization checks within the `beforeLoad` function of relevant routes. Redirect (`throw redirect(...)`) or throw errors if access is denied.
+- **Search/Path Param Validation**: Use `validateSearch` and `parseParams` to validate URL state and path parameters, preventing invalid data from reaching your components or loaders. Sanitize data before using it in API calls or rendering.
+- **Avoid Sensitive Data in URL**: Do not store sensitive information (API keys, tokens, PII) directly in path or search parameters.
+
+### 6. Common Pitfalls
+- **Missing `from` Prop**: Forgetting the `from` prop in hooks/links leads to reduced type safety and potential performance degradation.
+- **Frequent `navigate` Calls**: Updating search params on every keystroke can cause performance issues. Use debouncing or local state.
+- **Ignoring Validation**: Not using `validateSearch` or `parseParams` can lead to runtime errors if the URL contains unexpected data.
+- **Prop Drilling**: Avoid passing router state (params, search) deep down component trees. Use the provided hooks (`useParams`, `useSearch`) directly in the components that need the data.
+- **Overly Complex Loaders**: Keep loaders focused. If complex orchestration is needed, consider breaking down routes or using component-level fetching for supplemental data.
+- **Stale Data**: Be mindful of cache invalidation, especially when mixing route loaders with external data fetching (like TanStack Query mutations). Use `router.invalidate()` or TanStack Query's invalidation mechanisms.
+
+## Examples
+
+<example>
+  ```typescript
+  // Good: File-based route with validation, loader, and typed component
+  // src/routes/posts/$postId.tsx
+  import { createFileRoute, useParams, useLoaderData, Link } from '@tanstack/react-router'
+  import { z } from 'zod'
+  import { fetchPost } from '../utils/api' // Assume fetchPost exists
+  import { useQueryClient } from '@tanstack/react-query'
+
+  // Validate path param
+  const PostParamsSchema = z.object({
+    postId: z.string().uuid(),
+  })
+
+  // Validate search param
+  const PostSearchSchema = z.object({
+    showComments: z.boolean().optional().default(false),
+  })
+
+  export const Route = createFileRoute('/posts/$postId')({
+    parseParams: (params) => PostParamsSchema.parse(params),
+    validateSearch: (search) => PostSearchSchema.parse(search),
+    loaderDeps: ({ search: { showComments } }) => ({ showComments }), // Cache invalidation dependency
+    loader: async ({ params: { postId }, deps: { showComments } }) => {
+      const post = await fetchPost(postId) // Assume fetchPost handles errors
+      let comments = []
+      if (showComments) {
+        // comments = await fetchComments(postId) // Example deferred/conditional load
+      }
+      return { post, comments }
+    },
+    component: PostComponent,
+  })
+
+  function PostComponent() {
+    // Typesafe hooks thanks to schema validation and loader return type
+    const { postId } = useParams({ from: Route.id }) // Strict typing with 'from'
+    const { showComments } = useSearch({ from: Route.id }) // Strict typing with 'from'
+    const { post, comments } = useLoaderData({ from: Route.id }) // Strict typing with 'from'
+    const queryClient = useQueryClient()
+
+    const handleRefresh = () => {
+      // Invalidate route loader cache
+      Route.invalidate()
+      // Or invalidate specific query if using TanStack Query
+      // queryClient.invalidateQueries({ queryKey: ['post', postId] })
+    }
+
+    return (
+      <div>
+        <h1>{post.title}</h1>
+        <p>{post.body}</p>
+        {/* Typed Link */}
+        <Link
+          from={Route.id} // Important for relative links and search updaters
+          search={(prev) => ({ ...prev, showComments: !prev.showComments })}
+        >
+          {showComments ? 'Hide' : 'Show'} Comments
+        </Link>
+        {/* Conditional rendering based on search state */}
+        {showComments && <div>{/* Render comments */}</div>}
+        <button onClick={handleRefresh}>Refresh Post</button>
+      </div>
+    )
+  }
+  ```
+</example>
+
+<example type="invalid">
+  ```typescript
+  import { useSearch, useParams, useLoaderData, Link } from '@tanstack/react-router'
+
+  function InsecureAndUntypedComponent() {
+    // Bad: No 'from' prop - types will be loose (any/unknown) and TS performance hit
+    const params = useParams()
+    const search = useSearch()
+    const data = useLoaderData()
+
+    // Bad: Manually parsing/validating search params - use validateSearch instead
+    const page = parseInt(search.page || '1')
+    if (isNaN(page)) {
+      // Handle error... but validation should happen at route level
+    }
+
+    // Bad: No 'from' prop with search updater function
+    // Type of 'prev' will be unknown/any
+    return (
+      <Link search={prev => ({ ...prev, page: (prev.page || 0) + 1 })}>
+        Next Page
+      </Link>
+    )
+
+    // Bad: Potentially navigating with untyped/unvalidated params
+    // router.navigate({ to: '/posts/$postId', params: { postId: someUserInput } })
+  }
+
+  // Bad: Route definition without validation
+  export const Route = createFileRoute('/insecure/$id')({
+    // Missing parseParams and validateSearch
+    loader: async ({ params }) => {
+      // params.id is potentially unsafe string here
+      // const data = await fetchItem(params.id) // Risk of using unvalidated param
+      return {}
+    },
+    component: InsecureAndUntypedComponent
+  })
+  ```
+</example>
+

@@ -1,0 +1,373 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Rule: React Functional Component Patterns
+
+## Description
+Establishes consistent patterns for creating and structuring React functional components with TypeScript, focusing on modern best practices and avoiding common pitfalls.
+
+## Benefits
+- Improves code consistency across the project
+- Enhances component readability and maintainability
+- Leverages TypeScript for better type safety
+- Reduces bugs through consistent patterns
+- Makes components easier to test
+- Follows React's recommended patterns
+
+## Component Declaration
+
+### Bad Examples
+
+```tsx
+// ❌ Using arrow function without explicit return type
+const UserProfile = ({ user }) => {
+  return (
+    <div>
+      <h2>{user.name}</h2>
+      <p>{user.email}</p>
+    </div>
+  );
+};
+```
+
+```tsx
+// ❌ Using function declaration without TypeScript
+function ProductCard(props) {
+  const { name, price, imageUrl } = props;
+  
+  return (
+    <div className="product-card">
+      <img src={imageUrl} alt={name} />
+      <h3>{name}</h3>
+      <p>${price}</p>
+    </div>
+  );
+}
+```
+
+```tsx
+// ❌ Using React.FC (not recommended anymore)
+import React from 'react';
+
+type ButtonProps = {
+  label: string;
+  onClick: () => void;
+};
+
+const Button: React.FC<ButtonProps> = ({ label, onClick }) => {
+  return <button onClick={onClick}>{label}</button>;
+};
+```
+
+### Good Examples
+
+```tsx
+// ✅ Function declaration with explicit props interface
+interface UserProfileProps {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatarUrl?: string;
+  };
+  showDetails?: boolean;
+}
+
+function UserProfile({ user, showDetails = false }: UserProfileProps) {
+  return (
+    <div className="user-profile">
+      {user.avatarUrl && (
+        <img src={user.avatarUrl} alt={user.name} className="avatar" />
+      )}
+      <h2>{user.name}</h2>
+      {showDetails && <p>{user.email}</p>}
+    </div>
+  );
+}
+```
+
+```tsx
+// ✅ Arrow function with explicit typing and return type
+interface ProductCardProps {
+  name: string;
+  price: number;
+  imageUrl: string;
+  onAddToCart: (productName: string) => void;
+}
+
+const ProductCard = ({ 
+  name, 
+  price, 
+  imageUrl, 
+  onAddToCart 
+}: ProductCardProps): JSX.Element => {
+  return (
+    <div className="product-card">
+      <img src={imageUrl} alt={name} />
+      <h3>{name}</h3>
+      <p>${price.toFixed(2)}</p>
+      <button onClick={() => onAddToCart(name)}>
+        Add to Cart
+      </button>
+    </div>
+  );
+};
+```
+
+```tsx
+// ✅ Simple function with inline props type
+function Button({ 
+  label, 
+  onClick, 
+  disabled = false 
+}: { 
+  label: string; 
+  onClick: () => void; 
+  disabled?: boolean; 
+}) {
+  return (
+    <button 
+      onClick={onClick} 
+      disabled={disabled}
+      className={`btn ${disabled ? 'btn-disabled' : 'btn-primary'}`}
+    >
+      {label}
+    </button>
+  );
+}
+```
+
+## State and Effects
+
+### Bad Examples
+
+```tsx
+// ❌ Multiple related state variables that should be grouped
+function SignupForm() {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [errors, setErrors] = useState({});
+  
+  // Form handling...
+}
+```
+
+```tsx
+// ❌ Misusing useEffect with missing dependencies
+function UserData({ userId }) {
+  const [userData, setUserData] = useState(null);
+  
+  useEffect(() => {
+    const fetchUser = async () => {
+      const response = await fetch(`/api/users/${userId}`);
+      const data = await response.json();
+      setUserData(data);
+    };
+    
+    fetchUser();
+    // Missing userId dependency
+  }, []);
+  
+  // Component body...
+}
+```
+
+### Good Examples
+
+```tsx
+// ✅ Proper state organization with interfaces
+interface UserFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+interface FormErrors {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+}
+
+function SignupForm() {
+  const [formData, setFormData] = useState<UserFormData>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  // Form handling...
+}
+```
+
+```tsx
+// ✅ Proper useEffect with dependencies and cleanup
+function UserData({ userId }: { userId: string }) {
+  const [userData, setUserData] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+    setError(null);
+    
+    const fetchUser = async () => {
+      try {
+        const response = await fetch(`/api/users/${userId}`);
+        if (!response.ok) throw new Error('Failed to fetch user');
+        const data = await response.json();
+        
+        if (isMounted) {
+          setUserData(data);
+          setIsLoading(false);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err instanceof Error ? err : new Error('An error occurred'));
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    fetchUser();
+    
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, [userId]); // Proper dependency
+  
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error.message} />;
+  if (!userData) return null;
+  
+  return (
+    <div>
+      <h2>{userData.name}</h2>
+      <p>{userData.email}</p>
+    </div>
+  );
+}
+```
+
+```tsx
+// ✅ Custom hook for data fetching
+function useUserData(userId: string) {
+  const [userData, setUserData] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+    setError(null);
+    
+    const fetchUser = async () => {
+      try {
+        const response = await fetch(`/api/users/${userId}`);
+        if (!response.ok) throw new Error('Failed to fetch user');
+        const data = await response.json();
+        
+        if (isMounted) {
+          setUserData(data);
+          setIsLoading(false);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err instanceof Error ? err : new Error('An error occurred'));
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    fetchUser();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [userId]);
+  
+  return { userData, isLoading, error };
+}
+
+// Component using the custom hook
+function UserProfile({ userId }: { userId: string }) {
+  const { userData, isLoading, error } = useUserData(userId);
+  
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error.message} />;
+  if (!userData) return null;
+  
+  return (
+    <div>
+      <h2>{userData.name}</h2>
+      <p>{userData.email}</p>
+    </div>
+  );
+}
+```
+
+## Implementation Guidelines
+
+1. **Component Declaration**:
+   - Use named function declarations for most components
+   - Define explicit prop interfaces with descriptive names
+   - Place interfaces or types above the component
+   - Use destructuring for props in the function parameters
+   - Provide default values for optional props in the function parameters
+
+2. **Functional Component Structure**:
+   - Place hooks at the top of the component
+   - Define event handlers and helper functions next
+   - Use early returns for loading/error states
+   - Return JSX as the final statement
+   
+3. **TypeScript Best Practices**:
+   - Avoid using `any` types
+   - Use interfaces for defining prop shapes
+   - Define types for component state
+   - Add type annotations for event handlers
+   - Use type guards for conditional rendering
+
+4. **React Hooks Best Practices**:
+   - Follow React's rules of hooks
+   - Extract complex logic into custom hooks
+   - Ensure all dependencies are included in dependency arrays
+   - Use the function form of state setters when new state depends on old state
+   - Implement cleanup functions in useEffect when needed
+
+5. **Performance Optimization**:
+   - Memoize expensive calculations with useMemo
+   - Memoize callbacks with useCallback when passed to child components
+   - Consider using React.memo for pure components that render often
+   - Use lazy loading for code splitting
+
+## Exceptions
+- Very simple components with minimal props may use inline types
+- For library code or highly reusable components, consider using generics for flexibility
+- Test components may have simplified typing requirements
+
+## References
+- [React Hooks Documentation](https://reactjs.org/docs/hooks-intro.html)
+- [TypeScript Handbook for React](https://www.typescriptlang.org/docs/handbook/react.html)
+- [React TypeScript Cheatsheet](https://github.com/typescript-cheatsheets/react)

@@ -1,0 +1,52 @@
+{
+  "name": "vibe-rules",
+  "version": "0.2.31",
+  "description": "A utility for managing Cursor rules, Windsurf rules, and other AI prompts",
+  "main": "dist/index.js",
+  "bin": {
+    "vibe-rules": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./llms": "./dist/llms/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js",
+    "dev": "ts-node src/cli.ts",
+    "publish": "bun run build && npm publish"
+  },
+  "keywords": [
+    "cursor",
+    "windsurf",
+    "rules",
+    "ai",
+    "prompts"
+  ],
+  "author": "Artem Murzin <hello@jart.lol>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flowisgreat/vibe-rules.git"
+  },
+  "bugs": {
+    "url": "https://github.com/flowisgreat/vibe-rules/issues"
+  },
+  "homepage": "https://github.com/flowisgreat/vibe-rules#readme",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^11.1.0",
+    "fs-extra": "^11.3.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.10.4",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,184 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# react-dom Best Practices
+
+## Critical Rules
+
+### 1. Use the Modern Root API (React 18+)
+- **Use `createRoot` for Client-Side Rendering**: Always use `createRoot` from `react-dom/client` to initialize your React application root for client-rendered applications. This enables concurrent features and automatic batching.
+    ```javascript
+    // Correct (React 18+)
+    import { createRoot } from 'react-dom/client';
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    root.render(<App />);
+    ```
+- **Avoid Legacy `ReactDOM.render`**: Do not use the legacy `ReactDOM.render` API. It does not support React 18's concurrent features and will trigger deprecation warnings.
+- **Call `render` Only Once on Root Creation**: Typically, `root.render()` should only be called once after `createRoot`. Subsequent UI updates should be handled via component state changes, not by calling `root.render()` repeatedly.
+
+### 2. Use `hydrateRoot` for SSR/SSG
+- **Use `hydrateRoot` for Hydration**: If your application uses Server-Side Rendering (SSR) or Static Site Generation (SSG), you **must** use `hydrateRoot` from `react-dom/client` instead of `createRoot`. This attaches event listeners to the existing server-rendered HTML without recreating the DOM nodes.
+    ```javascript
+    // Correct (React 18+ for SSR/SSG)
+    import { hydrateRoot } from 'react-dom/client';
+    const container = document.getElementById('root');
+    hydrateRoot(container, <App />); // Pass JSX directly
+    ```
+- **Do Not Call `render` After `hydrateRoot` (Initially)**: Unlike `createRoot`, `hydrateRoot` renders the initial component immediately. Do not call `root.render()` right after `hydrateRoot`. If you need to update the root later, you can capture the return value of `hydrateRoot` and call `.render()` on it.
+
+### 3. Portals (`createPortal`)
+- **Use `createPortal` for Modals/Tooltips**: When you need to render a component's children into a different DOM node outside the parent component's DOM hierarchy (e.g., modals, tooltips, overlays), use `createPortal` from `react-dom`.
+    ```javascript
+    import { createPortal } from 'react-dom';
+
+    function MyModal({ children }) {
+      const modalRoot = document.getElementById('modal-root'); // Ensure this exists in your HTML
+      if (!modalRoot) return null;
+      return createPortal(children, modalRoot);
+    }
+    ```
+- **Distinguish from `createRoot`**: `createPortal` renders *part* of a component tree elsewhere, while `createRoot` initializes the *entire* application tree root.
+
+### 4. Performance & Batching
+- **Leverage Automatic Batching**: Understand that `createRoot` enables automatic batching of state updates (from hooks, timeouts, promises, native events) by default, improving performance.
+- **Use `flushSync` Sparingly**: Only use `flushSync` from `react-dom` if you explicitly need to opt-out of automatic batching and force synchronous DOM updates (e.g., measuring DOM layout immediately after a state change). Overuse can negate performance benefits.
+
+### 5. Error Handling & Strict Mode
+- **Use `<React.StrictMode>`**: Wrap your root component (or parts of your app) in `<React.StrictMode>`. It helps identify potential problems by enabling extra development-only checks, especially important with concurrent features.
+    ```javascript
+    root.render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+    ```
+- **Use Error Boundaries**: Implement React Error Boundaries within your application component tree to catch rendering errors gracefully.
+- **Root Error Callbacks**: Consider using the optional error callbacks (`onCaughtError`, `onUncaughtError`, `onRecoverableError`) in `createRoot` options for production error reporting.
+
+### 6. Security Considerations
+- **Hydration Mismatches**: Ensure server-rendered HTML matches the initial client render exactly when using `hydrateRoot`. Mismatches can cause the entire subtree to be client-rendered, potentially discarding server markup, and can sometimes have security implications if mismatched content includes sensitive data or creates vulnerabilities.
+- **Portals and Event Bubbling**: Remember that events fired from within a Portal still propagate up the *React* component tree, even if the DOM node is elsewhere. Manage event handling accordingly.
+
+### 7. Code Organization
+- **Single Root Call**: Most client-rendered applications should have only one `createRoot` call, typically in the main entry file (e.g., `index.js`, `main.tsx`).
+- **DOM Container**: Ensure the target DOM node (`document.getElementById('root')`) exists in your HTML *before* the script calling `createRoot` runs.
+
+## Examples
+
+<example>
+  ```javascript
+  // Good: Basic Client-Side Rendering (React 18+)
+  // src/main.tsx
+  import React from 'react';
+  import { createRoot } from 'react-dom/client';
+  import App from './App';
+
+  const container = document.getElementById('root');
+  if (container) {
+    const root = createRoot(container);
+    root.render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+  } else {
+    console.error('Root container not found');
+  }
+  ```
+
+  ```javascript
+  // Good: Hydration for SSR/SSG (React 18+)
+  // src/main.tsx
+  import React from 'react';
+  import { hydrateRoot } from 'react-dom/client';
+  import App from './App';
+
+  const container = document.getElementById('root');
+  if (container) {
+    hydrateRoot(
+      container, 
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+  } else {
+    console.error('Root container not found for hydration');
+  }
+  ```
+
+  ```javascript
+  // Good: Using createPortal for a modal
+  // src/components/MyModal.tsx
+  import React from 'react';
+  import { createPortal } from 'react-dom';
+
+  function MyModal({ children }) {
+    const [modalContainer, setModalContainer] = React.useState(null);
+
+    React.useEffect(() => {
+      // Ensure this runs client-side only
+      setModalContainer(document.getElementById('modal-root'));
+    }, []);
+
+    if (!modalContainer) return null;
+
+    return createPortal(
+      <div className="modal-backdrop">
+        <div className="modal-content">{children}</div>
+      </div>,
+      modalContainer
+    );
+  }
+  export default MyModal;
+  ```
+</example>
+
+<example type="invalid">
+  ```javascript
+  // Bad: Using legacy render API in React 18+
+  import ReactDOM from 'react-dom';
+  import App from './App';
+  const container = document.getElementById('root');
+  // Warning: ReactDOM.render is no longer supported in React 18.
+  ReactDOM.render(<App />, container);
+  ```
+
+  ```javascript
+  // Bad: Using createRoot for SSR/SSG hydration
+  import { createRoot } from 'react-dom/client';
+  import App from './App';
+  const container = document.getElementById('root');
+  const root = createRoot(container);
+  // This will discard server HTML and re-render from scratch!
+  root.render(<App />); 
+  // Should use hydrateRoot(container, <App />);
+  ```
+
+  ```javascript
+  // Bad: Calling render repeatedly on the root
+  import { createRoot } from 'react-dom/client';
+  import App from './App';
+  const root = createRoot(document.getElementById('root'));
+  setInterval(() => {
+    // Unnecessary and inefficient. Updates should happen via state.
+    root.render(<App />); 
+  }, 1000);
+  ```
+
+  ```javascript
+  // Bad: Trying to use createRoot like createPortal
+  import { createRoot } from 'react-dom/client';
+  function Tooltip({ content }) {
+    // Incorrect: Creates a new independent React root for every tooltip
+    const tooltipRootNode = document.getElementById('tooltip-container');
+    const root = createRoot(tooltipRootNode); 
+    root.render(<div>{content}</div>); // Doesn't integrate with parent state/context
+    // Should use createPortal
+    return null; // Or manages root.unmount somehow, becomes complex
+  }
+  ```
+</example>
+

@@ -1,0 +1,56 @@
+# Secure Coding Practices
+
+## Input Validation
+
+- Always validate user input on both client and server sides
+- Never trust client-side validation alone
+- Use validation libraries appropriate for your framework (e.g., Zod, Joi, Yup)
+
+## Prevent SQL Injection
+
+- Use parameterized queries or prepared statements
+- Never concatenate user input directly into SQL queries
+- Use ORM libraries (Prisma, Sequelize, TypeORM) which help prevent SQL injection
+
+## Prevent XSS (Cross-Site Scripting)
+
+- Sanitize user-generated content before rendering
+- Use framework-provided escaping mechanisms
+- Consider Content Security Policy (CSP) headers
+
+## Authentication Best Practices
+
+- Store only hashed passwords, never plaintext
+- Use strong hashing algorithms (bcrypt, Argon2) with appropriate work factors
+- Implement proper session management
+- Consider using OAuth or other established authentication frameworks
+
+## Authorization Controls
+
+- Implement proper access controls
+- Validate permissions on the server for every request
+- Don't rely on hiding UI elements for security
+
+## Security Headers
+
+- Implement appropriate security headers
+- Use HTTPS for all communications
+- Set proper CORS policies
+
+## Dependency Management
+
+- Regularly update dependencies
+- Use tools like `npm audit` to check for vulnerabilities
+- Remove unused dependencies
+
+## Error Handling
+
+- Implement proper error handling
+- Don't expose sensitive information in error messages
+- Log errors securely without exposing sensitive data
+
+## API Security
+
+- Rate limit API endpoints
+- Implement proper authentication for APIs
+- Use HTTPS for all API communications

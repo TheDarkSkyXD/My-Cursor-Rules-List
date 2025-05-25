@@ -1,0 +1,211 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Electron Forge Best Practices
+
+## Critical Rules
+
+### 1. Configuration (`forge.config.js` or `package.json`)
+- **Prefer `forge.config.js`**: Use a JavaScript configuration file (`forge.config.js`) over embedding in `package.json` (`config.forge`). This allows for conditional logic, comments, and better organization.
+- **Centralized Configuration**: Keep all Forge-related settings (packager, rebuild, makers, publishers, plugins, hooks) within this central configuration.
+- **`packagerConfig`**: Customize `@electron/packager` options here (e.g., `name`, `asar: true`, `icon`). Avoid overriding `dir`, `arch`, `platform`, `out`, or `electronVersion` as Forge manages these.
+- **`rebuildConfig`**: Configure `@electron/rebuild` for native modules. Usually, Forge handles necessary options, but `force: true` can be useful.
+- **Makers**: Select appropriate makers for your target platforms (e.g., `@electron-forge/maker-squirrel` for Windows, `@electron-forge/maker-dmg` for macOS, `@electron-forge/maker-deb` for Debian-based Linux).
+    - Specify `platforms` for makers if they only apply to certain OS (e.g., `platforms: ['darwin']`).
+- **Publishers**: Configure publishers like `@electron-forge/publisher-github` to automate releases. Securely manage authentication tokens (e.g., `GITHUB_TOKEN` as an environment variable).
+    - Set `draft: true` for GitHub releases to review before public release.
+- **Plugins**: Leverage plugins for extended functionality:
+    - **Bundlers**: Use `@electron-forge/plugin-webpack` or `@electron-forge/plugin-vite` for bundling main and renderer code, enabling code splitting, tree shaking, and hot reloading.
+    - **Native Modules**: Use `@electron-forge/plugin-auto-unpack-natives` to correctly handle native modules.
+    - **Security**: Consider `@electron-forge/plugin-electronegativity` for security linting and `@electron-forge/plugin-fuses` to toggle Electron's runtime feature flags for enhanced security.
+- **Hooks**: Use hooks for custom logic during the build lifecycle (e.g., `postPackage`, `preMake`). For complex logic, consider writing a custom plugin.
+- **Build Identifiers**: Use `buildIdentifier` and `fromBuildIdentifier` for environment-specific configurations (e.g., `beta` vs. `prod` builds with different `appBundleId`).
+
+### 2. Code Organization & Electron Principles
+- **Main, Renderer, Preload**: Strictly adhere to Electron's process model. Keep main process logic separate from renderer process UI code.
+- **Secure Preload Scripts**: Use preload scripts to expose specific Node.js/Electron APIs to the renderer in a controlled manner via `contextBridge`. Ensure `contextIsolation` is `true` and `nodeIntegration` is `false` in `webPreferences`.
+- **IPC Communication**: Use Electron's IPC (Inter-Process Communication) modules (`ipcMain`, `ipcRenderer`) for communication between main and renderer processes. Define clear, type-safe channels.
+
+### 3. Build Process & Performance
+- **Bundling**: ALWAYS use a bundler plugin (Webpack or Vite) to bundle your JavaScript/TypeScript code. This optimizes load times, enables modern JS features, and handles assets.
+    - Configure bundlers for tree-shaking and code-splitting, especially for renderer code.
+- **ASAR Archives**: Set `packagerConfig.asar: true` (default). This packages your app source code into an archive, improving read performance and hiding source slightly (not a security measure).
+    - Native modules are typically excluded from ASAR automatically or handled by plugins like `plugin-auto-unpack-natives`.
+- **Native Modules**: Ensure native modules are correctly rebuilt for Electron's Node.js version. Electron Forge usually handles this, but verify if issues arise. Use `plugin-auto-unpack-natives`.
+- **Output Directory (`outDir`)**: Can be configured if needed, but Forge defaults to an `out` directory.
+- **Cross-Platform Builds**: Building for a different OS than your host OS has caveats (e.g., native modules, signing). Use CI/CD (e.g., GitHub Actions) with runners for each target OS for reliable cross-platform builds.
+
+### 4. Security
+- **Code Signing**: ALWAYS code sign your application for macOS and Windows. Configure `packagerConfig.osxSign` (and `osxNotarize` for macOS) and maker-specific signing options (e.g., for `maker-squirrel`). Store signing credentials securely (e.g., environment variables, CI secrets).
+- **Fuses Plugin**: Use `@electron-forge/plugin-fuses` to toggle Electron's runtime feature flags. For example, disable `runAsNode` or enable `onlyLoadAppFromAsar` for enhanced security.
+- **Electron Security Best Practices**: Follow general Electron security guidelines:
+    - `contextIsolation: true` (default and mandatory in recent Electron versions).
+    - `nodeIntegration: false` (default).
+    - `sandbox: true` for renderers where possible (might require more preload setup).
+    - Set a Content Security Policy (CSP) via `session.defaultSession.webRequest.onHeadersReceived`.
+    - Validate all IPC messages.
+- **Electronegativity Plugin**: Consider `@electron-forge/plugin-electronegativity` to scan for security anti-patterns.
+
+### 5. Auto Updates
+- **Publisher Setup**: Configure a publisher (e.g., GitHub Publisher) to upload your releases.
+- **`update-electron-app`**: For open-source apps on GitHub, this is the simplest way to enable auto-updates. It works with `update.electronjs.org`.
+- **Custom Update Server**: For private repos or other hosting, implement your own update server logic and configure `autoUpdater` module accordingly.
+- **Sign Your Updates**: Auto-updates rely on code signing to verify authenticity.
+
+### 6. Development Workflow
+- **`electron-forge start`**: Use this command for development. It usually provides hot reloading if a bundler plugin (Webpack/Vite) is configured.
+- **Debugging**: Utilize debugging tools for both main and renderer processes (Node.js inspector for main, Chrome DevTools for renderer).
+
+## Common Pitfalls
+- **Native Module Issues**: Native modules not being rebuilt correctly for Electron's Node version or not being packaged properly. Ensure `rebuildConfig` and `plugin-auto-unpack-natives` are set up.
+- **Misconfigured Makers/Publishers**: Incorrect paths, missing credentials, or wrong platform configurations.
+- **Large Bundle Sizes**: Not using a bundler with tree-shaking and code splitting, or including unnecessary large assets.
+- **Security Oversights**: Forgetting code signing, not isolating renderer processes, or enabling Node.js integration in renderers.
+- **Cross-Platform Build Failures**: Attempting to build for Windows on macOS/Linux (or vice-versa) without a proper CI setup can lead to issues with native modules or platform-specific packaging steps.
+- **Ignoring Build Lifecycle**: Trying to manually script steps that Forge plugins or hooks are designed to handle.
+
+## Examples
+
+<example>
+  ```javascript
+  // forge.config.js (Recommended Structure)
+  const { FusesPlugin } = require('@electron-forge/plugin-fuses');
+  const { FuseV1Options, FuseVersion } = require('@electron/fuses');
+
+  module.exports = {
+    packagerConfig: {
+      asar: true,
+      icon: './assets/icons/icon', // .icns for macOS, .ico for Windows
+      name: 'My Awesome App',
+      appBundleId: process.env.IS_BETA ? 'com.myawesomeapp.beta' : 'com.myawesomeapp.prod',
+      osxSign: { // Options for signing on macOS
+        identity: process.env.APPLE_SIGNING_IDENTITY,
+        // 'hardened-runtime': true, // Recommended
+      },
+      osxNotarize: {
+        tool: 'notarytool',
+        appleId: process.env.APPLE_ID,
+        appleIdPassword: process.env.APPLE_ID_PASSWORD,
+        teamId: process.env.APPLE_TEAM_ID,
+      },
+    },
+    rebuildConfig: {},
+    makers: [
+      {
+        name: '@electron-forge/maker-squirrel',
+        config: {
+          name: 'MyAwesomeApp',
+          setupIcon: './assets/icons/icon.ico',
+          certificateFile: process.env.WINDOWS_CERTIFICATE_FILE, // Path to .pfx
+          certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
+        },
+        platforms: ['win32'],
+      },
+      {
+        name: '@electron-forge/maker-dmg',
+        config: {
+          icon: './assets/icons/icon.icns',
+          format: 'ULFO',
+        },
+        platforms: ['darwin'],
+      },
+      {
+        name: '@electron-forge/maker-deb',
+        config: {},
+        platforms: ['linux'],
+      },
+      {
+        name: '@electron-forge/maker-zip',
+        platforms: ['darwin', 'linux'],
+      },
+    ],
+    publishers: [
+      {
+        name: '@electron-forge/publisher-github',
+        config: {
+          repository: {
+            owner: 'your-github-username',
+            name: 'your-repo-name',
+          },
+          prerelease: !!process.env.IS_BETA,
+          draft: true,
+          authToken: process.env.GITHUB_TOKEN, // Recommended to set via env var
+        },
+      },
+    ],
+    plugins: [
+      {
+        name: '@electron-forge/plugin-webpack',
+        config: {
+          mainConfig: './webpack.main.config.js',
+          renderer: {
+            config: './webpack.renderer.config.js',
+            entryPoints: [
+              {
+                html: './src/frontend/index.html',
+                js: './src/frontend/index.tsx',
+                name: 'main_window',
+                preload: {
+                  js: './src/backend/preload.ts',
+                },
+              },
+            ],
+          },
+        },
+      },
+      {
+        name: '@electron-forge/plugin-auto-unpack-natives',
+        config: {},
+      },
+      new FusesPlugin({
+        version: FuseVersion.V1,
+        [FuseV1Options.RunAsNode]: false, // Disable ELECTRON_RUN_AS_NODE
+        [FuseV1Options.EnableCookieEncryption]: true,
+        [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
+        [FuseV1Options.EnableNodeCliInspectArguments]: false,
+        [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
+        [FuseV1Options.OnlyLoadAppFromAsar]: true,
+      }),
+    ],
+    hooks: {
+      postPackage: async (forgeConfig, { platform, arch, outputPaths }) => {
+        console.info(`Finished packaging for ${platform}-${arch} at ${outputPaths}`);
+        // Example: custom actions after packaging
+      },
+    },
+  };
+  ```
+</example>
+
+<example type="invalid">
+  ```javascript
+  // Bad: Configuration in package.json (less flexible)
+  // package.json (partial)
+  "config": {
+    "forge": {
+      "packagerConfig": { "asar": false }, // asar: false is generally not recommended
+      "makers": [ { "name": "@electron-forge/maker-zip" } ]
+      // Missing bundler plugin, no code signing, no specific makers for platforms
+    }
+  }
+
+  // Bad: Enabling nodeIntegration in renderer without strong justification
+  // In main process (e.g., backend.ts)
+  new BrowserWindow({
+    webPreferences: {
+      // nodeIntegration: true, // 🚨 Security Risk!
+      // contextIsolation: false, // 🚨 Security Risk!
+      preload: 'path/to/preload.js' // Good, but ensure preload is secure
+    }
+  });
+
+  // Bad: Not signing the application
+  // forge.config.js (missing osxSign, osxNotarize, or certificateFile for makers)
+
+  // Bad: Handling native modules manually without plugin-auto-unpack-natives
+  // Might lead to .node files not being found in packaged app.
+  ```
+</example>
+

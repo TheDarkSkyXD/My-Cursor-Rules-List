@@ -1,0 +1,155 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ # Naming Conventions Cheatsheet (Simple Intuitive Descriptive)
+
+## Overview
+This rule provides comprehensive guidelines for naming variables, functions, and other code elements in a consistent and meaningful way.
+
+## Key Principles
+
+### 1. Language and Consistency
+- Use English for all naming
+- Choose and stick to one naming convention (camelCase, PascalCase, snake_case)
+- Follow language-specific conventions
+
+### 2. S-I-D Principle
+Names should be:
+- **Short**: Quick to type and remember
+- **Intuitive**: Read naturally
+- **Descriptive**: Clearly reflect purpose/function
+
+### 3. Function Naming Pattern
+Follow the A/HC/LC pattern:
+```
+prefix? + action (A) + high context (HC) + low context? (LC)
+```
+
+Example:
+```typescript
+// Good
+function getUserMessages() {}
+function handleClickOutside() {}
+function shouldDisplayMessage() {}
+```
+
+### 4. Common Actions
+- `get`: Access data immediately
+- `set`: Set a value declaratively
+- `reset`: Return to initial state
+- `remove`: Remove from collection
+- `delete`: Erase completely
+- `compose`: Create new from existing
+- `handle`: Handle an action/callback
+
+### 5. Context and Prefixes
+- Context should reflect the domain/type
+- Common prefixes:
+  - `is`: Describes state/characteristic
+  - `has`: Indicates possession
+  - `should`: Positive conditional
+  - `min`/`max`: Boundaries
+  - `prev`/`next`: State transitions
+
+### 6. Best Practices
+- Avoid contractions
+- Avoid context duplication
+- Reflect expected results
+- Use singular/plural appropriately
+- Remove redundant context
+
+## Examples
+
+### Good Practices
+```typescript
+// Clear, descriptive names
+const userCount = 5;
+const hasPagination = userCount > 10;
+const shouldPaginate = userCount > 10;
+
+// Proper function naming
+function getUser(id: string) {}
+function handleClick(event: Event) {}
+function shouldUpdateComponent() {}
+
+// Context-aware naming
+class MenuItem {
+  handleClick() {} // Not handleMenuItemClick
+}
+```
+
+### Bad Practices
+```typescript
+// Avoid these
+const a = 5;
+const isPaginatable = a > 10;
+const onItmClk = () => {};
+const handleMenuItemClick = () => {};
+```
+
+## Implementation Guidelines
+
+1. **Variable Naming**
+   - Use descriptive names
+   - Follow S-I-D principle
+   - Use appropriate prefixes
+
+2. **Function Naming**
+   - Use action verbs
+   - Include relevant context
+   - Follow A/HC/LC pattern
+
+3. **Class/Component Naming**
+   - Use PascalCase
+   - Be specific about purpose
+   - Avoid redundant context
+
+4. **Type/Interface Naming**
+   - Use PascalCase
+   - Be descriptive
+   - Include type information
+
+## Common Patterns
+
+### Boolean Variables
+```typescript
+// Good
+const isEnabled = true;
+const hasItems = items.length > 0;
+const shouldRender = condition;
+
+// Bad
+const enabled = true;
+const itemsExist = items.length > 0;
+const render = condition;
+```
+
+### Event Handlers
+```typescript
+// Good
+function handleClick() {}
+function handleSubmit() {}
+function handleChange() {}
+
+// Bad
+function click() {}
+function submit() {}
+function change() {}
+```
+
+### Data Access
+```typescript
+// Good
+function getUser() {}
+function getPosts() {}
+function setUser() {}
+
+// Bad
+function user() {}
+function posts() {}
+function userSet() {}
+```
+
+Remember: Good naming makes code more readable, maintainable, and self-documenting. When in doubt, err on the side of clarity over brevity. 

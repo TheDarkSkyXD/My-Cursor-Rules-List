@@ -1,0 +1,35 @@
+---
+description: Guidelines for logging and error handling
+globs: ["**/*.py"]
+---
+
+# LOGGING STANDARDS
+
+- Use structured logging with consistent fields
+- Log at appropriate levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+- Include context in log messages (request ID, user, operation)
+- Configure log rotation and retention
+- Store logs in a standardized location
+- Implement sensitive data masking in logs
+
+## Log Format
+- Use JSON format for machine-readable logs
+- Include timestamp, log level, module, function, and message
+- Add correlation IDs for tracking requests across services
+- Include relevant context data in structured format
+- Use consistent naming for log fields
+
+# ERROR HANDLING
+
+- Implement proper error boundaries with user-friendly messages
+- Log errors for debugging
+- Provide context in error messages
+- Use Python's logging module with structured log levels
+- Create custom exception classes for domain-specific errors
+
+## Error Recovery
+- Implement retry logic for transient errors
+- Use circuit breakers for external service failures
+- Provide graceful degradation when services are unavailable
+- Implement proper cleanup in error scenarios
+- Document error recovery procedures 

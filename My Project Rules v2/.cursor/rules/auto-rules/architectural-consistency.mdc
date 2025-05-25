@@ -1,0 +1,32 @@
+---
+description: Architectural Consistency
+globs: 
+alwaysApply: false
+---
+Architectural Consistency Rule
+
+## Overview
+Maintain a consistent architectural pattern throughout the project to ensure long-term maintainability and scalability.
+
+## Guidelines
+1. Follow the established architectural pattern (MVC, MVVM, Clean Architecture, etc.)
+2. Keep business logic separate from UI components
+3. Maintain clear separation of concerns between layers
+4. Follow dependency injection principles where appropriate
+5. Implement interfaces/abstractions for loosely coupled components
+
+## Examples
+- UI components should only contain presentation logic
+- Data access should be isolated in dedicated repositories/services
+- Business rules belong in domain/service layers
+- Configuration should be separate from implementation
+
+## Application
+- Before adding a new component, identify its architectural role
+- When modifying existing code, preserve its architectural intent
+- Don't break the current folder structure; if changes are needed, consult with team members first
+
+## Enforcement
+- Perform architecture reviews during code reviews
+- Use static analysis tools to validate architectural boundaries
+- Document architectural decisions for future reference

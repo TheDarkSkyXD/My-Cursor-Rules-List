@@ -1,0 +1,72 @@
+---
+description: Progress Reports (RPT).
+globs: 
+alwaysApply: false
+---
+Progress reports are the central documents for tracking all aspects of project progress. These files MUST be maintained throughout the project lifecycle. They are stored in `docs/reports` if the folders are not create then create them.. 
+
+CRITICAL: BEFORE adding any dates, use terminal `date` command to get the current date.
+
+### 1.1. CRITICAL: Information Preservation
+- **NEVER delete historical information** - this is the most important rule
+- Add new information rather than replacing existing content
+- Even if we change course, it's important to have a record of our reasoning
+- Never delete completed tasks or phase summaries, even if they seem outdated
+- When updating task status, modify the existing entries instead of removing them
+- Maintain the complete chronological history of all project phases
+
+### 1.2. Organization Structure
+- Use consistent milestone naming across projects
+- When adding new entries, place them in appropriate sections
+- Use consistent formatting for all progress entries
+- Include specific dates and clear task descriptions
+- Cross-reference related tasks between sections when applicable
+
+### 1.3. Tracking Changes
+- Always explain plan deviations rather than hiding them
+- Document the rationale for changes
+- Track both planned and completed work
+- Separate concerns by appropriate categorization
+
+### 1.4. Maintenance Requirements
+- These reports serve as the single source of truth for project history and status
+- Update after each significant development
+- Review before beginning any new implementation work
+- Update immediately after completing any task
+
+### 1.5. Standard Progress Documentation Format
+
+#### 1.5.1. Implementation Status
+- Track by phase with detailed task status
+- Include task name, status, dates, and notes
+- Maintain phase summaries
+- Use standard status terms (Not Started, In Progress, Completed, Blocked)
+- Always keep previous phase information intact, even when starting a new phase
+
+#### 1.5.2. Error Log
+- Document errors with description, root cause, solution, and prevention
+- Include date and context for each error
+- Link errors to specific tasks when relevant
+
+#### 1.5.3. Design Decisions
+- Record context, options considered, final decision, rationale, and implications
+- Number decisions sequentially for easy reference
+- Include date and participants in the decision
+
+#### 1.5.4. Technical Insights
+- Document performance considerations
+- Note dependencies and their versions
+- Document edge cases and their handling
+- Record limitations and constraints
+
+#### 1.5.5. Plan Deviations
+- Document original plan vs. actual implementation
+- Explain reasons for deviations
+- Assess impact on timeline and deliverables
+- Note lessons learned
+
+#### 1.5.6. Future Improvements
+- List potential enhancements
+- Document technical debt
+- Prioritize future work items
+- Include rationale for deferring improvements

@@ -1,0 +1,324 @@
+---
+description: Configure Supabase services when implementing backend features to ensure secure and efficient database operations
+globs: *.json, *.sql, *.toml, *.ts,*.tsx
+alwaysApply: false
+---
+# Supabase Integration
+
+## Requirements
+
+### Project Setup
+
+- Configure Supabase client properly
+- Implement environment variable management:
+  - Use .env files for local development
+  - Configure CI/CD secrets for deployment
+  - Apply proper variable naming (`EXPO_PUBLIC_*`)
+
+### Database Design
+
+- Design normalized database schemas:
+  - Implement proper table relationships
+  - Use foreign key constraints
+  - Apply appropriate indexes
+- Use PL/SQL dialect when writing SQL:
+  - Always favor lowercase for SQL keywords and identifiers
+  - Format SQL statements for readability with consistent indentation
+  - Use meaningful table and column names
+- Implement Row-Level Security (RLS):
+
+  <example>
+
+  ```sql
+  create policy "users can only access their own data"
+  on profiles
+  for select
+  using (auth.uid() = user_id);
+  ```
+
+  </example>
+
+- Document Supabase schema and RLS policies
+
+### Authentication
+
+- Implement Supabase Auth:
+  1. Install `@supabase/supabase-js` (and `@supabase/ssr` if using Next.js for web)
+  2. Set up environment variables
+  3. Write two utility functions with `createClient` functions to create a browser client and a server client
+  4. Hook up middleware to refresh auth tokens
+- Use built-in providers (Email, OAuth)
+- Implement proper session management
+- Apply secure authentication flows
+- Create secure user profiles:
+  - Link profiles to auth.users
+  - Implement proper authorization checks
+  - Apply data validation
+
+<example>
+
+```ts
+// Server client implementation
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+export async function createClient() {
+  const cookieStore = await cookies()
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        }
+      }
+    }
+  )
+}
+```
+
+</example>
+<example>
+
+```ts
+// Middleware implementation
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
+
+export async function middleware(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({
+    request
+  })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            request.cookies.set(name, value)
+          )
+          supabaseResponse = NextResponse.next({
+            request
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        }
+      }
+    }
+  )
+
+  // Do not run code between createServerClient and
+  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
+  // issues with users being randomly logged out.
+
+  // IMPORTANT: DO NOT REMOVE auth.getUser()
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser()
+
+  if (
+    !user &&
+    !request.nextUrl.pathname.startsWith('/login') &&
+    !request.nextUrl.pathname.startsWith('/auth')
+  ) {
+    // no user, potentially respond by redirecting the user to the login page
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
+
+  // IMPORTANT: You _must_ return the supabaseResponse object as it is.
+  // If you're creating a new response object with NextResponse.next() make sure to:
+  // 1. Pass the request in it, like so:
+  // const myNewResponse = NextResponse.next({ request })
+  // 2. Copy over the cookies, like so:
+  // myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
+  // 3. Change the myNewResponse object to fit your needs, but avoid changing
+  // the cookies!
+  // 4. Finally:
+  // return myNewResponse
+  // If this is not done, you may be causing the browser and server to go out
+  // of sync and terminate the user's session prematurely!
+
+  return supabaseResponse
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*.(?:svg|png|jpg|jpeg|gif|webp)$).*)'
+  ]
+}
+```
+
+</example>
+
+<example type="invalid">
+
+```ts
+// ❌ It will break application
+{
+  cookies: {
+    get(name: string) {
+      return cookieStore.get(name)
+    },
+    set(name: string, value: string) {
+      cookieStore.set(name, value)
+    },
+    remove(name: string) {
+      cookieStore.remove(name)
+    }
+  }
+}
+
+// ❌ Using `auth-helpers-nextjs` is deprecated use `@supabase/ssr` instead
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+```
+
+</example>
+
+### Data Access
+
+- Implement type-safe Supabase queries:
+  <example>
+
+  ```ts
+  import { Database } from './database.types'
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, username, avatar_url')
+    .eq('id', userId)
+    .single()
+  ```
+
+  </example>
+
+- Use Supabase realtime subscriptions:
+  <example>
+
+  ```ts
+  const channel = supabase
+    .channel('table_db_changes')
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages'
+      },
+      payload => {
+        // Handle new message
+      }
+    )
+    .subscribe()
+  ```
+
+  </example>
+
+- Alternatively use [Apollo Client](mdc:https:/www.apollographql.com/docs/react/integrations/react-native) for GraphQL API interactions:
+
+  - Use a single instance with InMemoryCache and proper type policies
+  - Use GraphQL fragments to avoid redundancy
+  - Always update the cache after mutations
+  - Implement a global error handler with Apollo Link
+  - Handle individual errors using the error object from useQuery
+
+    <example>
+
+    ```ts
+    import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
+
+    // Initialize Apollo Client
+    const client = new ApolloClient({
+      uri: process.env.EXPO_PUBLIC_GRAPHQL_URL,
+      headers: {
+        apikey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+        authorization: `Bearer ${session?.access_token}`
+      }
+    })
+
+    // Define type-safe query with GraphQL and TypeScript
+    const GET_USER = gql`
+      query GetUser($userId: UUID!) {
+        users_by_pk(id: $userId) {
+          id
+          username
+          profile {
+            avatar_url
+          }
+        }
+      }
+    `
+
+    // Execute query with type safety
+    const { data, loading, error } = await client.query({
+      query: GET_USER,
+      variables: { userId }
+    })
+
+    // TypeScript knows the shape of this data
+    const user = data?.users_by_pk
+    ```
+
+    </example>
+
+### Storage
+
+- Configure secure storage buckets:
+  - Implement proper access controls
+  - Apply size and type restrictions
+  - Use signed URLs for secure access
+- Implement efficient asset management:
+  - Use optimized upload procedures
+  - Apply proper metadata
+  - Implement CDN integration
+
+### Edge Functions
+
+- Deploy backend logic with Edge Functions:
+  - Implement proper authentication checks
+  - Apply input validation
+  - Use environment variables for secrets
+- Structure Edge Functions effectively:
+  - Single-purpose functions
+  - Proper error handling
+  - Type-safe requests and responses
+
+### Local Development
+
+- Use Supabase CLI for local development:
+  - Start local Supabase instance
+  - Apply migrations locally
+  - Test functions in development environment
+- Implement database migrations:
+  - Version control schema changes
+  - Apply proper up/down migrations
+  - Test migrations locally before deployment

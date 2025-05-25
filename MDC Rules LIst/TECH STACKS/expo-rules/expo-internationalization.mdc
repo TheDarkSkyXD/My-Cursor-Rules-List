@@ -1,0 +1,65 @@
+---
+description: Apply internationalization practices when developing user interfaces to support multiple languages and cultural preferences
+globs: *.ts, *.tsx
+alwaysApply: false
+---
+# Internationalization (i18n)
+
+## Context
+
+- Applied to all user-facing text in the application
+- Ensures the app is accessible to users of different languages and regions
+- Supports multilingual capabilities and RTL layouts
+
+## Requirements
+
+- Support multiple languages:
+  - Use 'expo-localization' to detect the user's preferred locale
+  - Implement 'i18next' and ['react-i18next'](mdc:https:/react.i18next.com) for text translations
+  - Apply proper string management
+  - Handle text expansion/contraction
+- Store all translatable strings in dedicated locale files
+- Never hardcode user-facing text directly in components
+- Use the `useTranslation` hook or `Trans` component for all text rendering
+- Use translation keys that are descriptive and follow a hierarchical pattern
+- Implement proper RTL support:
+  - Use RTL-aware layout
+  - Test with RTL languages
+- Test the application with different locales during development
+
+## Examples
+
+<example>
+
+```tsx
+import { useTranslation } from 'react-i18next'
+
+function WelcomeScreen() {
+  const { t } = useTranslation()
+
+  return (
+    <View>
+      <Text>{t('welcome.greeting')}</Text>
+      <Text>{t('welcome.instructions')}</Text>
+    </View>
+  )
+}
+```
+
+</example>
+
+<example type="invalid">
+
+```tsx
+function WelcomeScreen() {
+  return (
+    // ❌ Hardcoded user-facing text directly in components
+    <View>
+      <Text>Welcome to our app!</Text>
+      <Text>Please sign in to continue</Text>
+    </View>
+  )
+}
+```
+
+</example>

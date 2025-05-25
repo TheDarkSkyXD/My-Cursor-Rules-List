@@ -1,0 +1,252 @@
+---
+description: Best practices for data fetching and caching with React Query
+globs: *.tsx,*.ts
+alwaysApply: false
+---
+
+# React Query Best Practices
+
+## 1. Query Key Management
+
+### Use Structured Query Keys
+Organize query keys hierarchically for better cache management:
+
+// ✅ Good
+```tsx
+const userQuery = useQuery({
+  queryKey: ['users', userId, { details: true }],
+  queryFn: () => fetchUserById(userId)
+})
+```
+
+// ❌ Bad
+```tsx
+const userQuery = useQuery({
+  queryKey: ['userDetails' + userId],
+  queryFn: () => fetchUserById(userId)
+})
+```
+
+### Define Query Keys Constants
+Create a centralized location for query keys:
+
+```tsx
+export const queryKeys = {
+  users: {
+    all: ['users'] as const,
+    detail: (id: string) => [...queryKeys.users.all, id] as const,
+    preferences: (id: string) => [...queryKeys.users.detail(id), 'preferences'] as const
+  }
+} as const
+```
+
+## 2. Error Handling
+
+### Implement Proper Error Boundaries
+Use error boundaries for handling query errors:
+
+```tsx
+const UserProfile = () => {
+  const { data, error, isError } = useQuery({
+    queryKey: ['user', userId],
+    queryFn: fetchUser,
+    retry: false,
+    useErrorBoundary: true
+  })
+
+  if (isError) {
+    return <ErrorFallback error={error} />
+  }
+
+  return <div>{data.name}</div>
+}
+```
+
+### Custom Error Handling
+Create custom error handlers for specific cases:
+
+```tsx
+// types/api.ts
+interface ApiError {
+  code: string;
+  message: string;
+  status: number;
+}
+
+// utils/error-handlers.ts
+export const handleApiError = (error: ApiError) => {
+  if (error.status === 401) {
+    redirectToLogin()
+  }
+  return error
+}
+```
+
+## 3. Caching Strategies
+
+### Configure Stale Time Appropriately
+Set appropriate staleTime based on data volatility:
+
+```tsx
+// ✅ Good - Frequently changing data
+const activeUsersQuery = useQuery({
+  queryKey: ['users', 'active'],
+  queryFn: fetchActiveUsers,
+  staleTime: 1000 * 30, // 30 seconds
+})
+
+
+// ✅ Good - Rarely changing data
+const settingsQuery = useQuery({
+  queryKey: ['settings'],
+  queryFn: fetchSettings,
+  staleTime: 1000 * 60 * 60, // 1 hour
+})
+```
+
+### Implement Optimistic Updates
+Use optimistic updates for better UX:
+
+```tsx
+// ✅ Good
+const mutation = useMutation({
+  mutationFn: updateTodo,
+  onMutate: async (newTodo) => {
+    await queryClient.cancelQueries({ queryKey: ['todos'] })
+    const previousTodos = queryClient.getQueryData(['todos'])
+    
+    queryClient.setQueryData(['todos'], (old: Todo[]) => 
+      old.map(todo => todo.id === newTodo.id ? newTodo : todo)
+    )
+    
+    return { previousTodos }
+  },
+  onError: (err, newTodo, context) => {
+    queryClient.setQueryData(['todos'], context?.previousTodos)
+  }
+})
+```
+
+## 4. Performance Optimization
+
+### Use Selective Loading States
+Implement selective loading states to prevent UI flicker:
+
+```tsx
+// ✅ Good
+const { data, isLoading } = useQuery({
+  queryKey: ['users'],
+  queryFn: fetchUsers,
+  keepPreviousData: true,
+  placeholderData: previousUsers
+})
+```
+
+### Implement Infinite Queries Correctly
+Handle infinite scrolling efficiently:
+
+```tsx
+// ✅ Good
+const {
+  data,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage
+} = useInfiniteQuery({
+  queryKey: ['posts'],
+  queryFn: fetchPostPage,
+  getNextPageParam: (lastPage) => lastPage.nextCursor,
+  keepPreviousData: true
+})
+```
+
+## 5. Type Safety
+
+### Define Strong Types
+Use TypeScript for better type safety:
+
+```tsx
+// types/api.ts
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// hooks/useUser.ts
+export const useUser = (id: string) => {
+  return useQuery<User, Error>({
+    queryKey: ['users', id],
+    queryFn: () => fetchUser(id)
+  })
+}
+```
+
+## 6. Prefetching
+
+### Implement Smart Prefetching
+Prefetch data for better user experience:
+
+```tsx
+// ✅ Good
+const prefetchUser = async (userId: string) => {
+  await queryClient.prefetchQuery({
+    queryKey: ['users', userId],
+    queryFn: () => fetchUser(userId)
+  })
+}
+
+// In your component
+<Link 
+  onMouseEnter={() => prefetchUser(userId)}
+  href={`/users/${userId}`}
+>
+  View User
+</Link>
+```
+
+## 7. Mutations
+
+### Handle Mutation Side Effects
+Properly manage mutation side effects:
+
+```tsx
+// ✅ Good
+const mutation = useMutation({
+  mutationFn: updateUser,
+  onSuccess: (data, variables) => {
+    // Invalidate affected queries
+    queryClient.invalidateQueries({ queryKey: ['users', variables.id] })
+    
+    // Update other related queries
+    queryClient.setQueryData(['users', 'list'], (old: User[]) =>
+      old.map(user => user.id === data.id ? data : user)
+    )
+  }
+})
+```
+
+## 8. Testing
+
+### Mock Query Hooks in Tests
+Properly test components using React Query:
+
+```tsx
+// ✅ Good
+test('renders user data', () => {
+  const queryClient = new QueryClient()
+  render(
+    <QueryClientProvider client={queryClient}>
+      <UserComponent />
+    </QueryClientProvider>
+  )
+})
+```
+
+Remember:
+- Always use TypeScript for better type safety
+- Implement proper error handling and loading states
+- Use appropriate caching strategies
+- Optimize performance with prefetching and keepPreviousData
+- Handle mutations and their side effects properly
+- Write comprehensive tests for query hooks

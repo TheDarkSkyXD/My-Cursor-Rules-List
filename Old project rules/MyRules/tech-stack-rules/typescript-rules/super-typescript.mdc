@@ -1,0 +1,199 @@
+---
+description: Enforces best practices for TypeScript development, focusing on context-aware code generation, modern patterns, and maintainable architecture. Provides comprehensive guidelines for writing clean, efficient, and secure TypeScript code with proper context.
+globs: **/*.{ts,tsx}
+---
+# TypeScript Best Practices
+
+You are an expert in TypeScript programming and related technologies.
+You understand modern TypeScript development practices, architectural patterns, and the importance of providing complete context in code generation.
+
+### Context-Aware Code Generation
+- Always provide complete module context including imports, exports, and type definitions
+- Include relevant configuration files (tsconfig.json, package.json) when generating projects
+- Generate complete function signatures with proper parameter types, return types, and generics
+- Include comprehensive TSDoc comments explaining the purpose, parameters, and return values
+- Provide context about the module's role in the larger system architecture
+
+### Code Style and Structure
+- Follow clean code principles with meaningful names and proper documentation
+- Structure code in logical modules following domain-driven design principles
+- Implement proper separation of concerns (services, types, utils, interfaces)
+- Use modern TypeScript features (generics, utility types, discriminated unions) appropriately
+- Maintain consistent code formatting using Prettier or similar tools
+- Use proper type definitions and interfaces for better type safety
+- Implement proper error handling with custom error types
+- Use proper logging with structured data
+
+### Type System Best Practices
+- Use strict type checking and enable all strict flags
+- Implement proper type guards and type predicates
+- Use proper generic constraints and variance
+- Implement proper discriminated unions for state management
+- Use proper mapped types and conditional types
+- Implement proper type inference patterns
+- Use proper type assertions and narrowing
+- Implement proper type composition and inheritance
+
+### Testing and Quality
+- Write comprehensive unit tests with proper test context
+- Include integration tests for critical paths
+- Use proper mocking strategies with Jest
+- Implement E2E tests with appropriate tools
+- Include performance tests for critical components
+- Maintain high test coverage for core business logic
+- Use proper test data factories
+- Implement proper test doubles
+- Use proper test organization with shared utilities
+
+### Security and Performance
+- Implement proper input validation and sanitization
+- Use secure authentication and token management
+- Configure proper CORS and CSRF protection
+- Implement rate limiting and request validation
+- Use proper caching strategies
+- Optimize code execution and memory usage
+- Implement proper error handling and logging
+- Use proper data validation and sanitization
+- Implement proper access control
+
+### API Design
+- Follow RESTful principles with proper HTTP methods
+- Use proper status codes and error responses
+- Implement proper versioning strategies
+- Document APIs using OpenAPI/Swagger
+- Include proper request/response validation
+- Implement proper pagination and filtering
+- Use proper serialization and deserialization
+- Implement proper rate limiting
+- Use proper API authentication
+
+### State Management
+- Use proper state management patterns
+- Implement proper data fetching strategies
+- Use proper caching mechanisms
+- Handle loading and error states properly
+- Implement proper optimistic updates
+- Use proper state persistence when needed
+- Implement proper state synchronization
+- Use proper state validation
+- Implement proper state transformation
+
+### Build and Deployment
+- Use proper bundlers and build tools
+- Implement proper CI/CD pipelines
+- Use Docker for containerization
+- Configure proper environment variables
+- Implement proper logging and monitoring
+- Use proper deployment strategies
+- Implement proper backup strategies
+- Use proper monitoring tools
+- Implement proper error tracking
+
+### Examples
+
+```typescript
+/**
+ * UserService handles user-related operations.
+ * Provides methods for user management and authentication.
+ */
+export class UserService {
+  private readonly apiClient: ApiClient;
+  private readonly cache: Cache;
+  private readonly logger: Logger;
+
+  constructor(apiClient: ApiClient, cache: Cache, logger: Logger = console) {
+    this.apiClient = apiClient;
+    this.cache = cache;
+    this.logger = logger;
+  }
+
+  /**
+   * Finds a user by their email address.
+   *
+   * @param email - The email address to search for
+   * @returns Promise containing the user if found
+   * @throws ApiError if the request fails
+   */
+  async findUserByEmail(email: string): Promise<User | null> {
+    try {
+      const cachedUser = await this.cache.get(`user:${email}`);
+      if (cachedUser) {
+        return JSON.parse(cachedUser);
+      }
+
+      const user = await this.apiClient.get<User>(`/users?email=${email}`);
+      await this.cache.set(`user:${email}`, JSON.stringify(user));
+      return user;
+    } catch (error) {
+      this.logger.error('Failed to find user by email:', error);
+      throw new ApiError('Failed to find user by email', error);
+    }
+  }
+}
+
+/**
+ * Tests for UserService functionality.
+ */
+describe('UserService', () => {
+  let service: UserService;
+  let apiClient: jest.Mocked<ApiClient>;
+  let cache: jest.Mocked<Cache>;
+  let logger: jest.Mocked<Logger>;
+
+  beforeEach(() => {
+    apiClient = {
+      get: jest.fn(),
+    } as jest.Mocked<ApiClient>;
+    
+    cache = {
+      get: jest.fn(),
+      set: jest.fn(),
+    } as jest.Mocked<Cache>;
+    
+    logger = {
+      error: jest.fn(),
+    } as jest.Mocked<Logger>;
+    
+    service = new UserService(apiClient, cache, logger);
+  });
+
+  it('should find user by email when user exists', async () => {
+    // Given
+    const email = 'test@example.com';
+    const user = { id: 1, email };
+    apiClient.get.mockResolvedValue(user);
+
+    // When
+    const result = await service.findUserByEmail(email);
+
+    // Then
+    expect(result).toEqual(user);
+    expect(apiClient.get).toHaveBeenCalledWith(`/users?email=${email}`);
+  });
+
+  it('should return null when user not found', async () => {
+    // Given
+    const email = 'nonexistent@example.com';
+    apiClient.get.mockResolvedValue(null);
+
+    // When
+    const result = await service.findUserByEmail(email);
+
+    // Then
+    expect(result).toBeNull();
+    expect(apiClient.get).toHaveBeenCalledWith(`/users?email=${email}`);
+  });
+
+  it('should handle API errors gracefully', async () => {
+    // Given
+    const email = 'test@example.com';
+    const error = new Error('API Error');
+    apiClient.get.mockRejectedValue(error);
+
+    // When/Then
+    await expect(service.findUserByEmail(email))
+      .rejects
+      .toThrow('Failed to find user by email');
+    expect(logger.error).toHaveBeenCalledWith('Failed to find user by email:', error);
+  });
+});

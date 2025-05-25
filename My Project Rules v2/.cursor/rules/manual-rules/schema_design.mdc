@@ -1,0 +1,169 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+@doc
+title: Schema Design Rules
+description: Best practices for designing database schemas in Snowflake
+tags: [database, schema, snowflake, best-practices]
+@end
+
+@rule(Primary Keys)
+Every table MUST have a primary key. Use `VARCHAR(36)` for UUID-based IDs or `INT AUTOINCREMENT` for sequential IDs.
+Primary keys must be `NOT NULL` and named consistently (e.g., `table_name_id`).
+
+@example(good)
+```sql
+CREATE TABLE users (
+    user_id VARCHAR(36) NOT NULL,
+    -- other columns
+    CONSTRAINT pk_users PRIMARY KEY (user_id)
+);
+```
+
+@example(bad)
+```sql
+CREATE TABLE users (
+    id INT,  -- Missing NOT NULL and proper constraints
+    -- other columns
+);
+```
+
+@rule(Foreign Keys)
+Define foreign key constraints explicitly. Match data types with referenced primary keys.
+Name constraints descriptively (e.g., `fk_child_parent`).
+
+@example(good)
+```sql
+CREATE TABLE orders (
+    order_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(36) NOT NULL,
+    CONSTRAINT pk_orders PRIMARY KEY (order_id),
+    CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+```
+
+@rule(Timestamps and Auditing)
+Include `create_date` and `modified_date` columns in all tables using `TIMESTAMP_LTZ`.
+Set default values to `CURRENT_TIMESTAMP()` and mark as `NOT NULL`.
+
+@example(good)
+```sql
+CREATE TABLE products (
+    product_id VARCHAR(36) NOT NULL,
+    create_date TIMESTAMP_LTZ NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+    modified_date TIMESTAMP_LTZ NOT NULL DEFAULT CURRENT_TIMESTAMP()
+);
+```
+
+@rule(Column Types)
+Use appropriate VARCHAR lengths for different types of data:
+- Names/Titles: VARCHAR(150)
+- Addresses: VARCHAR(200)
+- Codes/Types: VARCHAR(50)
+- States: VARCHAR(2)
+- ZIP codes: VARCHAR(10)
+
+Use BOOLEAN for flags and FLOAT for coordinates.
+
+@example(good)
+```sql
+CREATE TABLE locations (
+    location_id VARCHAR(36) NOT NULL,
+    name VARCHAR(150),
+    address VARCHAR(200),
+    state VARCHAR(2),
+    zip VARCHAR(10),
+    is_active BOOLEAN,
+    latitude FLOAT,
+    longitude FLOAT
+);
+```
+
+@rule(Performance Optimization)
+Define clustering keys for frequently joined columns and add search optimization for frequently queried columns.
+
+@example(good)
+```sql
+-- Clustering for parent-child relationships
+ALTER TABLE orders CLUSTER BY (user_id, order_id);
+
+-- Search optimization for common queries
+ALTER TABLE users ADD SEARCH OPTIMIZATION ON COLUMNS(email, external_id);
+```
+
+@rule(Schema Organization)
+Use meaningful schema names that reflect data domains:
+- EDW.CORE: Core business entities
+- EDW.MDM: Master Data Management
+- EDW.PROD: Production tables
+- EDW.MONITORING: System monitoring
+
+@example(good)
+```sql
+CREATE SCHEMA EDW.CORE;
+CREATE TABLE EDW.CORE.USERS (...);
+CREATE TABLE EDW.CORE.ORDERS (...);
+
+CREATE SCHEMA EDW.MDM;
+CREATE TABLE EDW.MDM.GOLDEN_RECORD (...);
+```
+
+@rule(Master/Golden Records)
+Include comprehensive identification fields and strict data quality constraints.
+Consider effective dating where appropriate.
+
+@example(good)
+```sql
+CREATE TABLE EDW.MDM.GOLDEN_RECORD (
+    golden_id VARCHAR(36) NOT NULL,
+    external_id VARCHAR(36),
+    name VARCHAR(150) NOT NULL,
+    effective_start_date DATE,
+    effective_end_date DATE,
+    CONSTRAINT pk_golden_record PRIMARY KEY (golden_id)
+);
+```
+
+@rule(Source/Landing Tables)
+Mirror source system structure and include metadata about the source.
+Maintain original field names with clear prefixes/suffixes.
+
+@example(good)
+```sql
+CREATE TABLE EDW.MDM.SOURCE_RECORD (
+    source_id VARCHAR(36) NOT NULL,
+    source_system VARCHAR(50) NOT NULL,
+    load_date TIMESTAMP_LTZ NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+    source_name__v VARCHAR(150),  -- Veeva field
+    source_type__v VARCHAR(50)    -- Veeva field
+);
+```
+
+@rule(Documentation)
+Document table purpose, business context, and column details including constraints and examples.
+
+@example(good)
+```sql
+-- User table storing core user information
+-- Business context: Central source of truth for user identity
+CREATE TABLE users (
+    user_id VARCHAR(36) NOT NULL,  -- Unique identifier for user
+    email VARCHAR(255) NOT NULL,   -- Primary contact email
+    status VARCHAR(20) NOT NULL    -- Values: ACTIVE, INACTIVE, PENDING
+);
+```
+
+@rule(Version Control)
+Document all schema changes, include rationale, and consider impact on existing data.
+Test changes in non-production environment first.
+
+@example(good)
+```sql
+-- Migration: 2024-03-17
+-- Rationale: Adding support for user preferences
+-- Impact: No data migration needed, new column defaults to NULL
+ALTER TABLE users 
+ADD COLUMN preferences VARIANT;
+``` 

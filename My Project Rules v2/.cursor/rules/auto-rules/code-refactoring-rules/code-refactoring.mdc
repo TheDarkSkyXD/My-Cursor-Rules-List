@@ -1,0 +1,18 @@
+---
+description: Lets refactor this file.
+globs: 
+alwaysApply: false
+---
+# For refactering a project or a file.
+
+
+# Rules to adhere to:
+   - Anytime we do a refactoring to use the common items from shared package, remove the redundant files from frontend or backend.
+   - Do not change the UI layout or components if not absolutely needed.
+   - Looks for existing implementation first and if not found then implement from scratch.
+   - Cleanup redundant code if any along the way.
+   - Make things easier wherever possible in the code
+   - For each feature above, add existing or create new test cases after implementing the functionality.
+   - Refer this plan and Do not break the previously implemented functionality.
+
+   - Be very careful with refactoring just so we do not break anything existing.

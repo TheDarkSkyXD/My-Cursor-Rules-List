@@ -1,0 +1,42 @@
+---
+description: How to write tests
+globs: 
+---
+# Testing rules
+
+## Core philosophy
+
+- Tests should be minimal but effective
+- Tests should be outside-in and focus on testing interfaces and behaviour
+- Tests should not be testing implementation detail
+- ALL API calls in tests MUST be mocked
+- Parameterised tests SHOULD NOT be used to allow for easier debugging
+- Tests should be reliable. If tests fail sporadically (flaky) ensure they are fixed first before moving on
+
+## Structuring test files
+
+- Test files should be focused on a specific behaviour
+- Test files should be named according to the expected behaviour we are testing for
+
+## Development testing
+
+During active development:
+1. Use minimum testing needed to verify functionality
+   - don't go into grainy detail in tests too soon
+   - Ensure critical paths work and things aren't broken
+   - Don't test implementation details
+
+2. Focus on core functionality
+   - Verify basic flow works
+   - Check expected outputs
+   - Confirm feature usability
+
+3. Build up test coverage
+   - Start with critical paths
+   - Add edge cases later
+   - Test scenarios should be documented through the test names
+
+4. Ensure API security
+   - After behavioural tests, suggest security focused tests
+   - Ensure any user provided data is always considered unsafe and should be sanitised
+   - Offload common security vulnerabilities to open-source packages

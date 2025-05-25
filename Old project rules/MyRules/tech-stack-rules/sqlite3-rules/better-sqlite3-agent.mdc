@@ -1,0 +1,222 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# better-sqlite3 Best Practices
+
+## Critical Rules
+
+### 1. Embrace Synchronicity (in the Right Place)
+- **Main Process Only (Electron)**: Due to its synchronous blocking nature, **only** use `better-sqlite3` in the Electron **main process** or dedicated **worker threads**. Never use it directly in the renderer process as it will freeze the UI.
+- **IPC for Renderer Access**: Access the database from renderer processes via secure **IPC calls** (`ipcMain.handle`, `ipcRenderer.invoke`) mediated by the main process.
+- **Server-Side Node.js**: In standard Node.js backends, understand that synchronous calls will block the event loop. This can be acceptable or even beneficial for short, fast queries (microseconds) where async overhead is greater, but long-running queries should be moved to worker threads.
+
+### 2. Performance Optimization
+- **WAL Mode**: **Always** enable Write-Ahead Logging (WAL) for improved concurrency (readers don't block writers, writer doesn't block readers) and performance, especially in multi-access scenarios (even if access is serialized through the main process).
+    ```javascript
+    const db = require('better-sqlite3')('mydatabase.db');
+    db.pragma('journal_mode = WAL');
+    ```
+- **Prepared Statements**: **Always** use prepared statements (`db.prepare(...)`) for queries that will be executed multiple times, even with different parameters. This is significantly faster than preparing the query each time and prevents SQL injection.
+    ```javascript
+    // Prepare once
+    const stmt = db.prepare('INSERT INTO users (name, email) VALUES (?, ?)');
+    // Execute many times
+    for (const user of users) {
+      stmt.run(user.name, user.email);
+    }
+    ```
+- **Transactions**: For multiple `INSERT`, `UPDATE`, or `DELETE` operations, **always** wrap them in a transaction (`db.transaction(...)`). This provides atomicity and dramatically improves performance (often by orders of magnitude) by reducing disk I/O commits.
+    ```javascript
+    const insert = db.prepare('INSERT INTO cats (name, age) VALUES (?, ?)');
+    const insertMany = db.transaction((cats) => {
+      for (const cat of cats) insert.run(cat.name, cat.age);
+    });
+    insertMany([ { name: 'Joey', age: 2 }, { name: 'Sally', age: 4 } ]);
+    ```
+- **Indexing**: Ensure your tables have appropriate indexes for columns used in `WHERE` clauses, `JOIN` conditions, and `ORDER BY` clauses to avoid slow full table scans. Use `EXPLAIN QUERY PLAN` to analyze query performance.
+- **PRAGMAs**: Consider other performance-related PRAGMAs like `synchronous = NORMAL` (slightly less durable but faster writes) or `cache_size` based on your needs and testing.
+
+### 3. Code Organization & Usage
+- **Single DB Instance**: Typically, create a single database connection instance (`const db = require('better-sqlite3')('path')`) and reuse it throughout the main process or worker. Export/import or pass the instance as needed.
+- **Separate DB Logic**: Abstract database interactions into dedicated modules or services (e.g., `UserRepository.js`, `databaseService.ts`) instead of writing raw SQL directly in main process event handlers or API routes.
+- **Close the Database**: Ensure the database connection is closed gracefully when your application shuts down using `db.close()`.
+    ```javascript
+    app.on('before-quit', () => {
+      db.close();
+    });
+    ```
+
+### 4. Security
+- **Prepared Statements for Inputs**: **Always** use parameterized prepared statements (`?` placeholders) for any query that includes external or user-provided input. This is the primary defense against SQL injection vulnerabilities. **Never** use string concatenation or template literals to build queries with user input.
+    ```javascript
+    // Good: Parameterized query
+    const userStmt = db.prepare('SELECT * FROM users WHERE email = ?');
+    const user = userStmt.get(userInputEmail); 
+
+    // Bad: SQL Injection Vulnerability!
+    // const query = `SELECT * FROM users WHERE email = '${userInputEmail}'`; 
+    // const user = db.prepare(query).get(); 🚨🚨🚨
+    ```
+- **Limit Permissions**: Ensure the database file has appropriate file system permissions, especially if it contains sensitive data.
+
+### 5. Data Handling
+- **64-bit Integers**: Be aware that SQLite supports 64-bit integers. `better-sqlite3` handles these correctly using JavaScript's `BigInt` type *if needed*. By default (`defaultSafeIntegers(true)`), results outside the safe JavaScript integer range (±2^53 - 1) are returned as `BigInt`. If you don't need values outside this range, you can stick with standard numbers.
+- **Result Formats**: Utilize methods like `.get()`, `.all()`, `.iterate()`, `.pluck()`, `.expand()`, `.raw()` based on whether you need one row, all rows, iterable access, specific columns, nested objects, or raw arrays for performance.
+
+## Common Pitfalls
+- **Blocking the Main Thread (Electron)**: Using `better-sqlite3` directly in the renderer process.
+- **Ignoring Transactions**: Performing bulk inserts/updates/deletes outside of a transaction, leading to very poor performance.
+- **Not Using Prepared Statements**: Decreased performance and potential SQL injection risks if not using parameter binding for user input.
+- **WAL Mode Neglect**: Forgetting to set `journal_mode = WAL`, especially if there's any potential for concurrent access patterns (even mediated via IPC).
+- **Asynchronous Expectations**: Trying to use `await` or callbacks with `better-sqlite3` methods (they are synchronous). Use worker threads for non-blocking behavior if needed for long queries.
+
+## Examples
+
+<example>
+  ```javascript
+  // Good: Main process setup with WAL, transactions, prepared statements, and IPC
+  // main.ts
+  import path from 'path';
+  import Database from 'better-sqlite3';
+  import { app, ipcMain, BrowserWindow } from 'electron';
+
+  const dbPath = path.join(app.getPath('userData'), 'app-data.db');
+  const db = new Database(dbPath);
+
+  // Recommended PRAGMAs
+  db.pragma('journal_mode = WAL');
+  db.pragma('synchronous = NORMAL'); // Consider based on durability needs
+
+  // Create table if not exists
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_user_email ON users (email);
+  `);
+
+  // Prepare statements (can be done once and reused)
+  const getUserStmt = db.prepare('SELECT * FROM users WHERE id = ?');
+  const insertUserStmt = db.prepare('INSERT INTO users (name, email) VALUES (@name, @email)');
+
+  // Transaction for bulk inserts
+  const insertUsers = db.transaction((users) => {
+    for (const user of users) {
+      insertUserStmt.run(user); // Uses named parameters
+    }
+    return users.length;
+  });
+
+  // IPC Handlers
+  ipcMain.handle('db-get-user', (event, userId) => {
+    try {
+      return getUserStmt.get(userId); // Use parameterized query
+    } catch (error) {
+      console.error('Failed to get user:', error);
+      return null;
+    }
+  });
+
+  ipcMain.handle('db-add-users', (event, users) => {
+    try {
+      const count = insertUsers(users); // Use transaction
+      return { success: true, count };
+    } catch (error) {
+      console.error('Failed to add users:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Graceful shutdown
+  app.on('before-quit', () => {
+    db.close();
+    console.log('Database connection closed.');
+  });
+
+  function createWindow() {
+    const mainWindow = new BrowserWindow({
+      // ... window options
+      webPreferences: {
+        preload: path.join(__dirname, 'preload.js'),
+        contextIsolation: true,
+        nodeIntegration: false,
+      }
+    });
+    // ... load window content
+  }
+
+  app.whenReady().then(createWindow);
+
+
+  // preload.js
+  import { contextBridge, ipcRenderer } from 'electron';
+
+  contextBridge.exposeInMainWorld('db', {
+    getUser: (id: number) => ipcRenderer.invoke('db-get-user', id),
+    addUsers: (users: Array<{ name: string; email: string }>) => 
+      ipcRenderer.invoke('db-add-users', users),
+  });
+
+
+  // renderer.ts
+  async function displayUser(id: number) {
+    const user = await window.db.getUser(id);
+    if (user) {
+      console.log('Found user:', user);
+    } else {
+      console.log('User not found');
+    }
+  }
+
+  async function addSomeUsers() {
+    const newUsers = [
+      { name: 'Alice', email: 'alice@example.com' },
+      { name: 'Bob', email: 'bob@example.com' },
+    ];
+    const result = await window.db.addUsers(newUsers);
+    if (result.success) {
+      console.log(`Added ${result.count} users.`);
+    } else {
+      console.error('Failed to add users:', result.error);
+    }
+  }
+  ```
+</example>
+
+<example type="invalid">
+  ```javascript
+  // Bad: Using directly in renderer (Blocks UI, Security Risk if nodeIntegration=true)
+  // renderer.ts
+  // import Database from 'better-sqlite3'; // 🚨 Don't do this!
+  // const db = new Database('path/to/db');
+  // const users = db.prepare('SELECT * FROM users').all(); // Blocks UI!
+
+  // Bad: Not using transactions for bulk operations
+  // main.ts
+  const insert = db.prepare('INSERT INTO items (data) VALUES (?)');
+  for (const item of largeArray) {
+    insert.run(item.data); // 🚨 Very slow - commits on every run()
+  }
+
+  // Bad: SQL Injection Risk (String concatenation with user input)
+  // main.ts
+  ipcMain.handle('search-items', (event, searchTerm) => {
+    // 🚨 SQL INJECTION VULNERABILITY!
+    const query = `SELECT * FROM items WHERE name LIKE '%${searchTerm}%'`; 
+    try {
+      // Even preparing here doesn't fix the injection in the query string itself
+      return db.prepare(query).all(); 
+    } catch (e) { return []; }
+  });
+  // Correct: Use parameterized query: db.prepare("... WHERE name LIKE ?").all('%' + searchTerm + '%')
+
+  // Bad: Forgetting WAL mode (Potential performance/concurrency issues)
+  // main.ts
+  // const db = new Database('path/to/db'); // 🚨 Missing db.pragma('journal_mode = WAL');
+  ```
+</example>
+

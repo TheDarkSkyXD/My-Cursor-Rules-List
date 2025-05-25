@@ -1,0 +1,89 @@
+---
+description: 
+globs: retry,try again,stuck,loop,circular
+alwaysApply: false
+---
+# Critical Thinking When Stuck
+
+# Rule for encouraging critical thinking and problem reframing when stuck in a loop.
+# Standards for breaking out of circular problem-solving patterns
+
+
+
+  When stuck in a loop or making repeated attempts:
+
+  1. Step Back and Reframe:
+
+     ```
+     - Stop the current approach immediately
+     - Explicitly state what you know and don't know
+     - Reframe the problem from first principles
+     - Consider if you're solving the right problem
+     ```
+
+  2. Analyze Assumptions:
+
+     ```
+     - List all implicit assumptions you're making
+     - Question each assumption critically
+     - Identify which assumptions might be incorrect
+     - Consider alternative mental models
+     ```
+
+  3. Systematic Diagnosis:
+
+     ```
+     - Identify the exact point of failure
+     - Trace backward from the failure to possible causes
+     - Create a hypothesis tree of possible issues
+     - Prioritize tests based on likelihood and cost
+     ```
+
+  4. Broaden Perspective:
+
+     ```
+     - Consider completely different approaches
+     - Look for analogous problems in other domains
+     - Ask "what would success look like?"
+     - Temporarily ignore constraints to find creative solutions
+     ```
+
+  5. Incremental Verification:
+     ```
+     - Break the problem into smaller, verifiable parts
+     - Test each part independently
+     - Build up from known-good components
+     - Create minimal test cases that isolate the issue
+     ```
+
+examples:
+
+  # Instead of:
+
+  "Let me try again with a slightly different approach..."
+  "That didn't work, let me try one more time..."
+  "Let me make another small change and see if it works..."
+
+  # Do:
+
+  "Let's step back and reconsider the fundamental problem."
+  "I need to question my assumptions about how this works."
+  "Let me create a minimal test case to isolate the exact issue."
+  output: "Breaking out of circular thinking"
+
+  # Instead of:
+
+  "The payload encoding isn't working, let me try a different bit shift..."
+  "That didn't work, let me try a different payload format..."
+
+  # Do:
+
+  "Let's analyze what we know about the data structure:
+
+  1.  A bytes32 can hold 32 bytes (256 bits) total
+  2.  We're trying to store: address (20 bytes) + address (20 bytes) + uint (32 bytes)
+  3.  That's 72 bytes total, which exceeds our 32 byte capacity
+
+  The fundamental issue is a data structure mismatch, not just a bit shifting problem."
+
+  output: "Identifying the core constraint"

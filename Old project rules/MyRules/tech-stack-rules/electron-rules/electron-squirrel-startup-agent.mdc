@@ -1,0 +1,100 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# electron-squirrel-startup Best Practices
+
+## Critical Rules
+
+### 1. Purpose & Placement
+- **Use Case**: Only use `electron-squirrel-startup` if you are building your Electron application for Windows using **Squirrel.Windows** (e.g., via Electron Forge's `@electron-forge/maker-squirrel`). It is **not** needed for other installers like NSIS, MSI, DMG, DEB, etc.
+- **Execute Early**: Require and execute `electron-squirrel-startup` as one of the **very first** things in your main process entry file (e.g., `main.js`, `index.ts`). It needs to run *before* `app.isReady()` and before any other application logic, including window creation.
+    ```javascript
+    // Good: At the top of main.js/index.ts
+    if (require('electron-squirrel-startup')) {
+      // eslint-disable-next-line unicorn/no-process-exit
+      process.exit(); // Use process.exit() for immediate exit
+    }
+
+    // OR (more common with Electron Forge templates)
+    // const { app } = require('electron');
+    // if (require('electron-squirrel-startup')) {
+    //   app.quit();
+    // }
+
+    // ... rest of your main process code (imports, app setup, window creation)
+    ```
+
+### 2. Handling the Return Value
+- **Check Return Value**: The module returns `true` if it handled a Squirrel event (like `--squirrel-install` or `--squirrel-updated`) and the application should **immediately quit**. It returns `false` if no Squirrel event was detected and the app should continue its normal startup.
+- **Quit Immediately**: If the module returns `true`, your application **MUST** quit immediately using `app.quit()` or `process.exit()`. Do not proceed with any further app initialization (like creating windows) in this case.
+
+### 3. Simplicity
+- **Keep it Simple**: The standard usage is a simple conditional check as shown above. Avoid wrapping it in complex logic unless absolutely necessary for specific edge cases.
+- **Platform Specific**: Remember this package is **only** relevant for Windows builds using Squirrel.Windows. While it likely won't cause harm on other platforms (it should just return `false`), its logic is pertinent only to Windows Squirrel installations.
+
+### 4. Common Pitfalls
+- **Executing Too Late**: Calling `electron-squirrel-startup` after `app` events have been handled or windows have been created will prevent it from correctly managing shortcut creation/removal during install/uninstall.
+- **Not Quitting**: Failing to call `app.quit()` or `process.exit()` when the module returns `true`. This can lead to multiple instances of the app running during updates or improper shortcut handling.
+- **Unnecessary Inclusion**: Including it in projects that don't use Squirrel.Windows for packaging.
+
+## Examples
+
+<example>
+  // Correct usage at the very beginning of main.js or index.ts
+  const { app } = require('electron');
+
+  // Handle creating/removing shortcuts on Windows when installing/uninstalling.
+  if (require('electron-squirrel-startup')) {
+    app.quit();
+  }
+
+  // Check if this is the first instance, quit if not (optional but common)
+  if (!app.requestSingleInstanceLock()) {
+    app.quit();
+    process.exit(0);
+  }
+
+  // ... rest of main process initialization ...
+
+  const createWindow = () => {
+    // ... create main window ...
+  };
+
+  app.whenReady().then(createWindow);
+
+  // ... other app event listeners ...
+</example>
+
+<example type="invalid">
+  // Bad: Calling electron-squirrel-startup too late
+  const { app, BrowserWindow } = require('electron');
+
+  app.whenReady().then(() => {
+    const mainWindow = new BrowserWindow(/* ... */);
+
+    // PROBLEM: This is too late! Squirrel events should be handled before app is ready.
+    if (require('electron-squirrel-startup')) {
+       app.quit();
+       return; // Even if we quit, window might have flashed open.
+    }
+
+    mainWindow.loadURL(/* ... */);
+  });
+</example>
+
+<example type="invalid">
+  // Bad: Not quitting the app when electron-squirrel-startup returns true
+  const { app } = require('electron');
+
+  // PROBLEM: The app continues running even if Squirrel handled an event.
+  require('electron-squirrel-startup');
+
+  // This code will run even during install/update events, which is wrong.
+  const createWindow = () => { /* ... */ };
+  app.whenReady().then(createWindow);
+</example>
+
+---
+

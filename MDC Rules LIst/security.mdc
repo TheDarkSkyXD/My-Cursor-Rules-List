@@ -1,0 +1,35 @@
+---
+description: Guidelines for security practices and standards
+globs: ["**/*.py"]
+---
+
+# SECURITY PRACTICES
+
+- Follow OWASP security guidelines
+- Implement proper authentication and authorization
+- Never hardcode credentials or secrets
+- Validate and sanitize all inputs
+- Use HTTPS for all external communications
+- Implement proper error handling that doesn't leak sensitive information
+- Regular dependency updates and security scanning
+
+## Data Protection
+- Encrypt sensitive data at rest and in transit
+- Implement proper access controls
+- Use secure storage for credentials and secrets
+- Implement data masking for sensitive information
+- Follow data retention policies
+
+## Secure Coding
+- Prevent common vulnerabilities (SQL injection, XSS, CSRF)
+- Use parameterized queries for database access
+- Implement proper input validation and sanitization
+- Use secure defaults for all configurations
+- Implement proper session management
+
+## Security Monitoring
+- Log security-related events
+- Implement monitoring for suspicious activities
+- Regular security audits and penetration testing
+- Document security incident response procedures
+- Keep dependencies updated to prevent known vulnerabilities 

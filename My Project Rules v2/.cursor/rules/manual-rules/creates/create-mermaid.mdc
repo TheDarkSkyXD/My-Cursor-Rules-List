@@ -1,0 +1,84 @@
+---
+description: Create Mermaid Diagrams.
+globs: 
+alwaysApply: false
+---
+# Mermaid Flowchart Syntax Guidelines
+
+This document captures best practices and troubleshooting tips for writing Mermaid flowchart diagrams, based on issues encountered with specific renderers (like the one used in Cursor).
+
+## General Principles
+
+*   **Start Simple:** Begin with basic node and edge definitions. Add complexity (subgraphs, styling, complex labels) incrementally.
+*   **Check Renderer:** Be aware that different Mermaid renderers (online editors, IDE extensions, command-line tools) might have slightly different levels of strictness or support for advanced features. If you encounter errors, try simplifying the syntax first.
+
+## Common Pitfalls & Solutions
+
+### 1. Avoid Trailing Semicolons
+
+Mermaid flowchart syntax generally does **not** require or expect semicolons at the end of node or edge definition lines. Adding them can cause parsing errors.
+
+**Incorrect:**
+
+```mermaid
+graph TD
+    A[Node A]; --> B(Node B);
+```
+
+**Correct:**
+
+```mermaid
+graph TD
+    A[Node A] --> B(Node B)
+```
+
+### 2. Parentheses in Node Labels
+
+Using parentheses `()` directly within the text label of certain node shapes (like standard rectangles `[...]` or rhombus shapes `{...}`) can sometimes confuse parsers.
+
+**Potentially Problematic:**
+
+```mermaid
+graph TD
+    E --> F{Calls Repo Interface (geocode_forward)}
+    L --> M[Calls Native App Procedure (geocode_forward_enrich)]
+```
+
+**Safer Alternatives:**
+
+*   **Simplify Text:** Remove the parentheses and the text within them if it's not essential, or rephrase.
+    ```mermaid
+    graph TD
+        E --> F{Calls Repo Interface}
+        L --> M[Calls Native App Procedure geocode_forward_enrich]
+    ```
+*   **Use HTML Entities (Advanced):** For renderers that support it, HTML character codes *might* work, but increase complexity. (e.g., `&#40;` for `(` and `&#41;` for `)`). Use with caution.
+
+### 3. Comment Placement
+
+Inline comments (`%% ...`) placed *after* a node or edge definition on the same line can cause parsing errors in some renderers.
+
+**Incorrect:**
+
+```mermaid
+graph TD
+    N --> H %% Repo creates GeocodeResult
+```
+
+**Correct:**
+
+Place comments on their own line, ideally *before* the element they describe.
+
+```mermaid
+graph TD
+    %% Repo creates GeocodeResult
+    N --> H 
+```
+
+## Debugging Tips
+
+*   **Isolate the Error:** Comment out sections of your diagram (using `%%` at the start of lines) until the error disappears. This helps pinpoint the problematic line(s).
+*   **Validate Online:** Paste your code into a reliable online Mermaid editor (like the official Mermaid Live Editor) to see if the error persists there. This helps determine if it's a syntax error or a limitation of your specific renderer.
+*   **Consult Documentation:** Refer to the official Mermaid documentation for the specific syntax rules for flowcharts, nodes, and edges.
+
+By following these guidelines, we can create clearer and more reliably rendered Mermaid diagrams.

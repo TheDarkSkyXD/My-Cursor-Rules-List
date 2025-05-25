@@ -1,0 +1,161 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ # Root Cause Analysis
+
+Rule for addressing the fundamental causes of issues rather than implementing workarounds.
+
+<rule>
+name: root_cause_analysis
+description: Standards for diagnosing and fixing the root cause of problems instead of creating workarounds
+filters:
+  - type: event
+    pattern: "bug_fix"
+  - type: content
+    pattern: ".*(?:error|bug|issue|fail|broken|crash|exception|workaround).*"
+
+actions:
+
+- type: suggest
+  message: |
+  When addressing issues:
+
+  1. Root Cause Identification:
+
+     ```
+     - Always identify the fundamental source of the problem
+     - Trace back from symptoms to underlying causes
+     - Ask "why" at least 3-5 times to find true origin
+     - Look for patterns that suggest deeper issues
+     ```
+
+  2. Avoid Workarounds:
+
+     ```
+     - Do not mask symptoms with bandaid solutions
+     - Resist quick fixes that ignore core issues
+     - Never duplicate code to avoid dealing with underlying problems
+     - Reject "it works, don't touch it" mentality
+     ```
+
+  3. Systematic Diagnosis:
+
+     ```
+     - Use debuggers, logs, and stack traces
+     - Reproduce the issue reliably in a controlled environment
+     - Isolate variables to determine exact failure points
+     - Document diagnosis steps for future reference
+     ```
+
+  4. Proper Fixes:
+
+     ```
+     - Fix at the earliest/deepest appropriate level
+     - Update relevant tests to cover the failure case
+     - Consider broader architectural implications
+     - Address all instances of the problem, not just one occurrence
+     ```
+
+  5. Knowledge Sharing:
+     ```
+     - Document the root cause and solution
+     - Update related documentation and comments
+     - Consider creating regression tests
+     - Share lessons learned to prevent similar issues
+     ```
+
+examples:
+
+- input: |
+
+  # Problem: API requests occasionally time out
+
+  # Bad (Workaround):
+
+  ```typescript
+  // Add more retries to mask the issue
+  const makeRequest = async () => {
+    for (let i = 0; i < 5; i++) {
+      try {
+        return await api.getData();
+      } catch (err) {
+        if (i === 4) throw err;
+        await sleep(1000);
+      }
+    }
+  }
+  ```
+
+  # Good (Root Cause Fix):
+
+  ```typescript
+  // Diagnose and fix the actual timeout cause
+  // Found: Connection pool exhaustion due to unclosed connections
+  
+  const db = new Database({
+    maxConnections: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000
+  });
+
+  // Ensure connections are properly released
+  const makeRequest = async () => {
+    const client = await db.connect();
+    try {
+      return await client.query('SELECT * FROM data');
+    } finally {
+      client.release();
+    }
+  }
+  ```
+  output: "Root cause fix vs. symptom masking"
+
+- input: |
+
+  # Problem: Dates rendering incorrectly in reports
+
+  # Bad (Workaround):
+
+  ```javascript
+  // Manual formatting to avoid timezone issues
+  function formatDate(date) {
+    // Hardcoded adjustments to make it "work"
+    const d = new Date(date);
+    d.setHours(d.getHours() + 12); // Hack to fix display
+    return d.toISOString().split('T')[0];
+  }
+  ```
+
+  # Good (Root Cause Fix):
+
+  ```javascript
+  // Properly address the date handling inconsistency
+  // Root cause: Inconsistent timezone handling between server and client
+  
+  // Server-side standardization
+  app.use((req, res, next) => {
+    // Ensure dates are serialized with timezone info
+    res.json = function(data) {
+      return originalJson.call(this, 
+        JSON.stringify(data, dateReplacer), 
+        ...arguments);
+    };
+    next();
+  });
+  
+  // Client-side proper parsing
+  function formatDate(isoString) {
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: 'UTC',
+      dateStyle: 'medium'
+    }).format(new Date(isoString));
+  }
+  ```
+  output: "Addressing timezone issues properly versus hacks"
+
+metadata:
+priority: high
+version: 1.0
+</rule>

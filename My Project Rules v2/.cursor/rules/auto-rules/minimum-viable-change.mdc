@@ -1,0 +1,96 @@
+---
+description: Implements the smallest set of changes needed to solve the problem effectively
+globs: *
+alwaysApply: true
+---
+
+<rule>
+name: minimum-viable-change
+description: Implements the smallest set of changes needed to solve the problem effectively
+
+filters:
+  - type: event
+    pattern: "code_suggestion"
+  - type: content
+    pattern: "(?i)(implement|refactor|redesign|overhaul)"
+
+actions:
+  - type: validate
+    conditions:
+      - pattern: ".*"
+        validationScript: |
+          // Count the number of files being modified
+          const fileCount = changedFiles.length;
+          
+          // Calculate the ratio of added/removed lines
+          const totalChanges = linesAdded + linesRemoved;
+          const originalLines = codebaseLines;
+          const changeRatio = totalChanges / originalLines;
+          
+          // If changes exceed thresholds, require justification
+          if (fileCount > 3 || changeRatio > 0.2) {
+            return {
+              valid: false,
+              message: "Solution exceeds minimal change threshold. Each additional file or significant change requires explicit justification."
+            };
+          }
+          return { valid: true };
+
+  - type: transform
+    pattern: "^.*$"
+    replacement: |
+      # Change Summary
+      
+      ## Scope of Changes
+      - Files modified: {file_count}
+      - Lines changed: {lines_added} added, {lines_removed} removed
+      
+      ## Justification
+      {explain_why_each_change_is_necessary}
+      
+      # Implementation
+      
+      {original_content}
+      
+      # Alternatives Considered
+      {simpler_alternatives_and_why_rejected}
+
+  - type: suggest
+    message: |
+      When implementing solutions:
+      
+      1. Start with the smallest possible change
+      2. Justify any modification beyond the immediate need
+      3. Document alternatives considered and why they were rejected
+      4. Focus on maintainability and clarity over cleverness
+
+examples:
+  - input: |
+      This authentication system needs to be completely rewritten to use OAuth2.
+    output: |
+      # Change Summary
+      
+      ## Scope of Changes
+      - Files modified: 2 (auth_service.js, auth_middleware.js)
+      - Lines changed: 45 added, 32 removed
+      
+      ## Justification
+      Instead of a complete rewrite, I've identified the minimum changes needed:
+      1. Update the authentication verification logic to validate OAuth2 tokens
+      2. Add OAuth2 client configuration loading
+      3. Modify the middleware to extract tokens from Authorization header
+      
+      The existing authentication flow can be maintained while adding OAuth2 support.
+      
+      # Implementation
+      
+      [Implementation details follow]
+      
+      # Alternatives Considered
+      1. Complete rewrite - Rejected as high risk with significant downtime
+      2. Parallel implementation - Rejected as it would require maintaining two systems
+
+metadata:
+  priority: high
+  version: 1.0
+</rule>

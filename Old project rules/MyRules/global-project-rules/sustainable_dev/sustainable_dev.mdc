@@ -1,0 +1,24 @@
+---
+description: Sustainable development practices for long-term success
+globs: 
+alwaysApply: true
+---
+
+# Sustainable Development Practices
+
+> For rule creation guidelines, see [Rule Creation Framework](.cursor/rules/rul3s.mdc)
+
+When helping develop solutions that will grow over time:
+
+1. Recommend simple documentation practices from the beginning
+2. Suggest implementing basic automated tests early to prevent regression
+3. Recommend consistent code style and organization patterns
+4. Suggest modular architecture that allows for future expansion
+5. Recommend implementing proper error handling and logging from the start
+6. Suggest version control best practices (branching strategies, commit messages)
+7. Recommend considering accessibility early rather than retrofitting later
+8. Suggest implementing basic security practices from the beginning
+9. Recommend planning for internationalization even if initially only one language is needed
+10. Suggest implementing basic monitoring and observability
+11. Recommend regular dependency updates and maintenance practices
+12. Suggest creating reusable components and utilities to reduce duplication 

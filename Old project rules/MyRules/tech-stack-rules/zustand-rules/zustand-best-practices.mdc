@@ -1,0 +1,333 @@
+---
+description: Best practices for form handling with React Hook Form
+globs: *.tsx,*.ts
+alwaysApply: false
+---
+
+# Zustand Best Practices
+
+## 1. Store Organization
+
+### Create Type-Safe Stores
+Define stores with proper typing:
+
+```tsx
+// ✅ Good - src/store/auth.store.ts
+interface User {
+  id: string
+  email: string
+  name: string
+}
+
+interface AuthState {
+  user: User | null
+  isAuthenticated: boolean
+  isLoading: boolean
+  // Actions
+  login: (credentials: { email: string; password: string }) => Promise<void>
+  logout: () => Promise<void>
+  updateUser: (user: Partial<User>) => void
+}
+
+export const useAuthStore = create<AuthState>()((set) => ({
+  user: null,
+  isAuthenticated: false,
+  isLoading: false,
+
+  login: async (credentials) => {
+    set({ isLoading: true })
+    try {
+      const user = await loginApi(credentials)
+      set({ user, isAuthenticated: true })
+    } catch (error) {
+      throw error
+    } finally {
+      set({ isLoading: false })
+    }
+  },
+
+  logout: async () => {
+    set({ isLoading: true })
+    try {
+      await logoutApi()
+      set({ user: null, isAuthenticated: false })
+    } finally {
+      set({ isLoading: false })
+    }
+  },
+
+  updateUser: (userData) => {
+    set((state) => ({
+      user: state.user ? { ...state.user, ...userData } : null
+    }))
+  }
+}))
+```
+
+## 2. Store Slices
+
+### Split Large Stores into Slices
+Organize complex stores into slices:
+
+```tsx
+// ✅ Good - src/store/slices/cart.ts
+interface CartSlice {
+  items: CartItem[]
+  addItem: (item: CartItem) => void
+  removeItem: (id: string) => void
+  clearCart: () => void
+}
+
+export const createCartSlice: StateCreator<StoreState, [], [], CartSlice> = 
+  (set) => ({
+    items: [],
+    addItem: (item) => 
+      set((state) => ({ 
+        items: [...state.items, item] 
+      })),
+    removeItem: (id) => 
+      set((state) => ({
+        items: state.items.filter((item) => item.id !== id)
+      })),
+    clearCart: () => set({ items: [] })
+  })
+
+// src/store/index.ts
+interface StoreState extends CartSlice, UserSlice, UISlice {}
+
+export const useStore = create<StoreState>()((...args) => ({
+  ...createCartSlice(...args),
+  ...createUserSlice(...args),
+  ...createUISlice(...args)
+}))
+```
+
+## 3. Selectors
+
+### Use Efficient Selectors
+Implement selective state updates:
+
+```tsx
+// ✅ Good - src/store/selectors.ts
+export const useCartTotal = () => 
+  useStore（
+    useShallow((state) => state.items.reduce(
+        (total, item) => total + item.price * item.quantity, 0)
+    )
+  )
+
+export const useCartItemCount = () => 
+  useStore(
+    (state) => state.items.length
+  )
+
+// In component
+const CartSummary = () => {
+  const total = useCartTotal()
+  const itemCount = useCartItemCount()
+  
+  return (
+    <div>
+      <span>Items: {itemCount}</span>
+      <span>Total: ${total}</span>
+    </div>
+  )
+}
+```
+## 4. Middleware and Persistence
+
+### Implement Storage Persistence
+Use middleware for persistence:
+
+```tsx
+// ✅ Good - src/store/middleware.ts
+import { persist } from 'zustand/middleware'
+
+export const usePersistedStore = create(
+  persist<StoreState>(
+    (set) => ({
+      // state and actions
+    }),
+    {
+      name: 'app-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        // Only persist specific state
+        user: state.user,
+        settings: state.settings
+      })
+    }
+  )
+)
+```
+
+## 5. Actions and Updates
+
+### Implement Atomic Updates
+Use atomic state updates:
+
+```tsx
+// ✅ Good - src/store/todo.ts
+interface TodoState {
+  todos: Todo[]
+  addTodo: (todo: Todo) => void
+  toggleTodo: (id: string) => void
+  updateTodo: (id: string, updates: Partial<Todo>) => void
+}
+
+export const useTodoStore = create<TodoState>()((set) => ({
+  todos: [],
+  
+  addTodo: (todo) => 
+    set((state) => ({
+      todos: [...state.todos, todo]
+    })),
+    
+  toggleTodo: (id) => 
+    set((state) => ({
+      todos: state.todos.map((todo) =>
+        todo.id === id 
+          ? { ...todo, completed: !todo.completed }
+          : todo
+      )
+    })),
+    
+  updateTodo: (id, updates) =>
+    set((state) => ({
+      todos: state.todos.map((todo) =>
+        todo.id === id 
+          ? { ...todo, ...updates }
+          : todo
+      )
+    }))
+}))
+```
+
+## 6. Async Actions
+
+### Handle Async State
+Manage loading and error states:
+
+```tsx
+// ✅ Good - src/store/products.ts
+interface ProductsState {
+  products: Product[]
+  isLoading: boolean
+  error: Error | null
+  fetchProducts: () => Promise<void>
+}
+
+export const useProductsStore = create<ProductsState>()((set) => ({
+  products: [],
+  isLoading: false,
+  error: null,
+
+  fetchProducts: async () => {
+    set({ isLoading: true, error: null })
+    try {
+      const products = await fetchProductsApi()
+      set({ products, isLoading: false })
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error : new Error('Unknown error'),
+        isLoading: false 
+      })
+    }
+  }
+}))
+```
+
+## 7. DevTools Integration
+
+### Setup Development Tools
+Implement DevTools for debugging:
+
+```tsx
+// ✅ Good - src/store/index.ts
+import { devtools } from 'zustand/middleware'
+
+export const useStore = create<StoreState>()(
+  devtools(
+    persist(
+      (set) => ({
+        // state and actions
+      }),
+      {
+        name: 'app-storage'
+      }
+    ),
+    {
+      name: 'App Store',
+      enabled: process.env.NODE_ENV === 'development'
+    }
+  )
+)
+```
+
+## 8. Type Safety
+
+### Ensure Type Safety
+Use TypeScript effectively:
+
+```tsx
+// ✅ Good - src/store/types.ts
+type Status = 'idle' | 'loading' | 'success' | 'error'
+
+interface AsyncState<T> {
+  data: T | null
+  status: Status
+  error: Error | null
+}
+
+export const createAsyncSlice = <T,>(
+  initialData: T | null = null
+): AsyncState<T> => ({
+  data: initialData,
+  status: 'idle',
+  error: null
+})
+```
+
+## 9. Performance Optimization
+
+### Optimize Re-renders
+Use selective updates and memoization:
+
+```tsx
+// ✅ Good - src/components/ProductList.tsx
+export const ProductList = () => {
+  const products = useStore(
+    (state) => state.products,
+    shallow
+  )
+  
+  return (
+    <div>
+      {products.map((product) => (
+        <ProductItem 
+          key={product.id}
+          product={product}
+        />
+      ))}
+    </div>
+  )
+}
+
+const ProductItem = memo(({ product }: { product: Product }) => {
+  return (
+    <div>{product.name}</div>
+  )
+})
+```
+
+Remember:
+- Keep stores focused and single-responsibility
+- Use TypeScript for type safety
+- Implement proper error handling
+- Use selectors for efficient updates
+- Handle async operations properly
+- Implement persistence when needed
+- Use middleware for advanced features
+- Optimize for performance
+- Use DevTools in development
+- Keep state updates atomic

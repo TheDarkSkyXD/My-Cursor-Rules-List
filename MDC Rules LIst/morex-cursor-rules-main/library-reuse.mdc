@@ -1,0 +1,74 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Library Reuse
+
+Rule for checking existing libraries before adding new ones to prevent duplication.
+
+<rule>
+name: library_reuse
+description: Standards for verifying library existence before installation
+filters:
+  - type: content
+    pattern: ".*(?:install|add|import).*(?:library|package|dependency).*"
+  - type: file_extension
+    pattern: "\\.(json|toml|sol)$"
+
+actions:
+  - type: suggest
+    message: |
+      Before adding a new library:
+
+      1. Check Local Dependencies:
+         ```
+         - Search contracts/ for existing library imports
+         - Check package.json/foundry.toml for existing dependencies
+         - Look for lib/ or node_modules/ for installed packages
+         ```
+
+      2. Search Patterns:
+         ```
+         - Use grep_search for import statements
+         - Use codebase_search for library usage
+         - Check remappings.txt or similar for library paths
+         ```
+
+      3. Common Library Locations:
+         ```
+         contracts/
+         ├── lib/                # Foundry libraries
+         ├── node_modules/       # npm packages
+         └── vendor/            # Vendored dependencies
+         ```
+
+      4. Only after confirming absence:
+         ```
+         - Add new library to dependencies
+         - Document why existing libraries don't meet needs
+         - Update remappings if needed
+         ```
+
+examples:
+  - input: |
+      # Before:
+      forge install OpenZeppelin/openzeppelin-contracts
+
+      # Do first:
+      grep -r "openzeppelin" .
+      ls contracts/lib/
+    output: "Library existence check"
+
+  - input: |
+      # Before:
+      import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+      # Do first:
+      find . -type f -name "*.sol" -exec grep -l "openzeppelin" {} \;
+    output: "Import existence check"
+
+metadata:
+  priority: high
+  version: 1.0
+</rule>

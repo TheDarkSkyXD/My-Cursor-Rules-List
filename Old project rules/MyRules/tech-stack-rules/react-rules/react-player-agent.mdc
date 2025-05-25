@@ -1,0 +1,158 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# react-player Best Practices
+
+## Critical Rules
+
+### 1. Performance Optimization
+- **Lazy Loading**: Prefer lazy loading to reduce initial bundle size, especially if supporting multiple player types. Import using `react-player/lazy`.
+    ```javascript
+    import ReactPlayer from 'react-player/lazy';
+    // Renders a fallback until the player loads
+    <ReactPlayer url={videoUrl} fallback={<div>Loading player...</div>} />
+    ```
+- **Single Player Import**: If only one player type (e.g., YouTube) is ever used, import it directly to minimize bundle size.
+    ```javascript
+    import ReactPlayer from 'react-player/youtube';
+    // <ReactPlayer url={youtubeUrl} />
+    ```
+- **Light Mode (`light` prop)**: Use `light={true}` or `light="/path/to/thumbnail.jpg"` to initially render only a thumbnail. The full player loads only on user interaction. This is crucial for performance when displaying multiple players.
+- **Prevent Unnecessary Renders**: If wrapping `ReactPlayer` in a custom component, use `React.memo` and ensure props passed down (especially complex objects like `config` or callback functions) are stable (e.g., memoized with `useCallback`, `useMemo`) to prevent unnecessary re-renders of the player.
+- **Unmount Offscreen Players**: If rendering many players (e.g., in a long list), consider unmounting players that are not currently visible in the viewport using techniques like intersection observers or virtual scrolling libraries.
+
+### 2. State Management & Control
+- **Controlled Component**: Treat `ReactPlayer` as a controlled component. Manage state like `playing`, `volume`, `muted`, `playbackRate`, and `seekedTime` in your component's state (using `useState`, `useReducer`, etc.).
+- **Use Callbacks to Update State**: Use callback props like `onProgress`, `onDuration`, `onPlay`, `onPause`, `onSeek` to update your application state based on the player's internal events.
+    ```javascript
+    const [playing, setPlaying] = useState(false);
+    const [playedSeconds, setPlayedSeconds] = useState(0);
+    const playerRef = useRef(null);
+
+    const handlePlayPause = () => setPlaying(!playing);
+    const handleProgress = (state) => setPlayedSeconds(state.playedSeconds);
+    const handleSeek = (seconds) => playerRef.current?.seekTo(seconds, 'seconds');
+
+    <ReactPlayer
+      ref={playerRef}
+      url={url}
+      playing={playing}
+      onProgress={handleProgress}
+      onPlay={() => setPlaying(true)} // Ensure state syncs if player plays internally
+      onPause={() => setPlaying(false)} // Ensure state syncs
+      // ... other props
+    />
+    // <button onClick={handlePlayPause}>{playing ? 'Pause' : 'Play'}</button>
+    // <input type="range" value={playedSeconds} onChange={(e) => handleSeek(parseFloat(e.target.value))} />
+    ```
+- **Use Refs for Imperative Actions**: Use `useRef` to get access to the player instance and call imperative methods like `seekTo()`, `getCurrentTime()`, `getDuration()`, `getInternalPlayer()`.
+
+### 3. Configuration & Usage
+- **Responsive Player**: For responsive design, wrap `ReactPlayer` in a container with a fixed aspect ratio (e.g., using padding-top percentage trick) and set `width="100%"` and `height="100%"` on the player component.
+- **Autoplay**: Remember autoplay (`playing={true}` on mount) requires `muted={true}` in most modern browsers. Provide controls (`controls={true}`) if using autoplay to allow users to unmute.
+- **Configuration (`config` prop)**: Use the `config` prop for player-specific settings (e.g., YouTube `playerVars`, file player `attributes`, `tracks` for subtitles).
+    ```javascript
+    <ReactPlayer
+      url={fileUrl}
+      config={{
+        file: {
+          attributes: { controlsList: 'nodownload' },
+          tracks: [
+            { kind: 'subtitles', src: 'subs/en.vtt', srcLang: 'en', default: true },
+          ]
+        }
+      }}
+    />
+    ```
+- **Error Handling**: Implement the `onError` callback to gracefully handle media loading errors (e.g., invalid URL, CORS, private content) and inform the user.
+
+### 4. Security Considerations
+- **URL Sanitization**: If the `url` prop can be influenced by user input, sanitize or validate the URL server-side or client-side before passing it to `ReactPlayer`. While the component usually embeds content safely (iframes, video tags), validating the source URL is a good practice to prevent unexpected behavior or potential (though less common) vectors if a player implementation changes.
+- **Config Security**: Do not construct the `config` prop directly from untrusted user input, as this could lead to manipulation of player parameters.
+
+### 5. Common Pitfalls
+- **Forgetting `muted={true}` for Autoplay**: Leads to autoplay failing silently in many browsers.
+- **Managing State Incorrectly**: Trying to control the player solely via refs without managing state like `playing` in React state, leading to UI/player desynchronization.
+- **Performance with Many Players**: Not using `light` prop or lazy loading when rendering many players simultaneously.
+- **CORS Issues**: File paths or certain streaming URLs might fail due to Cross-Origin Resource Sharing policies. Ensure your server/source provides appropriate CORS headers if needed.
+- **Mobile Restrictions**: Autoplay and certain player features might behave differently or require explicit user interaction on mobile devices.
+- **SSR Inconsistencies**: Player IDs might need specific handling (e.g., using `react-uid`) for consistent server-side rendering, especially for players like Facebook or Twitch that might rely on unique DOM element IDs.
+- **Callback Prop Stability**: Passing new function instances to callback props on every render can cause performance issues or unexpected behavior in `ReactPlayer`. Use `useCallback` for callback handlers.
+
+## Examples
+
+<example>
+  // Good: Controlled component with state, lazy loading, light prop, and error handling
+  import React, { useState, useRef, useCallback } from 'react';
+  import ReactPlayer from 'react-player/lazy'; // Use lazy loading
+
+  function MyVideoPlayer({ videoUrl }) {
+    const [playing, setPlaying] = useState(false);
+    const [volume, setVolume] = useState(0.8);
+    const [error, setError] = useState(null);
+    const playerRef = useRef(null);
+
+    const handlePlay = useCallback(() => setPlaying(true), []);
+    const handlePause = useCallback(() => setPlaying(false), []);
+    const handleVolumeChange = useCallback((e) => setVolume(parseFloat(e.target.value)), []);
+    const handleError = useCallback((err, data, instance, hlsInstance) => {
+      console.error('Player Error:', err, data, instance, hlsInstance);
+      setError('Sorry, this video could not be played.');
+    }, []);
+
+    return (
+      <div className="player-wrapper"> {/* Assumes CSS for responsive aspect ratio */}
+        {error ? (
+          <div className="error-message">{error}</div>
+        ) : (
+          <ReactPlayer
+            ref={playerRef}
+            className="react-player"
+            url={videoUrl}
+            light={true} // Use light mode for performance
+            playing={playing}
+            volume={volume}
+            controls={true} // Show native controls
+            width="100%"
+            height="100%"
+            onPlay={handlePlay}
+            onPause={handlePause}
+            onError={handleError}
+            fallback={<div>Loading...</div>} // Fallback for lazy load
+          />
+        )}
+        {/* Custom controls could go here, interacting with state */}
+        {/* <input type="range" min={0} max={1} step="0.1" value={volume} onChange={handleVolumeChange} /> */}
+      </div>
+    );
+  }
+</example>
+
+<example type="invalid">
+  // Bad: Uncontrolled, no lazy loading, no error handling, direct DOM manipulation attempt
+  import React, { useRef } from 'react';
+  import ReactPlayer from 'react-player'; // Not lazy loaded
+
+  function BadPlayer({ videoUrl }) {
+    const playerRef = useRef(null);
+
+    // PROBLEM: Trying to control imperatively without state
+    const handlePlay = () => {
+      // This might visually play, but React state won't know
+      playerRef.current?.getInternalPlayer()?.play();
+    };
+
+    return (
+      <div>
+        {/* PROBLEM: No light prop - loads full player immediately */}
+        {/* PROBLEM: No onError handler */}
+        {/* PROBLEM: No playing prop linked to state */}
+        <ReactPlayer ref={playerRef} url={videoUrl} />
+        <button onClick={handlePlay}>Play (Unreliable)</button>
+      </div>
+    );
+  }
+</example>
+

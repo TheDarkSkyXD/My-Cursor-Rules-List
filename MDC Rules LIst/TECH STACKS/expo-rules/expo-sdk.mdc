@@ -1,0 +1,51 @@
+---
+description: Use designated Expo SDK features when developing mobile applications to ensure optimal performance and compatibility
+globs: 
+alwaysApply: false
+---
+# Expo Best Practices
+
+## Context
+
+- Describes best practices for Expo SDK usage
+- Ensures consistent, maintainable, and performant Expo application
+
+## Requirements
+
+### Expo SDK
+
+- Always use the latest stable Expo SDK version
+- Use Expo's development builds for testing native functionality during development
+- Leverage Expo modules rather than custom native code when possible
+- Utilize EAS (Expo Application Services) for builds, submissions, insights and updates
+
+### Navigation and Deep Linking
+
+- Implement Expo Router for file-based navigation with proper deep linking support
+- Structure routes semantically for better navigation experience
+- Follow best practices for stack, tab, and drawer navigators
+- Support universal linking for cross-platform navigation
+- Handle URL search parameters using 'expo-linking'
+
+### Asset Management
+
+- Use Expo's asset system for images, fonts, and other static assets
+- Use 'expo-image' for proper image loading strategies with responsive considerations
+- Optimize asset loading with caching and pre-loading for critical assets
+
+### Expo Configuration
+
+- Configure [Expo with React Compiler](mdc:https:/docs.expo.dev/guides/react-compiler) and use 'eslint-plugin-react-compiler' to enforce best practices
+- Maintain a clean `app.json`/`app.config.js` configuration organized and documented
+- Use environment-specific configurations for development, staging, and production
+- Properly configure adaptive icons and splash screens for all supported devices
+
+### Native Features
+
+- Use 'expo-splash-screen' to hide the initial loading screen
+- Leverage Expo's cross-platform APIs for device features (camera, location, etc.)
+- Implement proper permissions handling:
+  - Request permissions just-in-time
+  - Provide clear user messaging for permission requests
+  - Handle denied permissions gracefully
+- Use Expo's notification system for push notifications

@@ -1,0 +1,46 @@
+---
+description: Security best practices for live applications
+globs: ["**/security.*", "**/auth.*", "**/*.config.*"]
+alwaysApply: true
+---
+
+# Live Application Security
+
+> For rule creation guidelines, see [Rule Creation Framework](.cursor/rules/rul3s.mdc)
+
+## Context
+Live applications face various security threats that must be addressed proactively. This rule provides guidelines for implementing security best practices in production applications.
+
+## Guidelines
+
+### Authentication & Authorization
+
+1. **Implement proper authentication**: Use industry-standard authentication protocols (OAuth 2.0, OIDC) rather than building custom solutions
+2. **Store passwords securely**: Always hash passwords using strong algorithms (bcrypt, Argon2) with appropriate work factors
+3. **Implement MFA**: Provide multi-factor authentication options for sensitive operations and admin accounts
+4. **Use proper session management**: Set appropriate session timeouts and implement secure cookie handling
+5. **Implement role-based access control**: Restrict access to features and data based on user roles and permissions
+
+### Data Protection
+
+6. **Encrypt sensitive data**: Use strong encryption for sensitive data both in transit (HTTPS) and at rest
+7. **Implement proper input validation**: Validate all user inputs on both client and server sides
+8. **Prevent common vulnerabilities**: Protect against XSS, CSRF, SQL injection, and other OWASP Top 10 vulnerabilities
+9. **Implement rate limiting**: Protect APIs and authentication endpoints from brute force and DoS attacks
+10. **Use content security policies**: Implement CSP headers to prevent XSS and data injection attacks
+
+### Infrastructure Security
+
+11. **Keep dependencies updated**: Regularly update libraries and dependencies to patch security vulnerabilities
+12. **Use security headers**: Implement HSTS, X-Content-Type-Options, X-Frame-Options, and other security headers
+13. **Configure proper CORS policies**: Restrict cross-origin requests to trusted domains only
+14. **Implement network security**: Use firewalls, VPNs, and network segmentation to protect infrastructure
+15. **Perform regular security audits**: Conduct penetration testing and vulnerability scanning regularly
+
+### Incident Response
+
+16. **Create a security incident response plan**: Document procedures for identifying, containing, and recovering from security breaches
+17. **Implement proper logging**: Log security events and maintain audit trails for suspicious activities
+18. **Set up real-time monitoring**: Implement tools to detect and alert on suspicious activities or potential breaches
+19. **Have a communication plan**: Prepare templates and procedures for notifying users and stakeholders about security incidents
+20. **Conduct post-incident reviews**: Learn from security incidents to improve security measures 

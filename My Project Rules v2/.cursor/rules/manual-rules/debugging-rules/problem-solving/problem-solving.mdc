@@ -1,0 +1,92 @@
+---
+description: 
+globs: error,bug
+alwaysApply: false
+---
+# Problem Solving Approach
+
+Rule for approaching problem-solving in a systematic, efficient manner.
+Standards for approaching and solving coding problems with emphasis on simplicity and industry standards
+
+  When solving problems:
+
+  1. Simplicity First:
+
+     ```
+     - Start with the simplest possible solution
+     - Avoid premature optimization
+     - Only add complexity when simple solutions prove inadequate
+     - Keep code readable and maintainable
+     ```
+
+  2. Analysis Before Action:
+
+     ```
+     - Review existing codebase thoroughly
+     - Understand the full context of the request
+     - Map out dependencies and impacts
+     - Consider edge cases early
+     ```
+
+  3. Industry Standards:
+
+     ```
+     - Research common industry solutions
+     - Follow established patterns and practices
+     - Consider what top companies/projects do
+     - Look for proven solutions before inventing new ones
+     ```
+
+  4. Library Usage Guidelines:
+     ```
+     - First attempt to solve without external dependencies
+     - Only add libraries when:
+       • Task is significantly complex
+       • Library is industry standard
+       • Implementation would require extensive testing
+       • Time constraints make custom solution impractical
+     - Evaluate library:
+       • Maintenance status
+       • Bundle size impact
+       • Security implications
+       • Community adoption
+     ```
+
+examples:
+
+- input: |
+
+  # Bad: Immediately reaching for a library
+
+  npm install massive-date-library
+  import { formatDate } from 'massive-date-library'
+  formatDate(date)
+
+  # Good: Simple solution first
+
+  const formatDate = (date) => {
+  return new Date(date).toLocaleDateString()
+  }
+  output: "Simple, no-dependency solution"
+
+- input: |
+
+  # Bad: Complex over-engineered solution
+
+  class ValidationManagerFactory {
+  static createValidator() {
+  return new ValidationManager(
+  new ValidationStrategy(),
+  new ValidationContext()
+  )
+  }
+  }
+
+  # Good: Simple direct approach
+
+  function validate(input) {
+  if (!input) return false
+  return input.length >= 3
+  }
+
+  output: "Simple, direct solution over complex architecture"

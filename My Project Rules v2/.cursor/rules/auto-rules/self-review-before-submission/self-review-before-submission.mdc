@@ -1,0 +1,194 @@
+---
+description: Critically evaluate solutions for bugs, edge cases, and maintenance issues
+globs: *
+alwaysApply: true
+---
+
+<rule>
+name: self-review-before-submission
+description: Critically evaluate solutions for bugs, edge cases, and maintenance issues
+
+filters:
+  - type: event
+    pattern: "code_completion|solution_finalized"
+  - type: content
+    pattern: "(?i)(complete|ready|finished|done|solution)"
+
+actions:
+  - type: transform
+    pattern: "^.*$"
+    replacement: |
+      # Self-Reviewed Solution
+      
+      {original_content}
+      
+      ## Pre-Submission Checklist
+      
+      | Category | Status | Notes |
+      |----------|--------|-------|
+      | **Functionality** | {status} | {notes} |
+      | **Edge Cases** | {status} | {notes} |
+      | **Error Handling** | {status} | {notes} |
+      | **Security** | {status} | {notes} |
+      | **Performance** | {status} | {notes} |
+      | **Maintainability** | {status} | {notes} |
+      | **Testing** | {status} | {notes} |
+      
+      ## Critical Review
+      
+      {critical_review_notes}
+      
+      ## Improvements for Future Iterations
+      
+      {future_improvements}
+
+  - type: validate
+    conditions:
+      - pattern: ".*"
+        validationScript: |
+          // Define self-review checklist
+          const requiredChecks = [
+            {
+              name: "Edge Case Handling",
+              patterns: [
+                /null|undefined|empty|exception|error|catch|if\s*\(/i
+              ]
+            },
+            {
+              name: "Input Validation",
+              patterns: [
+                /validate|check|assert|if\s*\([^)]*param/i
+              ]
+            },
+            {
+              name: "Comments/Documentation",
+              patterns: [
+                /\/\/|\/\*|\*\/|"""|'''/
+              ]
+            },
+            {
+              name: "Testing Considerations",
+              patterns: [
+                /test|assert|expect|should|mock/i
+              ]
+            }
+          ];
+          
+          // Check for missing requirements
+          const missingChecks = requiredChecks.filter(check => 
+            !check.patterns.some(pattern => pattern.test(fullContent))
+          );
+          
+          if (missingChecks.length > 0) {
+            const missing = missingChecks.map(check => check.name).join(", ");
+            return {
+              valid: false,
+              message: `Self-review incomplete: Missing ${missing}`
+            };
+          }
+          
+          return { valid: true };
+
+  - type: suggest
+    message: |
+      Before submitting your solution:
+      
+      1. Review functionality for correctness and completeness
+      2. Test with edge cases and unexpected inputs
+      3. Verify error handling for all failure paths
+      4. Check for security vulnerabilities
+      5. Look for performance bottlenecks
+      6. Assess code maintainability
+      7. Include tests or testing plans
+
+examples:
+  - input: |
+      I've implemented the user search functionality. Here's the solution:
+      
+      ```javascript
+      function searchUsers(query) {
+        const users = database.getUsers();
+        return users.filter(user => 
+          user.name.includes(query) || 
+          user.email.includes(query)
+        );
+      }
+      ```
+    output: |
+      # Self-Reviewed Solution
+      
+      ```javascript
+      /**
+       * Search for users by name or email
+       * @param {string} query - The search term to look for
+       * @returns {Array} - Array of matching user objects
+       */
+      function searchUsers(query) {
+        // Validate input
+        if (!query || typeof query !== 'string') {
+          return [];
+        }
+        
+        try {
+          // Normalize query for case-insensitive search
+          const normalizedQuery = query.toLowerCase().trim();
+          
+          // Return empty array for very short queries
+          if (normalizedQuery.length < 2) {
+            return [];
+          }
+          
+          // Get users with timeout and limit
+          const users = database.getUsers({ timeout: 3000, limit: 1000 });
+          
+          // Perform case-insensitive search on indexed fields
+          return users.filter(user => {
+            // Safely handle potentially missing properties
+            const name = (user.name || '').toLowerCase();
+            const email = (user.email || '').toLowerCase();
+            
+            return name.includes(normalizedQuery) || 
+                  email.includes(normalizedQuery);
+          }).slice(0, MAX_SEARCH_RESULTS); // Limit results for performance
+        } catch (error) {
+          logger.error('User search error:', error);
+          return []; // Return empty array on error rather than breaking UI
+        }
+      }
+      ```
+      
+      ## Pre-Submission Checklist
+      
+      | Category | Status | Notes |
+      |----------|--------|-------|
+      | **Functionality** | ✅ Complete | Search works on both name and email |
+      | **Edge Cases** | ✅ Complete | Handles null/empty queries, missing fields |
+      | **Error Handling** | ✅ Complete | Catches database exceptions, returns empty array |
+      | **Security** | ✅ Complete | Input validation, no injection vectors |
+      | **Performance** | ⚠️ Concerns | Full table scan, needs pagination for large DBs |
+      | **Maintainability** | ✅ Complete | Well-commented, clear variable names |
+      | **Testing** | ⚠️ Missing | Unit tests needed for edge cases |
+      
+      ## Critical Review
+      
+      1. **Performance issue**: The current implementation loads all users into memory before filtering. This will cause problems with large user databases.
+      
+      2. **Incomplete validation**: We're handling basic input issues, but not validating the structure of returned user objects.
+      
+      3. **Missing features**: No highlighting of matched terms or sorting of results by relevance.
+      
+      4. **Limited search fields**: Only searching name and email, but users might want to search by other fields.
+      
+      ## Improvements for Future Iterations
+      
+      1. Replace in-memory filtering with database query using indexes
+      2. Add server-side pagination with limit/offset
+      3. Implement relevance scoring and sorting
+      4. Add match highlighting in results
+      5. Expand searchable fields (username, department, etc.)
+      6. Add comprehensive unit tests for all edge cases
+
+metadata:
+  priority: high
+  version: 1.0
+</rule>

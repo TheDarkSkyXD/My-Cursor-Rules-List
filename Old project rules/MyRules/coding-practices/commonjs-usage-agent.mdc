@@ -1,0 +1,82 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# CommonJS Module Usage Guidelines
+
+## Critical Rules
+
+- Use CommonJS syntax (`require()`, `module.exports` or `exports`) primarily for:
+    - Node.js configuration files (e.g., `webpack.*.js`, `forge.config.js`, `postcss.config.js`) when the project's `package.json` does **not** have `"type": "module"`.
+    - Files explicitly named with the `.cjs` extension when the project **does** have `"type": "module"` in `package.json`.
+    - Legacy code sections if a full migration to ESM is not planned.
+- Use `require()` for importing modules within CommonJS files.
+- Use `module.exports = ...` (for exporting a single primary value) or `exports.name = ...` (for exporting multiple named values).
+- To import an ES Module from a CommonJS file, **must** use dynamic `import('module-path')` which returns a Promise.
+- Avoid mixing `require()` and static `import`/`export` statements within the same file. Dynamic `import()` is the exception.
+- Ensure file extensions match the expected module type (`.js` for CJS in non-module projects, `.cjs` for CJS in module projects).
+
+## Examples
+
+<example>
+  // Valid: webpack.config.js (in a project without "type": "module")
+  const path = require('path');
+  const SomePlugin = require('some-plugin');
+
+  module.exports = {
+    entry: './src/index.js',
+    output: {
+      path: path.resolve(__dirname, 'dist'),
+      filename: 'bundle.js',
+    },
+    plugins: [
+      new SomePlugin()
+    ]
+    // ... other config
+  };
+</example>
+
+<example>
+  // Valid: Using dynamic import() in a CommonJS file (e.g., settingsService.ts)
+  // To load an ESM-only module like electron-store v8+
+
+  async function initializeStore() {
+    try {
+      // Dynamically import electron-store (ESM)
+      const { default: ElectronStore } = await import('electron-store');
+      const store = new ElectronStore({ schema: {} }); 
+      console.log('Store initialized');
+      return store;
+    } catch (err) {
+      console.error('Failed to load store', err);
+    }
+  }
+</example>
+
+<example type="invalid">
+  // Invalid: Mixing require and static import in the same file (without dynamic import)
+  // Assuming this file is treated as CommonJS
+  const fs = require('fs');
+  import { app } from 'electron'; // Cannot use static import here
+
+  function readFile() {
+    // ...
+  }
+
+  module.exports = { readFile };
+</example>
+
+<example type="invalid">
+  // Invalid: Using module.exports in a .js file within a project with "type": "module"
+  // File: my-util.js
+  // package.json has "type": "module"
+
+  function helper() {
+    // ...
+  }
+
+  // This will cause errors or not work as expected. Should use export or rename file to .cjs
+  module.exports = { helper }; 
+</example>
+

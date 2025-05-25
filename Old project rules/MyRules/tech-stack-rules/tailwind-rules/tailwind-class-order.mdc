@@ -1,0 +1,158 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Rule: Tailwind CSS Class Order
+
+## Description
+Establishes a consistent ordering convention for Tailwind CSS classes to improve readability and maintainability of React components.
+
+## Benefits
+- Improves code scanability and readability
+- Makes class conflicts easier to spot
+- Facilitates easier collaboration on components
+- Reduces merge conflicts from reordering classes
+- Makes code reviews more efficient
+
+## Recommended Class Order
+
+1. Layout & Display (`flex`, `grid`, `block`, `hidden`, etc.)
+2. Positioning (`static`, `absolute`, `relative`, etc.)
+3. Box Model (`w-`, `h-`, `p-`, `m-`, etc.)
+4. Flexbox/Grid (`flex-`, `grid-`, `gap-`, etc.)
+5. Typography (`text-`, `font-`, etc.)
+6. Visual Styling (`bg-`, `border-`, `shadow-`, etc.)
+7. Interactions (`hover:`, `focus:`, etc.)
+8. Responsive Variants (`sm:`, `md:`, `lg:`, etc.)
+
+## Bad Examples
+
+```tsx
+// ❌ Random order of classes making it hard to scan
+function Card() {
+  return (
+    <div className="rounded-lg hover:shadow-lg text-gray-800 p-4 bg-white flex mb-4">
+      <h2 className="font-bold text-xl border-b pb-2 text-blue-600">Card Title</h2>
+      <p className="mt-2 text-sm">Card content goes here</p>
+    </div>
+  );
+}
+```
+
+```tsx
+// ❌ Mixing responsive variants throughout instead of grouping them
+function ResponsiveButton() {
+  return (
+    <button className="bg-blue-500 md:bg-blue-600 px-4 md:px-6 py-2 md:py-3 text-white rounded">
+      Submit
+    </button>
+  );
+}
+```
+
+## Good Examples
+
+```tsx
+// ✅ Classes organized by category
+function Card() {
+  return (
+    <div className="flex mb-4 p-4 bg-white rounded-lg text-gray-800 hover:shadow-lg">
+      <h2 className="pb-2 font-bold text-xl text-blue-600 border-b">Card Title</h2>
+      <p className="mt-2 text-sm">Card content goes here</p>
+    </div>
+  );
+}
+```
+
+```tsx
+// ✅ Responsive variants grouped at the end
+function ResponsiveButton() {
+  return (
+    <button className="px-4 py-2 bg-blue-500 text-white rounded md:px-6 md:py-3 md:bg-blue-600">
+      Submit
+    </button>
+  );
+}
+```
+
+```tsx
+// ✅ Using complex arrangement with proper ordering
+function FeatureSection() {
+  return (
+    <section className="
+      /* Layout */
+      flex flex-col
+      /* Box Model */
+      w-full max-w-4xl mx-auto p-6
+      /* Visual */
+      bg-gray-50 rounded-xl shadow-sm
+      /* Typography */
+      text-gray-800
+      /* Responsive */
+      sm:p-8 sm:flex-row md:gap-8
+    ">
+      <div className="flex-1 mb-6 sm:mb-0">
+        <h3 className="text-2xl font-bold mb-4">Feature Title</h3>
+        <p className="text-base">Feature description goes here</p>
+      </div>
+      <div className="flex-1">
+        {/* Content */}
+      </div>
+    </section>
+  );
+}
+```
+
+## Implementation
+
+For larger className strings (more than ~5 classes), consider using one of these approaches:
+
+1. **Template Literals with Comments**:
+```tsx
+<div className={`
+  /* Layout */
+  flex flex-col
+  /* Spacing */
+  p-4 my-6
+  /* Visual */
+  bg-white rounded-lg
+  /* Responsive */
+  md:flex-row md:p-6
+`}>
+```
+
+2. **Using classnames or clsx library**:
+```tsx
+import clsx from 'clsx';
+
+<div className={clsx(
+  // Layout
+  'flex flex-col',
+  // Spacing
+  'p-4 my-6',
+  // Visual
+  'bg-white rounded-lg',
+  // Responsive
+  'md:flex-row md:p-6',
+  // Conditional
+  isActive && 'border-2 border-blue-500'
+)}>
+```
+
+3. **Using Tailwind's @apply in separate CSS file** (for frequently reused patterns):
+```css
+/* styles.css */
+.feature-card {
+  @apply flex flex-col p-4 my-6 bg-white rounded-lg md:flex-row md:p-6;
+}
+```
+
+## Exceptions
+- For very simple components with few classes, strict ordering may be unnecessary
+- When using third-party component libraries that generate their own classes
+- For dynamically generated class names that cannot be reordered manually
+
+## References
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [Official Tailwind CSS Class Order Plugin](https://github.com/tailwindlabs/prettier-plugin-tailwindcss)

@@ -1,0 +1,197 @@
+---
+description: Write comprehensive tests when implementing features to ensure reliability, prevent regressions, and document expected behavior
+globs: *.test.ts, *.test.tsx, *.yaml, *.yml
+alwaysApply: false
+---
+# Testing and Code Quality
+
+## Context
+
+- Ensures consistent testing conventions for unit, integration, and E2E tests
+- Uses Jest for all test files matching `**/*.test.{ts,tsx}`
+- Complements the general testing standards
+
+## Requirements
+
+### Testing Strategy
+
+- Implement a comprehensive testing pyramid:
+  - Unit tests: Test individual functions and components
+  - Integration tests: Test component interactions
+  - E2E tests: Test complete user flows
+- Use meaningful test descriptions that explain the behavior
+- Apply test-driven development (TDD) when appropriate
+- Maintain high test coverage for critical components and business logic
+
+### Testing Libraries
+
+- Use appropriate testing libraries:
+  - Jest for unit and integration testing
+  - React Native Testing Library for component testing
+  - Maestro for E2E testing on mobile
+- Implement proper mocking strategies:
+  - Mock external services
+  - Mock device APIs
+  - Create test fixtures for consistent data
+
+### React Native Testing Library
+
+- Follow Arrange-Act-Assert pattern with one assertion per test
+- Write meaningful test descriptions explaining behavior
+- Mock external dependencies with `jest.mock()` at top level
+- Clean up after tests using `afterEach`
+- Use `screen` object for queries:
+  - `getBy*` for required elements
+  - `queryBy*` for absent elements
+  - `findBy*` for async elements
+- Prefer accessibility queries in this order:
+  1. `getByRole` (with name option if needed)
+  2. `getByLabelText`
+  3. `getByPlaceholderText`
+  4. `getByText`
+  5. `getByTestId` (last resort)
+- Test interactions with `userEvent` instead of directly calling props
+- Use `fireEvent` for synchronous interactions
+- Use `act` when state updates are involved
+- Wait for async operations with `waitFor`
+- Test accessibility with `jest-axe` for critical components
+- Verify accessibility labels and screen reader compatibility
+- Focus on behavior over implementation
+- Write tests from user perspective
+- Maintain test isolation
+- Use realistic test data
+- Test error states and edge cases
+
+<example>
+
+```typescript
+import { render, screen, userEvent, waitFor } from '@testing-library/react-native';
+import Button from '../Button
+
+it('should show error message when login fails', async () => {
+  // Arrange
+  const user = userEvent.setup();
+  render(<LoginScreen />);
+  const loginButton = screen.getByRole('button', { name: 'Login' });
+  // Act
+  userEvent.press(loginButton);
+  // Assert
+  await waitFor(() => {
+    expect(screen.getByText('Invalid credentials')).toBeTruthy();
+  });
+});
+```
+
+</example>
+
+<example type="invalid">
+
+```ts
+// Bad component test
+it('Button works', () => {
+  const wrapper = render(<Button>Click me</Button>)
+
+  // ❌ Using implementation details
+  expect(wrapper.find('.button-class').length).toBe(1)
+
+  // ❌ Directly accessing component instance
+  wrapper.instance().props.onClick()
+
+  // ❌ No user-centric testing
+})
+```
+
+</example>
+
+### Maestro
+
+- Place flow files in `.maestro` directory with `.yaml` extension
+- Name flows descriptively based on feature/workflow being tested
+- Break complex flows into reusable sub-flows
+- Group related test flows in subdirectories
+- Include setup, cleanup steps, and environment setup in flows
+- Write flows from user's perspective and test complete user journeys
+- Keep flows focused and atomic
+- Document test prerequisites
+- Use descriptive IDs for elements
+- Add clear comments for complex interactions
+- Use environment variables for sensitive data
+- Implement proper waits, assertions, and error handling
+- Test both success and error paths
+- Use appropriate wait times for animations/loading
+- Include visual validation when necessary
+- Use `tapOn` for buttons, `assertVisible` for UI validation, `inputText` for forms
+- Apply `scroll` when elements are off-screen, `wait` for dynamic content
+- Utilize `takeScreenshot` for visual records
+
+<example>
+
+```yaml
+appId: com.example.app
+---
+- launchApp
+- assertVisible: 'Login Screen'
+- tapOn: 'Email Input'
+- inputText: 'user@example.com'
+- tapOn: 'Password Input'
+- inputText: 'securePassword123'
+- tapOn: 'Login Button'
+- wait: 2000
+- assertVisible: 'Dashboard'
+```
+
+</example>
+
+<example type="invalid">
+
+```ts
+// Bad component test
+it('Button works', () => {
+  const wrapper = render(<Button>Click me</Button>)
+
+  // ❌ Using implementation details
+  expect(wrapper.find('.button-class').length).toBe(1)
+
+  // ❌ Directly accessing component instance
+  wrapper.instance().props.onClick()
+
+  // ❌ No user-centric testing
+})
+```
+
+</example>
+
+### Code Quality Tools
+
+- Implement ESLint with appropriate rulesets:
+  - React hooks rules
+  - TypeScript rules
+  - Accessibility rules
+  - Testing library rules
+- Use Prettier for consistent code formatting:
+  - No parentheses for single-parameter arrow functions
+  - Omit semicolons
+  - Use single quotes
+  - Disable trailing commas
+- Apply husky and lint-staged for pre-commit quality checks
+- Enforce meaningful commit messages with commitlint
+
+### Code Reviews
+
+- Establish clear code review guidelines:
+  - Functional correctness
+  - Code quality and style
+  - Performance considerations
+  - Security best practices
+- Utilize Merge Request templates for structured reviews
+
+### Continuous Integration
+
+- Set up CI/CD pipelines:
+  - Check for code style consistency
+  - Run tests and generate coverage reports
+  - Enforce lint and type checking
+  - Audit dependencies for vulnerabilities
+  - Enforce commit message format
+- Implement automated UI testing with screenshot comparisons
+- Use deployment previews for visual verification

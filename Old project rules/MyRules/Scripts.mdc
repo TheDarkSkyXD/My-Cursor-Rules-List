@@ -1,0 +1,6 @@
+---
+description: script
+globs: 
+alwaysApply: false
+---
+When creating scripts make sure to put them into the scripts folder always.

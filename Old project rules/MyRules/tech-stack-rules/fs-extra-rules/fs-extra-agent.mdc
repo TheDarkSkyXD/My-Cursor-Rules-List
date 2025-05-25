@@ -1,0 +1,181 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# fs-extra Best Practices
+
+## Critical Rules
+
+### 1. API Usage & Asynchronicity
+- **Prefer Promises**: Always use the Promise-based API with `async/await` for better readability and error handling compared to callbacks.
+    ```javascript
+    import fs from 'fs-extra'; // Use ES module import if possible
+    // const fs = require('fs-extra'); // Or CommonJS require
+
+    async function readFileAsync(filePath) {
+      try {
+        const data = await fs.readFile(filePath, 'utf8');
+        console.log('File content:', data);
+      } catch (err) {
+        console.error('Error reading file:', err);
+      }
+    }
+    ```
+- **Use Async Methods**: Prioritize asynchronous methods (e.g., `fs.copy`, `fs.readFile`, `fs.writeFile`, `fs.remove`) in server environments, Electron's main process, or any I/O-bound operation to avoid blocking the event loop.
+- **Use Sync Methods Sparingly**: Use synchronous methods (e.g., `fs.copySync`, `fs.readFileSync`) **only** when blocking is acceptable and intentional, such as:
+    - CLI tool scripts
+    - Build processes
+    - Application initialization (before the server starts listening or UI is shown)
+    - **Never** use sync methods in request handlers, event loops, or the Electron main process after startup.
+- **Leverage `fs-extra` Methods**: Utilize `fs-extra`'s added methods for common tasks:
+    - `fs.ensureDir()`: Ensures a directory exists, creating it if necessary (like `mkdir -p`).
+    - `fs.copy()`: Recursively copies files and directories (more robust than manual implementation).
+    - `fs.remove()`: Removes files or directories recursively (like `rm -rf`). Use with caution!
+    - `fs.emptyDir()`: Ensures a directory is empty, deleting its contents if it exists, or creating it if it doesn't.
+    - `fs.move()`: Moves files or directories, even across devices.
+
+### 2. Error Handling
+- **Use `try...catch`**: Wrap `await fs.*` calls in `try...catch` blocks to handle potential file system errors gracefully.
+- **Check Error Codes**: Inspect the `error.code` property (e.g., `'ENOENT'` for file not found, `'EACCES'` for permission denied) for specific error handling logic if needed.
+    ```javascript
+    async function safeRemove(filePath) {
+      try {
+        await fs.remove(filePath);
+        console.log(`Successfully removed ${filePath}`);
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          console.log(`File not found, nothing to remove: ${filePath}`);
+        } else {
+          console.error(`Error removing ${filePath}:`, err);
+          // Rethrow or handle other errors
+        }
+      }
+    }
+    ```
+
+### 3. Security
+- **Path Traversal Prevention (CRITICAL)**:
+    - **Never** trust user-provided input (from HTTP requests, IPC messages, config files, etc.) to construct file paths directly.
+    - **Validate and Sanitize**: Always validate and sanitize paths derived from external input.
+    - **Canonicalize Paths**: Use `path.resolve()` to get the absolute path.
+    - **Check Against Base Directory**: Ensure the resolved path is within an expected, allowed base directory. Reject any paths that resolve outside this boundary (`resolvedPath.startsWith(allowedBaseDir)`).
+    ```javascript
+    import path from 'path';
+    import fs from 'fs-extra';
+
+    const ALLOWED_BASE_DIR = path.resolve('./user_uploads');
+
+    async function readFileSecurely(userProvidedFilename) {
+      // Basic sanitization (more might be needed depending on context)
+      const safeFilename = path.basename(userProvidedFilename);
+
+      const intendedPath = path.join(ALLOWED_BASE_DIR, safeFilename);
+      const resolvedPath = path.resolve(intendedPath);
+
+      // Security Check: Ensure the resolved path is within the allowed directory
+      if (!resolvedPath.startsWith(ALLOWED_BASE_DIR)) {
+        console.error('Path Traversal Attempt Detected:', resolvedPath);
+        throw new Error('Invalid file path');
+      }
+
+      try {
+        return await fs.readFile(resolvedPath, 'utf8');
+      } catch (err) {
+        console.error('Failed to read file:', err);
+        throw err; // Re-throw or handle
+      }
+    }
+    ```
+- **Permissions**: Be aware of file system permissions. Handle `EACCES` and `EPERM` errors where the application might not have rights to read/write/delete.
+- **Race Conditions (TOCTOU)**: Be cautious with patterns that check file existence/permissions (`fs.access`) and then perform an operation. An attacker might change the file system state between the check and the use. Prefer atomic operations or methods like `fs.ensureDir` where possible.
+
+### 4. Performance
+- **Streams for Large Files**: For very large files, consider using Node.js native streams (`fs.createReadStream`, `fs.createWriteStream`) for optimal memory usage, although `fs-extra`'s `copy` often handles this reasonably well internally.
+    ```javascript
+    // Example: Piping a large file
+    // const reader = fs.createReadStream('large_input.txt');
+    // const writer = fs.createWriteStream('large_output.txt');
+    // reader.pipe(writer);
+    // Add error handling for reader and writer streams!
+    ```
+
+### 5. Electron-Specific
+- **Main Process Only**: Perform all direct `fs-extra` (and native `fs`) operations **only** in the Electron **main process**. Filesystem access is a privileged operation.
+- **Use Secure IPC**: Expose necessary file system functionality to renderer processes via secure Inter-Process Communication (`ipcMain.handle` in main, `contextBridge.exposeInMainWorld` in preload, `window.api.invoke` in renderer). **Never** expose the `fs-extra` module directly to the renderer via `contextBridge` or `nodeIntegration: true`.
+
+## Examples
+
+<example>
+  // Good: Using async/await, ensureDir, and error handling in main process
+  import fs from 'fs-extra';
+  import path from 'path';
+  import { app } from 'electron'; // Assuming main process
+
+  async function setupUserDataDir(userId) {
+    const userDataPath = app.getPath('userData');
+    const userDir = path.join(userDataPath, 'user_data', userId); // Construct path
+    const resolvedUserDir = path.resolve(userDir);
+
+    // Basic check (could be more robust)
+    if (!resolvedUserDir.startsWith(path.resolve(userDataPath))) {
+        throw new Error('Invalid user ID resulting in path traversal attempt.');
+    }
+
+    try {
+      await fs.ensureDir(resolvedUserDir); // Safely ensure directory exists
+      console.log(`User directory ensured at: ${resolvedUserDir}`);
+      // Proceed to write user config, etc.
+      // await fs.writeJson(path.join(resolvedUserDir, 'config.json'), { setting: 'value' });
+    } catch (err) {
+      console.error(`Failed to setup user directory for ${userId}:`, err);
+      // Handle error appropriately
+    }
+  }
+</example>
+
+<example type="invalid">
+  // Bad: Using synchronous I/O in a potentially blocking context (e.g., main process after ready)
+  import fs from 'fs-extra';
+  import path from 'path';
+
+  function readConfigSync() {
+    // PROBLEM:readFileSync blocks the event loop. If called in main process
+    // after app is ready, it can freeze the UI temporarily.
+    try {
+      const config = fs.readJsonSync(path.resolve('./config.json'));
+      return config;
+    } catch (err) {
+      console.error('Failed to read config sync:', err);
+      return {};
+    }
+  }
+</example>
+
+<example type="invalid">
+  // Bad: Directly using user input to construct path without validation
+  import fs from 'fs-extra';
+  import path from 'path';
+  // Assume this runs in an IPC handler in the main process
+  async function deleteUserFile(userProvidedPath) {
+    // PROBLEM: userProvidedPath could be '../../../../etc/passwd' or similar.
+    // No validation or sanitization is performed.
+    const fullPath = path.join('/app/user_files', userProvidedPath);
+    try {
+      // DANGEROUS: This could delete files outside the intended directory!
+      await fs.remove(fullPath);
+      console.log('File removed:', fullPath);
+    } catch (err) {
+      console.error('Error removing file:', err);
+    }
+  }
+</example>
+
+<example type="invalid">
+  // Bad: Exposing fs-extra directly to renderer process via preload
+  // preload.ts
+  // const fs = require('fs-extra');
+  // const { contextBridge } = require('electron');
+  // contextBridge.exposeInMainWorld('myFs', fs); // VERY INSECURE!
+</example>
+

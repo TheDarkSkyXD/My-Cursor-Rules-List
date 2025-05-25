@@ -1,0 +1,145 @@
+---
+description: Enforce security best practices when developing applications to prevent vulnerabilities
+globs: *.ts, *.tsx
+alwaysApply: false
+---
+# Security Best Practices
+
+## Context
+
+- Applied during development of Expo applications
+- Ensures protection of user data and application integrity
+- Prevents common security vulnerabilities
+
+## Requirements
+
+### Secret Management
+
+- Never expose secrets and/or api keys in the codebase, use environment variables instead
+- Do not commit secrets to the codebase or any `.env` file
+
+### Storage & Authentication
+
+- Store sensitive data using `expo-secure-store`
+- Use `expo-auth-session` for secure authentication flows
+- Implement proper session management with token expiration
+- Use UUID v4 for secure ID generation instead of sequential or predictable IDs
+
+### Input Validation & Sanitization
+
+- Implement input validation for all user inputs to prevent injection attacks
+- Sanitize user inputs to prevent XSS attacks
+- Validate all API responses before processing
+- Use Zod for schema validation and type inference
+
+### API & Network Security
+
+- Enable SSL pinning for API calls to prevent MITM attacks
+- Use Content Security Policy headers for web-based Expo applications
+- Apply deep linking validation to prevent URL scheme abuse
+
+### Application Configuration
+
+- Request minimum required permissions in app.json`
+- Keep all dependencies updated to latest secure versions
+
+### Error Handling & Monitoring
+
+- Handle errors at the beginning of functions
+- Use early returns for error conditions
+- Avoid unnecessary else statements; use if-return pattern
+- Implement global error boundaries for UI components
+- Implement error logging with Sentry or similar tools
+
+## Examples
+
+<example>
+
+```ts
+// Secure storage of sensitive data
+import * as SecureStore from 'expo-secure-store'
+
+async function saveSecureValue(key: string, value: string) {
+  await SecureStore.setItemAsync(key, value)
+}
+```
+
+<example>
+
+</example>
+
+```tsx
+// Schema validation with Zod
+import * as z from 'zod'
+
+// Define schema with proper types
+const UserSchema = z.object({
+  name: z.string(),
+  email: z.string().email()
+})
+
+// Safe parsing with early return
+function processUserData(data: unknown) {
+  const result = safeParse(UserSchema, data)
+
+  if (!result.success) {
+    logError('Invalid user data', result.error)
+    return null
+  }
+
+  // Continue with validated data
+  const user = result.data
+  return user
+}
+
+// Early return pattern
+function fetchUserData(userId: string) {
+  if (!userId) {
+    logError('Missing user ID')
+    return Promise.reject(new Error('User ID is required'))
+  }
+
+  return api.fetchUser(userId).catch(error => {
+    logError('Failed to fetch user', { userId, error })
+    throw error
+  })
+}
+
+// Error boundary component
+function AppErrorBoundary({ children }) {
+  return (
+    <ErrorBoundary
+      fallback={({ error }) => <ErrorScreen error={error} />}
+      onError={error => logError('UI Error', error)}
+    >
+      {children}
+    </ErrorBoundary>
+  )
+}
+```
+
+</example>
+
+<example type="invalid">
+
+```ts
+// ❌ Hardcoded API key
+const API_KEY = '1a2b3c4d5e6f7g8h9i0j'
+
+// ❌ Insecure storage of sensitive data
+localStorage.setItem('userToken', token)
+
+// ❌ No validation of user input
+function processUserInput(input) {
+  executeQuery(`SELECT * FROM users WHERE name = '${input}'`)
+}
+
+// ❌ No error handling or validation in API calls
+const fetchData = async () => {
+  const response = await fetch(API_URL)
+  const data = await response.json()
+  return data
+}
+```
+
+</example>

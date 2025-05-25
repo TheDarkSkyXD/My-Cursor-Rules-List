@@ -1,0 +1,21 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Commenting Rules
+
+## Core Principles
+
+- Documentation should be clear and concise
+- Keep documentation close to the code it describes
+- Update documentation when code changes
+- Focus on explaining "why" more than "how"
+
+## Code Comments
+
+- Write brief, clear comments
+- Focus on explaining why, not what
+- Keep comments up to date with code
+- Remove commented-out code
+- Use JSDoc for public APIs and interfaces

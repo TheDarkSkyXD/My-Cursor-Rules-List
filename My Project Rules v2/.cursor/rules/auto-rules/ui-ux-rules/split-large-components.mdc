@@ -1,0 +1,645 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Rule: Split Large Components
+
+## Description
+This rule provides guidelines for refactoring large React components into smaller, more manageable pieces while maintaining functionality and improving code quality.
+
+## Benefits
+- Improves code readability and maintainability
+- Facilitates easier testing of individual components
+- Enhances reusability of component parts
+- Reduces cognitive load when reading and modifying code
+- Improves performance through more granular re-rendering
+- Makes debugging easier with clearer component boundaries
+
+## Indicators a Component Should Be Split
+
+- Component file exceeds 300 lines of code
+- Component function exceeds 150 lines
+- Component has more than 2-3 levels of nested JSX
+- Component has more than 8 props
+- Component manages multiple unrelated pieces of state
+- Component performs multiple unrelated functionalities
+- The same visual pattern appears multiple times in the component
+- Component has complex conditional rendering logic
+
+## Bad Examples
+
+```tsx
+// ❌ Monolithic component with too many responsibilities
+function DashboardPage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isAddingTask, setIsAddingTask] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskDescription, setNewTaskDescription] = useState("");
+  const [newTaskDueDate, setNewTaskDueDate] = useState<Date | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [currentTab, setCurrentTab] = useState<'overview' | 'tasks' | 'users'>('overview');
+  
+  // Fetch data on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      const [usersData, projectsData, tasksData] = await Promise.all([
+        fetchUsers(),
+        fetchProjects(),
+        fetchTasks()
+      ]);
+      setUsers(usersData);
+      setProjects(projectsData);
+      setTasks(tasksData);
+    };
+    
+    fetchData();
+  }, []);
+  
+  // Filter tasks based on search
+  const filteredTasks = useMemo(() => {
+    return tasks
+      .filter(task => task.title.toLowerCase().includes(searchQuery.toLowerCase()))
+      .sort((a, b) => {
+        if (sortOrder === 'asc') {
+          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        } else {
+          return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
+        }
+      });
+  }, [tasks, searchQuery, sortOrder]);
+  
+  // Handle task creation
+  const handleCreateTask = async () => {
+    if (!newTaskTitle || !selectedProject || !newTaskDueDate) return;
+    
+    const newTask = {
+      id: `task-${Date.now()}`,
+      title: newTaskTitle,
+      description: newTaskDescription,
+      projectId: selectedProject.id,
+      assigneeId: selectedUser?.id || null,
+      dueDate: newTaskDueDate,
+      status: 'todo'
+    };
+    
+    try {
+      await createTask(newTask);
+      setTasks([...tasks, newTask]);
+      setNewTaskTitle("");
+      setNewTaskDescription("");
+      setNewTaskDueDate(null);
+      setIsAddingTask(false);
+    } catch (error) {
+      console.error("Failed to create task", error);
+    }
+  };
+  
+  return (
+    <div className="dashboard-container">
+      <header className="dashboard-header">
+        <h1>Project Dashboard</h1>
+        <div className="user-info">
+          <span>Welcome, {currentUser.name}</span>
+          <button onClick={logout}>Logout</button>
+        </div>
+      </header>
+      
+      <div className="tabs">
+        <button 
+          className={currentTab === 'overview' ? 'active' : ''} 
+          onClick={() => setCurrentTab('overview')}
+        >
+          Overview
+        </button>
+        <button 
+          className={currentTab === 'tasks' ? 'active' : ''} 
+          onClick={() => setCurrentTab('tasks')}
+        >
+          Tasks
+        </button>
+        <button 
+          className={currentTab === 'users' ? 'active' : ''} 
+          onClick={() => setCurrentTab('users')}
+        >
+          Users
+        </button>
+      </div>
+      
+      {currentTab === 'overview' && (
+        <div className="overview-section">
+          <div className="stats-container">
+            <div className="stat-card">
+              <h3>Total Projects</h3>
+              <span className="stat-value">{projects.length}</span>
+            </div>
+            <div className="stat-card">
+              <h3>Total Tasks</h3>
+              <span className="stat-value">{tasks.length}</span>
+            </div>
+            <div className="stat-card">
+              <h3>Team Members</h3>
+              <span className="stat-value">{users.length}</span>
+            </div>
+          </div>
+          
+          <div className="recent-activity">
+            <h2>Recent Activity</h2>
+            <ul>
+              {tasks.slice(0, 5).map(task => (
+                <li key={task.id}>
+                  <span className="task-title">{task.title}</span>
+                  <span className="task-date">{formatDate(task.dueDate)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+      
+      {currentTab === 'tasks' && (
+        <div className="tasks-section">
+          <div className="tasks-header">
+            <div className="search-container">
+              <input 
+                type="text" 
+                placeholder="Search tasks..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <select 
+                value={sortOrder} 
+                onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+              >
+                <option value="asc">Due Date (Earliest First)</option>
+                <option value="desc">Due Date (Latest First)</option>
+              </select>
+            </div>
+            <button onClick={() => setIsAddingTask(true)}>Add Task</button>
+          </div>
+          
+          {isAddingTask && (
+            <div className="add-task-form">
+              <h3>Add New Task</h3>
+              <input
+                type="text"
+                placeholder="Task Title"
+                value={newTaskTitle}
+                onChange={(e) => setNewTaskTitle(e.target.value)}
+              />
+              <textarea
+                placeholder="Task Description"
+                value={newTaskDescription}
+                onChange={(e) => setNewTaskDescription(e.target.value)}
+              />
+              <select
+                value={selectedProject?.id || ""}
+                onChange={(e) => {
+                  const project = projects.find(p => p.id === e.target.value);
+                  setSelectedProject(project || null);
+                }}
+              >
+                <option value="">Select Project</option>
+                {projects.map(project => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={selectedUser?.id || ""}
+                onChange={(e) => {
+                  const user = users.find(u => u.id === e.target.value);
+                  setSelectedUser(user || null);
+                }}
+              >
+                <option value="">Assign to (optional)</option>
+                {users.map(user => (
+                  <option key={user.id} value={user.id}>
+                    {user.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="date"
+                value={newTaskDueDate ? formatDateForInput(newTaskDueDate) : ""}
+                onChange={(e) => setNewTaskDueDate(new Date(e.target.value))}
+              />
+              <div className="form-buttons">
+                <button onClick={handleCreateTask}>Create Task</button>
+                <button onClick={() => setIsAddingTask(false)}>Cancel</button>
+              </div>
+            </div>
+          )}
+          
+          <div className="tasks-list">
+            {filteredTasks.length === 0 ? (
+              <p className="no-tasks">No tasks found.</p>
+            ) : (
+              filteredTasks.map(task => (
+                <div key={task.id} className="task-card">
+                  <h3>{task.title}</h3>
+                  <p>{task.description}</p>
+                  <div className="task-meta">
+                    <span>Due: {formatDate(task.dueDate)}</span>
+                    <span>Status: {task.status}</span>
+                    <span>
+                      Assigned to: {
+                        task.assigneeId 
+                          ? users.find(u => u.id === task.assigneeId)?.name || 'Unknown'
+                          : 'Unassigned'
+                      }
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+      
+      {currentTab === 'users' && (
+        <div className="users-section">
+          <h2>Team Members</h2>
+          <div className="users-grid">
+            {users.map(user => (
+              <div key={user.id} className="user-card">
+                <div className="user-avatar">
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.name} />
+                  ) : (
+                    <div className="avatar-placeholder">
+                      {user.name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                <h3>{user.name}</h3>
+                <p>{user.role}</p>
+                <span>{user.email}</span>
+                <div className="user-tasks">
+                  <span>Assigned Tasks: {
+                    tasks.filter(task => task.assigneeId === user.id).length
+                  }</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Good Examples
+
+```tsx
+// ✅ Refactored dashboard with component splitting
+
+// Main container component with reduced responsibilities
+function DashboardPage() {
+  const [currentTab, setCurrentTab] = useState<'overview' | 'tasks' | 'users'>('overview');
+  const { users, projects, tasks, isLoading, error } = useDashboardData();
+
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error.message} />;
+
+  return (
+    <div className="dashboard-container">
+      <DashboardHeader />
+      
+      <TabNavigation 
+        currentTab={currentTab} 
+        onTabChange={setCurrentTab} 
+      />
+      
+      {currentTab === 'overview' && (
+        <DashboardOverview 
+          users={users}
+          projects={projects}
+          tasks={tasks}
+        />
+      )}
+      
+      {currentTab === 'tasks' && (
+        <TasksManager tasks={tasks} users={users} projects={projects} />
+      )}
+      
+      {currentTab === 'users' && (
+        <UsersList users={users} tasks={tasks} />
+      )}
+    </div>
+  );
+}
+
+// Custom hook for data fetching
+function useDashboardData() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const [usersData, projectsData, tasksData] = await Promise.all([
+          fetchUsers(),
+          fetchProjects(),
+          fetchTasks()
+        ]);
+        setUsers(usersData);
+        setProjects(projectsData);
+        setTasks(tasksData);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch data'));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
+  
+  return { users, projects, tasks, isLoading, error };
+}
+
+// Header component
+function DashboardHeader() {
+  const { currentUser, logout } = useAuth();
+  
+  return (
+    <header className="dashboard-header">
+      <h1>Project Dashboard</h1>
+      <div className="user-info">
+        <span>Welcome, {currentUser.name}</span>
+        <button onClick={logout}>Logout</button>
+      </div>
+    </header>
+  );
+}
+
+// Tab navigation component
+function TabNavigation({ 
+  currentTab, 
+  onTabChange 
+}: { 
+  currentTab: string; 
+  onTabChange: (tab: 'overview' | 'tasks' | 'users') => void 
+}) {
+  return (
+    <div className="tabs">
+      <button 
+        className={currentTab === 'overview' ? 'active' : ''} 
+        onClick={() => onTabChange('overview')}
+      >
+        Overview
+      </button>
+      <button 
+        className={currentTab === 'tasks' ? 'active' : ''} 
+        onClick={() => onTabChange('tasks')}
+      >
+        Tasks
+      </button>
+      <button 
+        className={currentTab === 'users' ? 'active' : ''} 
+        onClick={() => onTabChange('users')}
+      >
+        Users
+      </button>
+    </div>
+  );
+}
+```
+
+```tsx
+// ✅ Continuing with refactored components
+
+// Dashboard Overview component
+function DashboardOverview({ 
+  users, 
+  projects, 
+  tasks 
+}: { 
+  users: User[];
+  projects: Project[];
+  tasks: Task[];
+}) {
+  return (
+    <div className="overview-section">
+      <StatCards 
+        userCount={users.length}
+        projectCount={projects.length}
+        taskCount={tasks.length}
+      />
+      <RecentActivity tasks={tasks.slice(0, 5)} />
+    </div>
+  );
+}
+
+// Stats component
+function StatCards({ 
+  userCount, 
+  projectCount, 
+  taskCount 
+}: { 
+  userCount: number;
+  projectCount: number;
+  taskCount: number;
+}) {
+  return (
+    <div className="stats-container">
+      <StatCard title="Total Projects" value={projectCount} />
+      <StatCard title="Total Tasks" value={taskCount} />
+      <StatCard title="Team Members" value={userCount} />
+    </div>
+  );
+}
+
+// Individual stat card component
+function StatCard({ title, value }: { title: string; value: number }) {
+  return (
+    <div className="stat-card">
+      <h3>{title}</h3>
+      <span className="stat-value">{value}</span>
+    </div>
+  );
+}
+
+// Recent activity component
+function RecentActivity({ tasks }: { tasks: Task[] }) {
+  return (
+    <div className="recent-activity">
+      <h2>Recent Activity</h2>
+      <ul>
+        {tasks.map(task => (
+          <li key={task.id}>
+            <span className="task-title">{task.title}</span>
+            <span className="task-date">{formatDate(task.dueDate)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+```tsx
+// ✅ Task management components
+
+// Task manager component
+function TasksManager({ 
+  tasks, 
+  users, 
+  projects 
+}: { 
+  tasks: Task[];
+  users: User[];
+  projects: Project[];
+}) {
+  const [isAddingTask, setIsAddingTask] = useState(false);
+  const { 
+    filteredTasks, 
+    searchQuery, 
+    setSearchQuery, 
+    sortOrder, 
+    setSortOrder 
+  } = useTaskFiltering(tasks);
+  
+  return (
+    <div className="tasks-section">
+      <TasksHeader 
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        sortOrder={sortOrder}
+        onSortChange={setSortOrder}
+        onAddTask={() => setIsAddingTask(true)}
+      />
+      
+      {isAddingTask && (
+        <AddTaskForm 
+          users={users}
+          projects={projects}
+          onTaskAdded={(newTask) => {
+            // Add task logic
+            setIsAddingTask(false);
+          }}
+          onCancel={() => setIsAddingTask(false)}
+        />
+      )}
+      
+      <TasksList 
+        tasks={filteredTasks} 
+        users={users} 
+      />
+    </div>
+  );
+}
+
+// Custom hook for task filtering
+function useTaskFiltering(tasks: Task[]) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  
+  const filteredTasks = useMemo(() => {
+    return tasks
+      .filter(task => task.title.toLowerCase().includes(searchQuery.toLowerCase()))
+      .sort((a, b) => {
+        if (sortOrder === 'asc') {
+          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        } else {
+          return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
+        }
+      });
+  }, [tasks, searchQuery, sortOrder]);
+  
+  return { filteredTasks, searchQuery, setSearchQuery, sortOrder, setSortOrder };
+}
+
+// Tasks header with search and sort
+function TasksHeader({ 
+  searchQuery, 
+  onSearchChange, 
+  sortOrder, 
+  onSortChange, 
+  onAddTask 
+}: {
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  sortOrder: 'asc' | 'desc';
+  onSortChange: (order: 'asc' | 'desc') => void;
+  onAddTask: () => void;
+}) {
+  return (
+    <div className="tasks-header">
+      <div className="search-container">
+        <input 
+          type="text" 
+          placeholder="Search tasks..." 
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
+        <select 
+          value={sortOrder} 
+          onChange={(e) => onSortChange(e.target.value as 'asc' | 'desc')}
+        >
+          <option value="asc">Due Date (Earliest First)</option>
+          <option value="desc">Due Date (Latest First)</option>
+        </select>
+      </div>
+      <button onClick={onAddTask}>Add Task</button>
+    </div>
+  );
+}
+```
+
+## Implementation Guidelines
+
+1. **Identify Responsibilities**:
+   - Analyze your component to identify distinct responsibilities
+   - Look for natural groupings of state and UI elements
+   - Consider what could potentially be reused elsewhere
+
+2. **Extract Components by Type**:
+   - **Container Components**: Manage data fetching, state, and coordinate other components
+   - **Presentational Components**: Focus purely on rendering UI based on props
+   - **Form Components**: Handle input collection and validation
+   - **List Components**: Display collections of items
+   - **Layout Components**: Control positioning and structure
+
+3. **Extract Custom Hooks**:
+   - Move data fetching logic to custom hooks
+   - Extract complex state management to hooks
+   - Separate complex calculations and transformations
+
+4. **Component Splitting Strategies**:
+   - **By Feature**: Group related UI elements and logic
+   - **By Reusability**: Extract potentially reusable patterns
+   - **By Complexity**: Split particularly complex logic or rendering
+   - **By Size**: Break down any component exceeding ~150 lines
+
+5. **Props Handling**:
+   - Use TypeScript interfaces to define prop types
+   - Pass only the props needed by each component
+   - Consider using React Context for deeply nested components that need the same data
+
+6. **State Management**:
+   - Keep state as close as possible to where it's used
+   - Lift state up only as far as necessary
+   - Consider using context or state management libraries for complex state sharing
+
+## Exceptions
+- Entry point components like pages may be larger to coordinate other components
+- Very simple UI components may not need further splitting
+- Performance-critical components may require more inline code in specific cases
+
+## References
+- [React Official Documentation on Component Composition](https://reactjs.org/docs/composition-vs-inheritance.html)
+- [Kent C. Dodds - "When to Break Up a Component into Multiple Components"](https://kentcdodds.com/blog/when-to-break-up-a-component-into-multiple-components)
+- [Dan Abramov - "Presentational and Container Components"](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0)

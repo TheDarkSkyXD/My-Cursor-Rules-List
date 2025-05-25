@@ -1,0 +1,28 @@
+---
+description: fix this error or errors
+globs: 
+alwaysApply: false
+---
+# Debugging Errors
+When asked to fix an error please follow this exact sequence:
+  
+  1. Reflect on 5-7 different possible sources of the problem
+  2. Distill those down to 1-2 most likely sources
+  3. Add additional logs to validate your assumptions and track the transformation of data structures throughout the application control flow before we move onto implementing the actual code fix
+  4. Obtain the console logs as well if accessible - otherwise, ask me to copy/paste them into the chat
+  5. Obtain the server logs as well if accessible - otherwise, ask me to copy/paste them into the chat
+  6. Deeply reflect on what could be wrong + produce a comprehensive analysis of the issue
+  7. Suggest additional logs if the issue persists or if the source is not yet clear
+  8. Once a fix is implemented, ask for approval to remove the previously added logs
+  ## Bug Fix Steps
+
+9. Use tests to identify the cause
+10. If the cause cannot be identified using tests for some reason, comprehensively check the implementation to identify the cause
+11. Examine areas affected by the fix
+12. Always adhere to TDD principles during the fix process
+13. Follow the RED - GREEN - REFACTORING principles and implement fixes gradually
+14. Run tests using Jest
+15. If tests fail, return to step 12; if successful, consider the fix complete
+16. Deep Analysis: Reflect deeply on what could be wrong and produce a comprehensive analysis of the issue. and use [deep-debug.mdc](mdc:.cursor/rules/debug-rules/debugging_strategiesv2/deep-debug.mdc)
+17. Additional Logging: Suggest additional logs if the issue persists or if the source is not yet clear.
+18. Cleanup: Once a fix is implemented, ask for approval to remove the previously added logs.

@@ -1,0 +1,380 @@
+# Rule: Implement @tanstack/react-form
+
+Description: This rule guides the AI on how to implement forms in React using the `@tanstack/react-form` library, following best practices for common use cases. It covers setup, field creation, validation (sync, async, schema-based), state management, array fields, and submission handling.
+
+Applies to: *.tsx
+
+---
+
+## @tanstack/react-form Implementation Guide
+
+This guide outlines the core concepts and best practices for using `@tanstack/react-form` in React applications.
+
+**Core Philosophy:**
+
+*   **Controlled Inputs:** The library manages form state explicitly.
+*   **Type Safety:** Leverages TypeScript inference heavily. Avoid passing explicit generics to `useForm`. Define types via `defaultValues`.
+*   **Performance:** Designed to minimize re-renders. Use `form.Subscribe` or `useStore` for reactive UI updates.
+*   **Composition:** Encourages creating custom, reusable form components for larger applications (see Form Composition section).
+
+**1. Basic Setup (`useForm`)**
+
+Import `useForm` and initialize it with `defaultValues` and an `onSubmit` handler.
+
+```tsx
+import * as React from 'react';
+import { useForm, useStore } from '@tanstack/react-form';
+import type { AnyFieldApi } from '@tanstack/react-form';
+
+// Define the shape of your form data (optional but recommended)
+interface MyFormData {
+  firstName: string;
+  lastName: string;
+  age: number;
+}
+
+function MyForm() {
+  const form = useForm({
+    // Provide default values to infer the form's type structure
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      age: 0,
+    } as MyFormData, // Cast here if using an interface
+    onSubmit: async ({ value }) => {
+      // This function is called on successful submission after validation
+      console.log('Form Submitted:', value);
+      // Example: await api.saveUserData(value);
+    },
+    // Optional: Add form-level validation (see Validation section)
+    // validators: { ... }
+  });
+
+  // ... rest of the component
+}
+```
+
+**2. Creating Fields (`form.Field`)**
+
+Use the `form.Field` component provided by the `form` instance. It uses a render prop pattern.
+
+*   `name`: A type-safe string representing the path to the value in `defaultValues` (e.g., `"firstName"`, `"address.street"`).
+*   `children`: A function receiving the `field` API object.
+
+```tsx
+// Inside MyForm component:
+
+// Helper component to display errors/validation status (optional)
+function FieldInfo({ field }: { field: AnyFieldApi }) {
+  return (
+    <>
+      {/* Display errors only after the field has been touched */}
+      {field.state.meta.isTouched && field.state.meta.errors.length ? (
+        <em style={{ color: 'red' }}>{field.state.meta.errors.join(', ')}</em>
+      ) : null}
+      {field.state.meta.isValidating ? ' Validating...' : null}
+    </>
+  );
+}
+
+return (
+  <form
+    onSubmit={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Trigger validation and the onSubmit handler
+      form.handleSubmit();
+    }}
+  >
+    {/* First Name Field */}
+    <form.Field
+      name="firstName" // Type-safe based on defaultValues
+      // Add validators here (see Validation section)
+      // validators={{ onChange: ... }}
+      children={(field) => (
+        <div>
+          <label htmlFor={field.name}>First Name:</label>
+          <input
+            id={field.name}
+            name={field.name}
+            value={field.state.value} // Get value from field state
+            onBlur={field.handleBlur} // Mark field as touched
+            onChange={(e) => field.handleChange(e.target.value)} // Update field value
+          />
+          <FieldInfo field={field} />
+        </div>
+      )}
+    />
+
+    {/* Last Name Field */}
+    <form.Field
+      name="lastName"
+      children={(field) => (
+        <div>
+          <label htmlFor={field.name}>Last Name:</label>
+          <input
+            id={field.name}
+            name={field.name}
+            value={field.state.value}
+            onBlur={field.handleBlur}
+            onChange={(e) => field.handleChange(e.target.value)}
+          />
+          <FieldInfo field={field} />
+        </div>
+      )}
+    />
+
+    {/* Age Field (Number Input) */}
+    <form.Field
+      name="age"
+      children={(field) => (
+        <div>
+          <label htmlFor={field.name}>Age:</label>
+          <input
+            id={field.name}
+            name={field.name}
+            type="number"
+            value={field.state.value}
+            onBlur={field.handleBlur}
+            // Remember to handle type conversion for non-string inputs
+            onChange={(e) => field.handleChange(e.target.valueAsNumber)}
+          />
+          <FieldInfo field={field} />
+        </div>
+      )}
+    />
+
+    {/* Submit Button */}
+    <form.Subscribe
+      selector={(state) => [state.canSubmit, state.isSubmitting]}
+      children={([canSubmit, isSubmitting]) => (
+        <button type="submit" disabled={!canSubmit}>
+          {isSubmitting ? 'Submitting...' : 'Submit'}
+        </button>
+      )}
+    />
+     <button type="button" onClick={() => form.reset()}>
+        Reset
+      </button>
+  </form>
+);
+```
+
+**3. Validation**
+
+Validation rules are defined in the `validators` prop on `form.Field` or `useForm`. Return an error message (string is common) if invalid, `undefined` if valid.
+
+*   **Triggers:** `onChange`, `onBlur`, `onSubmit`, `onMount`.
+*   **Async Validation:** Use `onChangeAsync`, `onBlurAsync`, `onSubmitAsync`.
+*   **Debouncing:** Use `asyncDebounceMs` (field-level) or specific `onChangeAsyncDebounceMs`, `onBlurAsyncDebounceMs`.
+*   **Schema Libraries (Recommended):** Use libraries like Zod, Valibot, ArkType. TanStack Form supports the Standard Schema specification.
+
+```tsx
+import { z } from 'zod'; // Example using Zod
+
+// --- Field-Level Validation ---
+<form.Field
+  name="firstName"
+  validators={{
+    // Sync validation on change
+    onChange: ({ value }) =>
+      !value
+        ? 'First name is required'
+        : value.length < 3
+          ? 'First name must be at least 3 characters'
+          : undefined, // Valid
+    // Async validation on change (debounced)
+    onChangeAsyncDebounceMs: 500,
+    onChangeAsync: async ({ value }) => {
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+      return value.toLowerCase().includes('test')
+        ? 'Name cannot contain "test"'
+        : undefined;
+    },
+    // Sync validation on blur
+    onBlur: ({ value }) => (value.trim() !== value ? 'Cannot have leading/trailing spaces' : undefined),
+  }}
+  children={(field) => (
+    // ... input + FieldInfo
+  )}
+/>
+
+// --- Schema Validation (Field Level) ---
+<form.Field
+  name="age"
+  validators={{
+    onChange: z.number().min(18, 'Must be 18 or older'),
+  }}
+  children={(field) => (
+     // ... number input + FieldInfo
+  )}
+/>
+
+// --- Schema Validation (Form Level - Recommended for consistency) ---
+const myFormSchema = z.object({
+  firstName: z.string().min(3, 'First name needs 3+ chars'),
+  lastName: z.string().min(3, 'Last name needs 3+ chars'),
+  age: z.number().min(18, 'Must be 18+'),
+});
+
+const form = useForm({
+  defaultValues: { firstName: '', lastName: '', age: 0 },
+  validators: {
+    // Validate the entire form object on change
+    onChange: myFormSchema,
+    // Can also add async form-level validation
+    // onSubmitAsync: async ({ value }) => { ... }
+  },
+  onSubmit: async ({ value }) => { console.log(value); },
+});
+
+// When using form-level schema validation, field-level validators are often not needed,
+// but can still be used for specific UI feedback or complex rules.
+// Errors from the form schema are automatically mapped to the respective fields.
+```
+
+**Displaying Errors:** Use `field.state.meta.errors` (an array of errors from all validation triggers) or `field.state.meta.errorMap` (object mapping trigger to error). The `FieldInfo` component above shows a basic example using `errors`.
+
+**4. Reactivity (Accessing State)**
+
+Form state changes **do not** automatically cause component re-renders. To react to state changes:
+
+*   **`form.Subscribe` Component:** Subscribes to specific parts of the form state. Only re-renders its children. Ideal for UI elements like disabling submit buttons.
+    ```tsx
+    <form.Subscribe
+      selector={(state) => [state.canSubmit, state.isSubmitting, state.values.firstName]}
+      children={([canSubmit, isSubmitting, firstName]) => (
+        <div>
+          <p>Current First Name: {firstName}</p>
+          <button type="submit" disabled={!canSubmit}>
+            {isSubmitting ? '...' : 'Submit'}
+          </button>
+        </div>
+      )}
+    />
+    ```
+*   **`useStore` Hook:** Subscribes to state within component logic. **Always provide a selector** to prevent unnecessary re-renders.
+    ```tsx
+    import { useStore } from '@tanstack/react-form'; // Or '@tanstack/react-store'
+
+    // Inside MyForm component:
+    const firstNameValue = useStore(form.store, (state) => state.values.firstName);
+    const formErrors = useStore(form.store, (state) => state.errors); // Form-level errors
+
+    // Use firstNameValue in component logic or render
+    console.log('Current first name:', firstNameValue);
+    ```
+
+**5. Array Fields**
+
+Handle dynamic lists of inputs using `mode="array"` on `form.Field`.
+
+```tsx
+interface Hobby {
+  name: string;
+  years: number;
+}
+
+interface MyFormDataWithHobbies {
+  // ... other fields
+  hobbies: Hobby[];
+}
+
+const form = useForm({
+  defaultValues: {
+    // ... other fields
+    hobbies: [] as Hobby[],
+  },
+  onSubmit: async ({ value }) => { console.log(value); },
+});
+
+// Inside the form JSX:
+<form.Field
+  name="hobbies"
+  mode="array" // Important!
+  children={(field) => (
+    <div>
+      <h3>Hobbies</h3>
+      {field.state.value.length === 0 && <p>No hobbies added yet.</p>}
+      {field.state.value.map((_, index) => (
+        <div key={index} style={{ border: '1px solid #eee', padding: '10px', marginBottom: '10px' }}>
+          <h4>Hobby #{index + 1}</h4>
+          {/* Sub-field for hobby name */}
+          <form.Field
+            name={`hobbies[${index}].name`} // Use array index syntax
+            validators={{ onChange: z.string().min(1, 'Hobby name required') }}
+            children={(subField) => (
+              <div>
+                <label>Name:</label>
+                <input
+                  value={subField.state.value}
+                  onBlur={subField.handleBlur}
+                  onChange={(e) => subField.handleChange(e.target.value)}
+                />
+                <FieldInfo field={subField} />
+              </div>
+            )}
+          />
+          {/* Sub-field for hobby years */}
+          <form.Field
+            name={`hobbies[${index}].years`}
+            validators={{ onChange: z.number().min(0, 'Years must be positive') }}
+            children={(subField) => (
+              <div>
+                <label>Years:</label>
+                <input
+                  type="number"
+                  value={subField.state.value}
+                  onBlur={subField.handleBlur}
+                  onChange={(e) => subField.handleChange(e.target.valueAsNumber)}
+                />
+                 <FieldInfo field={subField} />
+              </div>
+            )}
+          />
+           <button type="button" onClick={() => field.removeValue(index)}>
+             Remove Hobby #{index + 1}
+           </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() => field.pushValue({ name: '', years: 0 })} // Add new item
+      >
+        Add Hobby
+      </button>
+      {/* Other array methods: insertValue(index, value), swapValues(indexA, indexB), moveValue(fromIndex, toIndex), replaceValue(index, value) */}
+    </div>
+  )}
+/>
+```
+
+**6. Form Submission**
+
+*   Define the `onSubmit` async function in `useForm` options. This runs only if validation passes.
+*   Attach `form.handleSubmit()` to the `<form>` element's `onSubmit` event handler (preventing default browser submission).
+*   Use `form.Subscribe` or `useStore` to track `isSubmitting` and `canSubmit` states for UI feedback (e.g., disabling the submit button).
+
+**7. Linking Fields & Listeners**
+
+*   **Linked Validation:** Use `validators.onChangeListenTo: ['otherFieldName']` on a field to re-run its `onChange`/`onChangeAsync` validation when `otherFieldName` changes. Useful for password confirmation fields.
+*   **Side Effects (Listeners):** Use the `listeners` prop on `form.Field` (e.g., `listeners={{ onChange: ({ value, form }) => { ... } }}`) to perform actions when field events occur, like resetting another field's value.
+
+**8. Form Composition (Best Practice for Scalability)**
+
+For larger applications or reusable form components, use `createFormHook` to create a custom form hook with pre-bound UI components. This reduces boilerplate and enforces consistency.
+
+*   Define contexts using `createFormHookContexts`.
+*   Create UI components (e.g., `TextField`, `SelectField`) that use `useFieldContext`.
+*   Create the custom hook using `createFormHook`, registering your components.
+*   Use `useAppForm` instead of `useForm`.
+*   Use `form.AppField` instead of `form.Field`. Wrap components needing form context with `form.AppForm`.
+
+*(Refer to the official "Form Composition" guide for a detailed example if needed, but the basic `useForm`/`form.Field` approach covers many use cases).*
+
+**9. TypeScript Notes**
+
+*   Enable `strict: true` in `tsconfig.json`.
+*   **Rely on inference:** Define `defaultValues` correctly; `useForm` will infer the `TFormData` type. Avoid `<MyFormData>` generics on `useForm`.
+*   Type safety extends to field names, values, and validation errors.
+```

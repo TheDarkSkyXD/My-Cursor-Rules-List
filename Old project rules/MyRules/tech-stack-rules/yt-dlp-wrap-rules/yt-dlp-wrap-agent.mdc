@@ -1,0 +1,170 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# yt-dlp-wrap Best Practices
+
+## Critical Rules
+
+### 1. Binary Management
+- **Ensure yt-dlp Binary**: `yt-dlp-wrap` does not bundle the `yt-dlp` binary. You MUST ensure the binary is available.
+    - Use `YTDlpWrap.downloadFromGithub()` to download the binary to a known, secure location during setup or as a pre-run step.
+    - Alternatively, allow users to specify the path to their existing `yt-dlp` binary.
+- **Binary Path**: Initialize `YTDlpWrap` with the correct path to the `yt-dlp` binary. Store this path in a configuration file or environment variable rather than hardcoding.
+    - `const ytDlpWrap = new YTDlpWrap('path/to/your/yt-dlp/binary');`
+- **Permissions**: Ensure the downloaded `yt-dlp` binary has execute permissions on Unix-like systems.
+- **Updates**: Regularly update the `yt-dlp` binary using `YTDlpWrap.downloadFromGithub()` or a manual process to get the latest features and security patches from `yt-dlp` itself.
+
+### 2. Code Organization & Usage
+- **Dedicated Service**: Encapsulate `yt-dlp-wrap` logic within a dedicated service or module (e.g., `ytDlpService.ts`) to centralize interactions and make them reusable.
+- **Instance Management**: Create a single, reusable instance of `YTDlpWrap` within your service if the binary path is static. If the path can change, manage instances accordingly.
+- **Interface Choice**: Choose the appropriate execution method based on your needs:
+    - `exec()`: For event-driven handling, progress updates, and direct access to the child process. Ideal for long-running downloads with UI feedback.
+    - `execStream()`: For piping output directly to a file or another stream. Efficient for direct downloads.
+    - `execPromise()`: For simpler cases where you only need the final output (stdout) after completion, or for utility commands like `getVersion()`.
+- **Metadata Fetching**: Use `getVideoInfo(url)` for fetching video metadata as a structured JSON object.
+
+### 3. Performance Optimization
+- **Streaming for Downloads**: Prefer `execStream()` for downloading files directly to disk (`readableStream.pipe(fs.createWriteStream('output.mp4'))`) to avoid buffering large files in memory.
+- **Selective Fields**: When fetching metadata with `getVideoInfo()`, if you only need specific fields and `yt-dlp` supports filtering them via CLI arguments (e.g. using `--print`), pass those arguments through `execPromise()` or `exec()` instead of fetching the full JSON dump, if performance is critical for metadata extraction.
+- **Concurrency**: If downloading multiple files, manage concurrency at the application level (e.g., using a queue like `p-queue`) to avoid overwhelming system resources or hitting rate limits. `yt-dlp-wrap` itself executes one `yt-dlp` process at a time per instance method call.
+
+### 4. Security Considerations
+- **Input Sanitization**: CRITICAL: URLs and any other parameters passed to `exec()`, `execStream()`, or `execPromise()` that originate from user input MUST be strictly validated and sanitized to prevent command injection vulnerabilities. `yt-dlp` itself is powerful; do not pass unsanitized user input directly as command-line arguments.
+    - Validate URLs to ensure they conform to expected patterns.
+    - Be cautious with options like `-o` (output template) if parts of it are user-influenced.
+- **Binary Integrity**: When downloading `yt-dlp` using `YTDlpWrap.downloadFromGithub()`, ensure you are comfortable with the source. For greater security, consider verifying checksums/signatures if provided by the `yt-dlp` project for their releases, though the wrapper doesn't do this automatically.
+- **Output Path**: Ensure output paths for downloads (`-o` option) are within a designated, controlled directory. Do not allow users to write to arbitrary file system locations.
+- **Error Handling**: Log errors from `yt-dlp` execution, but avoid exposing detailed error messages directly to end-users if they might reveal sensitive system path information or internal workings.
+- **Resource Limits**: For long-running downloads, consider implementing timeouts or resource limits at the application level to prevent runaway processes, although `AbortController` can be used for cancellation.
+
+### 5. Error Handling & Cancellation
+- **Event Listeners**: For `exec()` and `execStream()`, always attach listeners for `'error'` and `'close'` events.
+    - `on('error', (error) => console.error(error))`
+    - `on('close', () => console.log('all done'))`
+- **Progress Tracking**: Use the `'progress'` event for user feedback during downloads.
+    - `on('progress', (progress) => console.log(progress.percent, progress.eta))`
+- **Promise Rejection**: For `execPromise()`, ensure `try...catch` blocks are used to handle potential rejections.
+- **Cancellation**: For long-running operations, provide a way to cancel them using an `AbortController`.
+    - `const controller = new AbortController();`
+    - `ytDlpWrap.exec([...args], {}, controller.signal);`
+    - `controller.abort();`
+
+## Examples
+
+<example>
+  // Good: Downloading yt-dlp binary and initializing wrapper
+  import YTDlpWrap from 'yt-dlp-wrap';
+  import fs from 'fs';
+  import path from 'path';
+
+  const initYtDlp = async () => {
+    const downloadsPath = './binaries';
+    await fs.promises.mkdir(downloadsPath, { recursive: true });
+    const ytDlpBinaryPath = path.join(downloadsPath, 'yt-dlp');
+    // Check if binary exists, if not download it
+    if (!fs.existsSync(ytDlpBinaryPath)) {
+        console.log('Downloading yt-dlp binary...');
+        await YTDlpWrap.downloadFromGithub(ytDlpBinaryPath);
+        // On Unix, ensure it's executable
+        if (process.platform !== 'win32') {
+            await fs.promises.chmod(ytDlpBinaryPath, '755');
+        }
+        console.log('yt-dlp binary downloaded.');
+    }
+    return new YTDlpWrap(ytDlpBinaryPath);
+  };
+
+  // Good: Securely downloading a video with progress and error handling
+  async function downloadVideo(ytDlpWrapInstance, videoUrl, outputPath) {
+    // Validate URL (basic example)
+    if (!videoUrl.startsWith('https://www.youtube.com/')) {
+        throw new Error('Invalid YouTube URL');
+    }
+    // Ensure outputPath is safe
+    const safeOutputDir = path.resolve('./downloads');
+    if (!outputPath.startsWith(safeOutputDir)) {
+        throw new Error('Invalid output path');
+    }
+    await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
+
+    console.log(`Starting download for ${videoUrl} to ${outputPath}`);
+    const controller = new AbortController();
+
+    // Example: Cancel download after 10 seconds (for demonstration)
+    // setTimeout(() => controller.abort(), 10000);
+
+    return new Promise((resolve, reject) => {
+        ytDlpWrapInstance.exec([
+            videoUrl,
+            '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+            '-o', outputPath,
+            '--ffmpeg-location', '/usr/bin/ffmpeg' // Example, ensure ffmpeg is available if needed for merging
+        ], { shell: false }, controller.signal) // shell: false is generally safer
+        .on('progress', (progress) => {
+            process.stdout.write(`\r${progress.percent}% | ${progress.totalSize} | ${progress.currentSpeed} | ETA: ${progress.eta} `);
+        })
+        .on('ytDlpEvent', (eventType, eventData) => {
+            // console.log(`\n[ytDlp Event] ${eventType}: ${eventData}`);
+        })
+        .on('error', (error) => {
+            process.stdout.write('\n'); // New line after progress
+            console.error('Error during download:', error);
+            reject(error);
+        })
+        .on('close', () => {
+            process.stdout.write('\n'); // New line after progress
+            console.log('Download finished!');
+            resolve(outputPath);
+        });
+    });
+  }
+
+  // Good: Fetching metadata
+  async function getMetadata(ytDlpWrapInstance, videoUrl) {
+    if (!videoUrl.startsWith('https://www.youtube.com/')) {
+        throw new Error('Invalid YouTube URL');
+    }
+    const metadata = await ytDlpWrapInstance.getVideoInfo(videoUrl);
+    console.log('Title:', metadata.title);
+    return metadata;
+  }
+
+  // (async () => {
+  //   const ytDlpWrap = await initYtDlp();
+  //   await getMetadata(ytDlpWrap, 'https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+  //   await downloadVideo(ytDlpWrap, 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', './downloads/test_video.mp4');
+  // })();
+
+</example>
+
+<example type="invalid">
+  // Bad: Hardcoding binary path that might not exist or not be secure
+  // const ytDlpWrap = new YTDlpWrap('/usr/local/bin/yt-dlp'); // Path might be incorrect or insecure
+
+  // Bad: Directly using user input in exec arguments without sanitization
+  async function downloadWithUserInput(ytDlpWrapInstance, userSuppliedUrl, userSuppliedFilename) {
+    // THIS IS DANGEROUS if userSuppliedFilename can contain shell metacharacters
+    // e.g., userSuppliedFilename = "myvideo.mp4; rm -rf /"
+    await ytDlpWrapInstance.execPromise([
+        userSuppliedUrl, 
+        '-o', `downloads/${userSuppliedFilename}` // Unsafe output path construction
+    ]);
+  }
+
+  // Bad: Not handling errors for execPromise
+  async function fetchTitleUnsafe(ytDlpWrapInstance, videoUrl) {
+    const metadata = await ytDlpWrapInstance.getVideoInfo(videoUrl); // Could throw, not caught
+    console.log(metadata.title);
+  }
+
+  // Bad: Forgetting to attach 'error' listener for EventEmitter/Stream interface
+  function downloadStreamNoProperErrorHandling(ytDlpWrapInstance, videoUrl) {
+    ytDlpWrapInstance.execStream([videoUrl, '-o', 'output.mp4'])
+        .on('progress', console.log)
+        // Missing .on('error', ...) and .on('close', ...)
+        .pipe(fs.createWriteStream('output.mp4'));
+  }
+</example>
+

@@ -1,0 +1,203 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Rule: Avoid Magic Numbers
+
+## Description
+Ensures that numeric literals are not used directly in code without explanation. Instead, they should be assigned to named constants or variables with descriptive names.
+
+## Benefits
+- Improves code readability and maintainability
+- Makes the purpose of numeric values clear
+- Centralizes number definitions for easier updates
+- Prevents duplicate magic numbers with different meanings
+- Reduces the chance of errors when values need to be changed
+
+## Bad Examples
+
+```tsx
+// ❌ Using unexplained numeric literals directly in code
+function calculateTotalPrice(subtotal: number): number {
+  // What does 0.08 represent? Tax rate?
+  return subtotal + (subtotal * 0.08);
+}
+```
+
+```tsx
+// ❌ Magic numbers in component props
+function Pagination({ currentPage, totalItems }: PaginationProps) {
+  // What does 10 represent? Items per page?
+  const totalPages = Math.ceil(totalItems / 10);
+  
+  return (
+    <div className="pagination">
+      {/* What do 3, 5, 7 represent? */}
+      {currentPage > 3 && <button>First</button>}
+      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => (
+        <button 
+          key={i}
+          className={currentPage === i + 1 ? 'active' : ''}
+          disabled={i + 1 > totalPages}
+        >
+          {i + 1}
+        </button>
+      ))}
+      {totalPages > 7 && <span>...</span>}
+    </div>
+  );
+}
+```
+
+```tsx
+// ❌ Magic numbers in time calculations
+function getSessionStatus(lastActiveTimestamp: number): string {
+  const now = Date.now();
+  // What do these numbers represent?
+  if (now - lastActiveTimestamp < 300000) {
+    return 'active';
+  } else if (now - lastActiveTimestamp < 1800000) {
+    return 'idle';
+  } else {
+    return 'expired';
+  }
+}
+```
+
+## Good Examples
+
+```tsx
+// ✅ Using named constants for numeric values
+const TAX_RATE = 0.08;
+
+function calculateTotalPrice(subtotal: number): number {
+  return subtotal + (subtotal * TAX_RATE);
+}
+```
+
+```tsx
+// ✅ Using descriptive constants for pagination
+function Pagination({ currentPage, totalItems }: PaginationProps) {
+  const ITEMS_PER_PAGE = 10;
+  const PAGINATION_THRESHOLD = 3;
+  const MAX_VISIBLE_PAGES = 5;
+  const ELLIPSIS_THRESHOLD = 7;
+  
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  
+  return (
+    <div className="pagination">
+      {currentPage > PAGINATION_THRESHOLD && <button>First</button>}
+      {Array.from({ length: Math.min(MAX_VISIBLE_PAGES, totalPages) }, (_, i) => (
+        <button 
+          key={i}
+          className={currentPage === i + 1 ? 'active' : ''}
+          disabled={i + 1 > totalPages}
+        >
+          {i + 1}
+        </button>
+      ))}
+      {totalPages > ELLIPSIS_THRESHOLD && <span>...</span>}
+    </div>
+  );
+}
+```
+
+```tsx
+// ✅ Using time constants with clear names
+function getSessionStatus(lastActiveTimestamp: number): string {
+  const now = Date.now();
+  const FIVE_MINUTES_MS = 5 * 60 * 1000; // 300,000ms
+  const THIRTY_MINUTES_MS = 30 * 60 * 1000; // 1,800,000ms
+  
+  if (now - lastActiveTimestamp < FIVE_MINUTES_MS) {
+    return 'active';
+  } else if (now - lastActiveTimestamp < THIRTY_MINUTES_MS) {
+    return 'idle';
+  } else {
+    return 'expired';
+  }
+}
+```
+
+```tsx
+// ✅ Using an enum for status codes
+enum HttpStatus {
+  OK = 200,
+  CREATED = 201,
+  BAD_REQUEST = 400,
+  UNAUTHORIZED = 401,
+  FORBIDDEN = 403,
+  NOT_FOUND = 404,
+  INTERNAL_SERVER_ERROR = 500
+}
+
+function handleApiResponse(response: Response) {
+  if (response.status === HttpStatus.OK) {
+    // Process successful response
+  } else if (response.status === HttpStatus.UNAUTHORIZED) {
+    // Handle unauthorized
+  } else if (response.status === HttpStatus.NOT_FOUND) {
+    // Handle not found
+  }
+}
+```
+
+## Implementation
+
+1. **For application constants**:
+   - Create a `constants.ts` file in appropriate directories
+   - Export named constants with ALL_CAPS naming convention
+   - Group related constants together
+
+   ```tsx
+   // constants/payment.ts
+   export const TAX_RATES = {
+     DEFAULT: 0.08,
+     REDUCED: 0.05,
+     EXEMPT: 0
+   };
+   
+   export const PAYMENT_METHODS = {
+     CREDIT_CARD: 'credit_card',
+     PAYPAL: 'paypal',
+     BANK_TRANSFER: 'bank_transfer'
+   };
+   ```
+
+2. **For component-specific values**:
+   - Define constants at the top of the component file
+   - Use PascalCase for component constants
+
+   ```tsx
+   // Component-specific constants
+   const MIN_PASSWORD_LENGTH = 8;
+   const MAX_USERNAME_LENGTH = 20;
+   
+   function SignupForm() {
+     // Component implementation
+   }
+   ```
+
+3. **For configuration values**:
+   - Use environment variables for values that change between environments
+   - Create a config file that imports environment variables
+
+   ```tsx
+   // config.ts
+   export const config = {
+     apiUrl: process.env.NEXT_PUBLIC_API_URL,
+     maxUploadSize: Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE) || 5242880, // 5MB
+     supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@example.com'
+   };
+   ```
+
+## Exceptions
+- Truly ubiquitous values like `0`, `1`, `-1` for array indices, counters, or increments
+- CSS-like values where the meaning is clear from context (e.g., `opacity: 0.5`)
+- Well-known mathematical constants or conversion factors with comments
+
+## References
+- [ESLint no-magic-numbers rule](https://eslint.org/docs/rules/no-magic-numbers)
+- [Clean Code by Robert C. Martin](https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882)

@@ -1,0 +1,93 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Single Task Focus
+
+Rule for ensuring each code change focuses on exactly one task at a time.
+
+<rule>
+name: single_task_focus
+description: Standards for maintaining single-task focus in code changes
+filters:
+  - type: event
+    pattern: "code_change"
+  - type: event
+    pattern: "feature_request"
+  - type: event
+    pattern: "bug_fix"
+
+actions:
+  - type: suggest
+    message: |
+      When making code changes:
+
+      1. Task Boundaries:
+         ```
+         - Only modify code directly related to current task
+         - Ignore unrelated improvements/refactoring opportunities
+         - Save other issues for separate tasks
+         - Do not mix concerns across different features
+         ```
+
+      2. Code Changes:
+         ```
+         - Edit only files necessary for current task
+         - Only modify lines relevant to task
+         - Skip unrelated formatting/style fixes
+         - Resist urge to "clean up while you're there"
+         ```
+
+      3. Review Before Submit:
+         ```
+         - Verify each changed line relates to task
+         - Remove unrelated changes
+         - Split unrelated improvements into new tasks
+         - Keep changes minimal and focused
+         ```
+
+      4. Common Violations to Avoid:
+         ```
+         - Fixing unrelated lint errors
+         - Updating unrelated dependencies
+         - Reformatting unrelated code
+         - Adding features beyond task scope
+         ```
+
+examples:
+  - input: |
+      # Task: Fix button click handler
+
+      # ❌ Don't do this:
+      - Fix button click handler
+      - Also reformat entire file
+      - Update some dependencies
+      - Fix typos in comments
+
+      # ✅ Do this:
+      - Only fix button click handler
+      - Save other improvements for later
+
+  - input: |
+      # Task: Add new API endpoint
+
+      # ❌ Don't do this:
+      function newEndpoint() {
+        // Add endpoint
+      }
+
+      // Also refactor old endpoints
+      function oldEndpoint() {
+        // Cleanup while here
+      }
+
+      # ✅ Do this:
+      function newEndpoint() {
+        // Only add new endpoint
+      }
+
+metadata:
+  priority: high
+  version: 1.0
+</rule>

@@ -1,0 +1,242 @@
+---
+description: Best practices for schema validation with Zod
+globs: *.tsx,*.ts
+alwaysApply: false
+---
+
+# Zod Best Practices
+
+## 1. Schema Organization
+
+### Create Reusable Base Schemas
+Define base schemas for common patterns:
+
+```ts
+// ✅ Good - src/lib/schemas/base.ts
+export const baseUserSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email('Invalid email format'),
+  createdAt: z.date(),
+  updatedAt: z.date()
+})
+
+export const paginationSchema = z.object({
+  page: z.number().int().positive(),
+  limit: z.number().int().min(1).max(100),
+  sortBy: z.string().optional(),
+  order: z.enum(['asc', 'desc']).optional()
+})
+```
+
+## 2. Type Inference and Exports
+
+### Export Types with Schemas
+Export both schema and inferred types:
+
+```ts
+// ✅ Good - src/lib/schemas/user.ts
+export const userSchema = baseUserSchema.extend({
+  username: z.string().min(3).max(50),
+  role: z.enum(['user', 'admin']),
+  profile: z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+    avatar: z.string().url().optional()
+  })
+})
+
+export type User = z.infer<typeof userSchema>
+export type UserProfile = z.infer<typeof userSchema>['profile']
+```
+
+## 3. Custom Validations
+
+### Create Reusable Custom Validators
+Define reusable validation rules:
+
+```ts
+// ✅ Good - src/lib/validations/custom.ts
+export const passwordValidation = z
+  .string()
+  .min(8, 'Password must be at least 8 characters')
+  .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
+  .regex(/[a-z]/, 'Must contain at least one lowercase letter')
+  .regex(/[0-9]/, 'Must contain at least one number')
+  .regex(/[^A-Za-z0-9]/, 'Must contain at least one special character')
+
+export const phoneValidation = z
+  .string()
+  .regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format')
+```
+
+## 4. Complex Validations
+
+### Implement Refined Validations
+Use refine for complex validation rules:
+
+```ts
+// ✅ Good - src/lib/schemas/order.ts
+export const orderSchema = z.object({
+  items: z.array(
+    z.object({
+      productId: z.string(),
+      quantity: z.number().int().positive(),
+      price: z.number().positive()
+    })
+  ),
+  total: z.number().positive(),
+  discountCode: z.string().optional()
+}).refine(
+  (data) => {
+    const calculatedTotal = data.items.reduce(
+      (sum, item) => sum + (item.quantity * item.price),
+      0
+    )
+    return Math.abs(calculatedTotal - data.total) < 0.01
+  },
+  {
+    message: "Total price doesn't match items total",
+    path: ["total"]
+  }
+)
+```
+
+## 5. Error Handling
+
+### Custom Error Messages
+Implement detailed error messages:
+
+```ts
+// ✅ Good - src/lib/schemas/validation.ts
+export const registrationSchema = z.object({
+  email: z.string({
+    required_error: "Email is required",
+    invalid_type_error: "Email must be a string"
+  }).email('Invalid email format'),
+  password: passwordValidation,
+  confirmPassword: z.string()
+}).refine(
+  (data) => data.password === data.confirmPassword,
+  {
+    message: "Passwords don't match",
+    path: ["confirmPassword"]
+  }
+)
+```
+
+## 6. Async Validation
+
+### Handle Async Validations
+Implement async validation properly:
+
+```ts
+// ✅ Good - src/lib/schemas/async-validation.ts
+export const createUserSchema = userSchema.extend({
+  email: z.string().email()
+}).refine(
+  async (data) => {
+    const exists = await checkEmailExists(data.email)
+    return !exists
+  },
+  {
+    message: "Email already exists",
+    path: ["email"]
+  }
+)
+```
+
+## 7. Transformations
+
+### Use Transformations Effectively
+Transform data during validation:
+
+```ts
+// ✅ Good - src/lib/schemas/transformations.ts
+export const apiResponseSchema = z.object({
+  createdAt: z.string().transform((str) => new Date(str)),
+  amount: z.string().transform((str) => parseFloat(str)),
+  tags: z.string().transform((str) => str.split(',').map(s => s.trim())),
+  metadata: z.record(z.unknown()).transform((obj) => {
+    return Object.entries(obj).reduce((acc, [key, value]) => {
+      acc[key.toLowerCase()] = value
+      return acc
+    }, {} as Record<string, unknown>)
+  })
+})
+```
+
+## 8. Union and Discriminated Unions
+
+### Handle Complex Types
+Use unions effectively:
+
+```ts
+// ✅ Good - src/lib/schemas/payment.ts
+export const paymentSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('creditCard'),
+    cardNumber: z.string().length(16),
+    expiryMonth: z.number().min(1).max(12),
+    expiryYear: z.number().min(2023),
+    cvv: z.string().length(3)
+  }),
+  z.object({
+    type: z.literal('paypal'),
+    email: z.string().email()
+  }),
+  z.object({
+    type: z.literal('bankTransfer'),
+    accountNumber: z.string(),
+    routingNumber: z.string()
+  })
+])
+```
+
+## 9. Error Formatting
+
+### Consistent Error Handling
+Create utility functions for error handling:
+
+```ts
+// ✅ Good - src/lib/utils/zod-errors.ts
+export function formatZodError(error: z.ZodError) {
+  return error.errors.reduce((acc, err) => {
+    const path = err.path.join('.')
+    acc[path] = err.message
+    return acc
+  }, {} as Record<string, string>)
+}
+```
+
+## 10. API Integration
+
+### Validate API Responses
+Validate API responses:
+
+```ts
+// ✅ Good - src/lib/api/validation.ts
+export async function fetchUser(id: string) {
+  const response = await fetch(`/api/users/${id}`)
+  const data = await response.json()
+  
+  const result = userSchema.safeParse(data)
+  
+  if (!result.success) {
+    throw new Error('Invalid API response')
+  }
+  
+  return result.data
+}
+```
+
+Remember:
+- Create reusable base schemas
+- Export both schemas and types
+- Use custom validators for common patterns
+- Implement proper error messages
+- Handle async validation correctly
+- Use transformations when needed
+- Implement proper error handling
+- Validate API responses
+- Use discriminated unions for complex types
+- Keep schemas organized and maintainable

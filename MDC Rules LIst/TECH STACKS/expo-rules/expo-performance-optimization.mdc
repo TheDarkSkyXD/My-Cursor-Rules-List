@@ -1,0 +1,89 @@
+---
+description: Apply optimization techniques when developing features to enhance application speed, reduce resource usage, and improve user experience
+globs: *.ts, *.tsx
+alwaysApply: false
+---
+# Performance and Optimization
+
+## Context
+
+- Ensures application performs efficiently on all target devices
+- Prevents common performance bottlenecks in Expo apps
+- Establishes standards for maintaining high performance as the app grows
+
+## Requirements
+
+### Component Optimization
+
+- Relies on React Compiler to optimize rendering; do not use `useMemo` or `useCallback`
+- Optimize rendering:
+  - Avoid unnecessary re-renders
+  - Use React DevTools Performance tab to identify bottlenecks
+  - Implement virtualization for long lists with FlashList
+- Apply code splitting:
+  - Use dynamic imports for route-based code splitting
+  - Lazy load non-critical components
+- Avoid anonymous functions in render methods or component props
+- Keep component state as local as possible
+- Avoid prop drilling; use context or state management judiciously
+- Wrap client components in `Suspense` with fallback UI
+- Implement appropriate error boundaries
+
+### Asset Optimization
+
+- Optimize images and assets:
+  - Use 'expo-image' for mobile apps
+  - Use appropriate image formats (WebP, AVIF)
+  - Implement responsive images
+  - Apply proper compression
+  - Lazy load images not immediately visible and display a blurhash as placeholder
+- Implement asset caching strategies:
+  - Pre-load critical assets
+  - Use asset bundles
+  - Implement offline-first approach
+
+### Network Optimization
+
+- Optimize API requests
+  - Use request batching
+  - Implement request deduplication
+  - Apply proper caching strategies
+- Implement offline support:
+  - Use optimistic UI updates
+  - Store critical data locally
+  - Sync data when back online
+
+### Build Optimization
+
+- Optimize bundle size:
+  - Analyze bundle with appropriate tools
+  - Remove unused dependencies
+  - Apply tree shaking
+- Use production builds:
+  - Apply proper minification
+  - Remove development features
+  - Implement source maps for debugging
+
+### Performance Metrics
+
+- Optimize for both web and mobile performance
+- Track key performance indicators:
+  - Time to Interactive (TTI)
+  - First Contentful Paint (FCP)
+  - Largest Contentful Paint (LCP)
+  - Cumulative Layout Shift (CLS)
+- Implement performance monitoring:
+  - Use Performance API
+  - Integrate with analytics tools
+- Use Expo dev tools to identify bottlenecks
+
+### Mobile-specific Optimizations
+
+- Optimize for different device capabilities:
+  - Apply adaptive rendering
+  - Use device-specific optimizations
+  - Handle low-end devices gracefully
+- Implement proper animations:
+  - Use native animations when possible
+  - Offload animations to native thread
+  - Apply proper animation optimization techniques

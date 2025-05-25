@@ -1,0 +1,180 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# electron-store Best Practices
+
+## Critical Rules
+
+### 1. Initialization & Configuration
+- **Instantiate in Main Process**: Always instantiate `electron-store` in the main process. Avoid creating instances directly in the renderer process for security reasons.
+    ```javascript
+    // Good: In main process (e.g., main.ts or background.ts)
+    import Store from 'electron-store';
+    const store = new Store(/* options */);
+    ```
+- **Schema for Validation & Defaults**: Define a `schema` using JSON Schema to validate data and provide default values. This ensures data integrity and helps prevent errors.
+    ```javascript
+    const schema = {
+      launchCount: { type: 'number', default: 0 },
+      theme: { type: 'string', enum: ['light', 'dark'], default: 'light' },
+      downloadPath: { type: 'string', format: 'uri', default: app.getPath('downloads') }
+    };
+    const store = new Store({ schema });
+    ```
+- **`defaults` Option**: Use `defaults` for simple default values. Note: `defaults` values overwrite `default` values specified within the `schema`.
+- **Naming (`name` option)**: If creating multiple store files or a reusable module, provide a unique `name` (default is `'config'`).
+- **Location (`cwd` option)**: Avoid changing `cwd`. The default `app.getPath('userData')` is the standard and correct location.
+- **Serialization (`serialize`/`deserialize`)**: Only override if using a format other than JSON (rarely needed).
+
+### 2. Accessing the Store
+- **Main Process**: Access the store instance directly in the main process.
+- **Renderer Process (Secure IPC)**: **NEVER** access `electron-store` directly from the renderer process. Instead:
+    1.  Define IPC channels in the main process to handle get/set/delete operations on the store instance.
+    2.  Expose these specific IPC communication functions (e.g., `storeGet`, `storeSet`) to the renderer via `contextBridge` in a secure preload script (`contextIsolation: true`, `nodeIntegration: false`).
+    3.  Call the exposed functions from the renderer process (`window.electron.store.get(...)`).
+    ```javascript
+    // main.ts
+    import Store from 'electron-store';
+    import { ipcMain } from 'electron';
+    const store = new Store();
+    ipcMain.handle('electron-store-get', (event, key) => store.get(key));
+    ipcMain.on('electron-store-set', (event, key, val) => { store.set(key, val); });
+    // ... other handlers (delete, has, etc.)
+
+    // preload.ts
+    import { contextBridge, ipcRenderer } from 'electron';
+    contextBridge.exposeInMainWorld('electronStore', {
+      get: (key) => ipcRenderer.invoke('electron-store-get', key),
+      set: (key, val) => ipcRenderer.send('electron-store-set', key, val),
+      // ... other methods
+    });
+
+    // renderer.ts
+    async function getTheme() {
+      const theme = await window.electronStore.get('theme');
+      // ... use theme
+    }
+    function setTheme(theme: string) {
+      window.electronStore.set('theme', theme);
+    }
+    ```
+
+### 3. Data Types & Storage
+- **JSON Serializable Only**: Store only data types that can be serialized to JSON (strings, numbers, booleans, plain objects, arrays). Do not store functions, symbols, `undefined`, classes, or complex objects.
+- **Not for Large Data**: `electron-store` reads and writes the entire file on each operation. It's unsuitable for large datasets, large files, or frequently changing data. Use it for settings, user preferences, and simple application state.
+- **Large Data Strategy**: For large data blobs, save them to separate files (e.g., using `fs`) and store only the *file path* in `electron-store`.
+
+### 4. Security
+- **Encryption (`encryptionKey`)**: Understand that `encryptionKey` provides **obscurity**, not strong security. The key is often easily discoverable in the packaged app's source. It primarily prevents casual user modification and ensures data integrity (decryption fails if the file is tampered with). For sensitive data requiring real security, manage the key externally (e.g., using `node-keytar` or prompting the user).
+- **IPC Security**: Always use secure IPC (as described in point 2) for renderer access.
+
+### 5. Watching Changes (`watch` option)
+- **Use Case**: Set `watch: true` if multiple processes might modify the config file concurrently and need to be notified.
+- **`onDidChange`/`onDidAnyChange`**: These listeners only work *within the same process*. To notify another process of changes (e.g., main -> renderer), use IPC after detecting a change.
+
+### 6. Migrations (`migrations` option)
+- **Purpose**: Useful for evolving the data schema between app versions.
+- **Caution**: The maintainer notes this feature has known bugs and limited support. Use with caution and test thoroughly. Consider manual migration logic triggered on app startup if issues arise.
+
+### 7. Error Handling
+- **Invalid Config (`clearInvalidConfig`)**: The default (`true`) clears the store if the JSON file is corrupt (e.g., syntax error), resetting to defaults/schema. Set to `false` to throw an error instead, which might be preferable if users are expected to edit the file directly.
+
+## Common Pitfalls
+- **Direct Renderer Access**: Trying to use `new Store()` or `require('electron-store')` in the renderer without proper secure IPC setup.
+- **Storing Large/Complex Data**: Leads to poor performance or errors.
+- **Encryption Misconception**: Assuming `encryptionKey` provides strong security.
+- **Singleton Assumption**: Thinking `new Store()` provides a shared instance across processes.
+- **Migration Complexity**: Running into bugs or difficulties with the built-in `migrations` feature.
+- **Ignoring Process Model**: Not handling store access correctly based on whether code runs in the main or renderer process.
+
+## Examples
+
+<example>
+  ```javascript
+  // Good: Secure setup with IPC
+  // main.ts
+  import Store from 'electron-store';
+  import { app, ipcMain, BrowserWindow } from 'electron';
+  import path from 'path';
+
+  const schema = {
+    windowBounds: { 
+      type: 'object', 
+      properties: { 
+        width: { type: 'number' }, 
+        height: { type: 'number' } 
+      },
+      default: { width: 800, height: 600 }
+    },
+    checkUpdates: { type: 'boolean', default: true }
+  };
+
+  const store = new Store({ schema });
+
+  function createWindow() {
+    const { width, height } = store.get('windowBounds');
+    const mainWindow = new BrowserWindow({
+      width,
+      height,
+      webPreferences: {
+        preload: path.join(__dirname, 'preload.js'),
+        contextIsolation: true,
+        nodeIntegration: false,
+      }
+    });
+
+    mainWindow.on('resize', () => {
+      const { width, height } = mainWindow.getBounds();
+      store.set('windowBounds', { width, height });
+    });
+    // ... load URL etc.
+  }
+
+  ipcMain.handle('electron-store-get', (event, key) => store.get(key));
+  ipcMain.on('electron-store-set', (event, key, val) => { store.set(key, val); });
+
+  app.whenReady().then(createWindow);
+  
+  // preload.ts
+  import { contextBridge, ipcRenderer } from 'electron';
+
+  contextBridge.exposeInMainWorld('appSettings', {
+    get: (key: string) => ipcRenderer.invoke('electron-store-get', key),
+    set: (key: string, value: any) => ipcRenderer.send('electron-store-set', key, value),
+  });
+
+  // renderer.ts
+  async function initSettings() {
+      const shouldCheck = await window.appSettings.get('checkUpdates');
+      console.log('Check for updates:', shouldCheck);
+  }
+  
+  function disableUpdateChecks() {
+      window.appSettings.set('checkUpdates', false);
+  }
+  ```
+</example>
+
+<example type="invalid">
+  ```javascript
+  // Bad: Accessing directly in renderer (requires nodeIntegration: true - Security Risk!)
+  // renderer.ts
+  // import Store from 'electron-store'; // 🚨 Don't do this!
+  // const store = new Store(); 
+  // const theme = store.get('theme');
+
+  // Bad: Storing large file buffer
+  // main.ts
+  // import fs from 'fs';
+  // const largeFile = fs.readFileSync('large-video.mp4');
+  // store.set('cachedVideo', largeFile); // 🚨 Very bad performance!
+  // Correct way: store.set('cachedVideoPath', 'path/to/large-video.mp4');
+
+  // Bad: Assuming encryption is highly secure without external key management
+  // main.ts
+  // const store = new Store({ encryptionKey: 'my-super-secret-key' }); // 🚨 Key is in source code
+  ```
+</example>
+

@@ -1,0 +1,41 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Prefer Editing Over Deleting Files
+
+## Critical Rules
+
+- Before proposing to delete any file, exhaust all possibilities for editing or refactoring the existing file to meet the new requirements.
+- Only propose to delete a file if it is confirmed to be entirely obsolete, unused, or its functionality is fully and demonstrably replaced by a new or existing file.
+- If a file's purpose changes significantly but it still contains relevant structure, history, or is heavily depended upon, prioritize refactoring its content over deletion and recreation.
+- When in doubt between modifying an existing file or deleting it to create a new one, opt to modify the existing file.
+- If deletion is proposed, provide a clear justification explaining why the file is no longer needed and cannot be adapted.
+
+## Examples
+
+<example>
+  **Scenario:** A user requests an update to the data processing logic in `scripts/data_processor.py`. The fundamental purpose of the script remains, but the algorithm needs to be changed.
+  **AI Action:** The AI proposes modifications directly within `scripts/data_processor.py` to implement the new algorithm.
+  **Rationale:** The file's core purpose (data processing) is still relevant, making editing the appropriate action.
+</example>
+
+<example>
+  **Scenario:** The application previously used a component `src/ui/OldButton.jsx`. A new design system has been implemented, and `src/ui/NewButton.jsx` now provides all necessary button functionality, rendering `OldButton.jsx` redundant. All usages of `OldButton.jsx` have been updated to `NewButton.jsx`.
+  **AI Action:** The AI proposes to delete `src/ui/OldButton.jsx` after verifying it's no longer imported or used anywhere in the codebase.
+  **Rationale:** The file is obsolete, its functionality is fully replaced, and it has no remaining dependencies.
+</example>
+
+<example type="invalid">
+  **Scenario:** A user asks to change the API endpoint definitions in `routes/api_v1.js`. The new version of the API (v2) will have different endpoint structures.
+  **AI Action:** The AI proposes to delete `routes/api_v1.js` and create a new file `routes/api_v2.js`.
+  **Rationale (Invalid):** While the endpoints change, the existing file `api_v1.js` might still be needed for backward compatibility or could serve as a base for `api_v2.js`. Instead, the AI should have considered creating `api_v2.js` alongside `api_v1.js` if v1 is still needed, or refactoring `api_v1.js` to `api_v2.js` if v1 is being deprecated and replaced directly. Deleting without considering these options is premature.
+</example>
+
+<example type="invalid">
+  **Scenario:** The file `utils/helpers.js` contains several utility functions. The user requests a new utility function.
+  **AI Action:** The AI decides `utils/helpers.js` is "too cluttered" and proposes deleting it to create `utils/new_helpers.js` and `utils/other_utils.js`, moving existing functions and adding the new one.
+  **Rationale (Invalid):** Deleting the existing file is a drastic step. The AI should have proposed adding the new function to `utils/helpers.js` and then, if concerned about clutter, separately suggested refactoring `utils/helpers.js` into multiple, more focused utility files (which would involve moving, not deleting and recreating all functions from scratch).
+</example>
+
